@@ -1,0 +1,33 @@
+.root { -fx-font-family: "Segoe UI"; -fx-font-size: 14px; -fx-base: #1c3041; -fx-background: #142330; -fx-control-inner-background: #142330; -fx-text-background-color: #eff6fa; -fx-accent: #5bbbd4; -fx-focus-color: #81d6e8; -fx-faint-focus-color: transparent; }
+.label { -fx-text-fill: #eff6fa; }
+.brand { -fx-font-size: 25px; -fx-font-weight: bold; -fx-text-fill: #81d6e8; }
+.intro, .sidebar { -fx-background-color: #0f1d28; }
+.display { -fx-font-size: 40px; -fx-font-weight: bold; -fx-line-spacing: 8px; }
+.title { -fx-font-size: 29px; -fx-font-weight: bold; }
+.section-title { -fx-font-size: 18px; -fx-font-weight: bold; -fx-padding: 12 0 4 0; }
+.muted { -fx-text-fill: #b5c7d3; -fx-font-size: 13px; }
+.identity { -fx-font-size: 14px; }
+.topbar { -fx-background-color: #1c3041; -fx-border-color: transparent transparent #334a5a transparent; }
+.field-label { -fx-font-weight: bold; }
+.text-field { -fx-background-color: #0f1d28; -fx-text-fill: #eff6fa; -fx-prompt-text-fill: #a2b7c6; -fx-padding: 12; -fx-border-color: #536c7d; -fx-border-radius: 4; -fx-background-radius: 4; }
+.text-field:focused { -fx-border-color: #81d6e8; -fx-border-width: 2; }
+.button { -fx-padding: 11 18; -fx-cursor: hand; -fx-background-radius: 4; -fx-font-weight: bold; }
+.button:focused { -fx-border-color: #eff6fa; -fx-border-width: 2; -fx-border-radius: 4; }
+.primary { -fx-background-color: #71cadd; -fx-text-fill: #0f1d28; }
+.primary:hover { -fx-background-color: #98e1ee; }
+.secondary { -fx-background-color: #294457; -fx-text-fill: #eff6fa; }
+.secondary:hover { -fx-background-color: #385b70; }
+.error { -fx-text-fill: #ffb3a8; }
+.list-view { -fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 0; }
+.list-cell { -fx-background-color: #0f1d28; -fx-padding: 2 4; -fx-border-width: 0 0 0 3; -fx-border-color: transparent; }
+.list-cell:filled:hover { -fx-background-color: #203848; }
+.list-cell:filled:selected { -fx-background-color: #294457; -fx-border-color: #81d6e8; }
+.subject-code { -fx-text-fill: #e9bb74; -fx-font-weight: bold; -fx-font-size: 13px; }
+.subject-name { -fx-font-weight: bold; -fx-font-size: 15px; -fx-max-width: 225; }
+.progress-number { -fx-font-size: 25px; -fx-text-fill: #81d6e8; -fx-font-weight: bold; }
+.progress-bar { -fx-pref-height: 14; }
+.progress-bar .track { -fx-background-color: #294457; -fx-background-radius: 3; }
+.progress-bar .bar { -fx-background-color: #71cadd; -fx-background-radius: 3; -fx-background-insets: 0; }
+.scroll-pane, .scroll-pane > .viewport { -fx-background-color: #142330; -fx-border-color: transparent; }
+.activity { -fx-background-color: #1c3041; -fx-border-color: #334a5a; -fx-border-width: 0 0 1 0; }
+.activity-name { -fx-font-size: 15px; }
