@@ -1,4 +1,15 @@
-# SteamBeta · Biblioteca académica
+# SteamBeta · Comunidad universitaria
+
+La prioridad es una comunidad universitaria independiente de registros académicos.
+Esta rama incluye registro JavaFX, comunidades propias, publicaciones y membresías
+administradas por el equipo. Sigue [la guía del piloto](backend/PILOT-QUICKSTART.md)
+para ejecutar y comprobar el recorrido con tres cuentas de prueba.
+Comentarios, reportes y moderación siguen pendientes. La biblioteca descrita
+debajo se conserva como módulo académico opcional.
+
+Para ejecutar la entrega actual por primera vez, sigue la
+[guía local paso a paso](backend/LOCAL-QUICKSTART.md). Incluye un comprobador
+de registro, acceso, perfil y salida que gestiona cookies y CSRF automáticamente.
 
 Plataforma académica con cliente JavaFX modular y backend Spring Boot independiente.
 El recorrido implementado es acceso por sesión, biblioteca personal, actividades,

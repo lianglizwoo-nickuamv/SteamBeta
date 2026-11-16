@@ -25,6 +25,9 @@ class PersistenceIT {
     private ConfigurableApplicationContext app;
     private volatile CyclicBarrier transactionBarrier;
     private static final ThreadLocal<ActorProvider.Actor> ACTOR = new ThreadLocal<>();
+    private final UUID upgradedAccount = UUID.randomUUID();
+    private final UUID upgradedUniversity = UUID.randomUUID();
+    private final UUID upgradedStudent = UUID.randomUUID();
 
     @Configuration(proxyBeanMethods = false)
     static class FixtureAuthentication {
@@ -62,6 +65,24 @@ class PersistenceIT {
             s.execute("create role fixture_academic login nosuperuser nobypassrls password '"+password+"' in role replica_academic");
             s.execute("create role fixture_migrator login nosuperuser nobypassrls password '"+password+"'");
             s.execute("grant create on database " + c.getCatalog() + " to fixture_migrator");
+        }
+        // Exercise V3 with a populated V2 database, not only a fresh schema.
+        org.flywaydb.core.Flyway.configure()
+                .dataSource(url, "fixture_migrator", password)
+                .defaultSchema("replica_meta").schemas("replica_meta")
+                .placeholders(Map.of("backendLogin", "fixture_runtime"))
+                .target("2").load().migrate();
+        try (var c = admin()) {
+            c.setAutoCommit(false);
+            execute(c, "insert into replica.university(id,code,name) values (?,?,'Existing university')",
+                    upgradedUniversity, upgradedUniversity.toString());
+            execute(c, "insert into replica.student(id,university_id,alias) values (?,?,'Existing alias')",
+                    upgradedStudent, upgradedUniversity);
+            execute(c, """
+                    insert into replica.access_account(id,login_identifier,password_hash,university_id,student_id)
+                    values (?,?,'fixture-unused-hash',?,?)
+                    """, upgradedAccount, "upgrade." + upgradedAccount, upgradedUniversity, upgradedStudent);
+            c.commit();
         }
         try (var migrationApp = new SpringApplicationBuilder(BackendApplication.class)
                 .run("--spring.profiles.active=migration",
@@ -320,6 +341,16 @@ class PersistenceIT {
             if(csrf)builder.header(csrfHeader,csrfToken);
             return http.send(builder.build(),java.net.http.HttpResponse.BodyHandlers.ofString());
         }
+        java.net.http.HttpResponse<String> register(String body, boolean includeCsrf) throws Exception {
+            return jsonPost("/api/auth/register", body, includeCsrf);
+        }
+        java.net.http.HttpResponse<String> jsonPost(String path, String body, boolean includeCsrf) throws Exception {
+            var request = java.net.http.HttpRequest.newBuilder(endpoint(path))
+                    .header("Content-Type", "application/json")
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(body));
+            if (includeCsrf) request.header(csrfHeader, csrfToken);
+            return http.send(request.build(), java.net.http.HttpResponse.BodyHandlers.ofString());
+        }
         void csrf() throws Exception {
             var response=get("/api/auth/csrf");assertEquals(200,response.statusCode());
             var node=bean(tools.jackson.databind.ObjectMapper.class).readTree(response.body());
@@ -408,6 +439,272 @@ class PersistenceIT {
             assertEquals("42501",assertThrows(SQLException.class,()->scalar(c,"select account_id from replica.lookup_access_account('demo.alba')")).getSQLState());
         }
     }
+    @Test void independentRegistrationLoginAndProfileNeedNoAcademicData() throws Exception {
+        String identifier = "member." + UUID.randomUUID();
+        String secret = UUID.randomUUID().toString();
+        var json = bean(tools.jackson.databind.ObjectMapper.class);
+        String payload = json.writeValueAsString(Map.of("login", identifier, "password", secret,
+                "alias", "New member", "declaredUniversity", "User declared university",
+                "declaredCareer", "Systems engineering", "studentId", upgradedStudent.toString(),
+                "universityId", upgradedUniversity.toString(), "role", "ADMIN",
+                "institutionalIdentityVerified", true));
+        var browser = new Browser();
+        assertEquals(401, browser.get("/api/account").statusCode());
+        assertEquals(403, browser.register(payload, false).statusCode());
+        browser.csrf();
+        long studentsBefore = count("select count(*) from replica.student");
+        long walletsBefore = count("select count(*) from replica.wallet");
+        long enrollmentsBefore = count("select count(*) from replica.enrollment");
+        var created = browser.register(payload, true);
+        assertEquals(201, created.statusCode());
+        UUID accountId = UUID.fromString(json.readTree(created.body()).get("accountId").asText());
+        assertEquals(1, json.readTree(created.body()).size());
+        assertEquals(409, browser.register(payload, true).statusCode());
+        assertEquals(studentsBefore, count("select count(*) from replica.student"));
+        assertEquals(walletsBefore, count("select count(*) from replica.wallet"));
+        assertEquals(enrollmentsBefore, count("select count(*) from replica.enrollment"));
+        assertEquals(1, count("""
+                select count(*) from replica.access_account
+                where id=? and student_id is null and university_id is null
+                """, accountId));
+        var accepted = browser.login(identifier, secret);
+        assertEquals(200, accepted.statusCode());
+        assertTrue(json.readTree(accepted.body()).get("studentId").isNull());
+        var profile = browser.get("/api/account");
+        assertEquals(200, profile.statusCode());
+        var data = json.readTree(profile.body());
+        assertEquals(5, data.size());
+        assertEquals(accountId.toString(), data.get("accountId").asText());
+        assertEquals("New member", data.get("alias").asText());
+        assertFalse(data.get("institutionalIdentityVerified").asBoolean());
+        assertFalse(profile.body().contains(identifier));
+        assertFalse(profile.body().contains(secret));
+        assertFalse(profile.body().contains("password"));
+        assertEquals(403, browser.get("/api/me/library").statusCode());
+        assertEquals(200, browser.get("/api/me").statusCode());
+        browser.csrf();
+        assertEquals(204, browser.post("/api/auth/logout", "", true).statusCode());
+        assertEquals(401, browser.get("/api/account").statusCode());
+    }
+
+    @Test void registrationIsAtomicUniqueAndCannotSetAnAcademicIdentity() throws Exception {
+        var json = bean(tools.jackson.databind.ObjectMapper.class);
+        String identifier = "unique." + UUID.randomUUID();
+        var request = new HashMap<String, Object>();
+        request.put("login", identifier);
+        request.put("password", UUID.randomUUID().toString());
+        request.put("alias", "Independent member");
+        var first = new Browser();
+        var second = new Browser();
+        first.csrf();
+        second.csrf();
+        String payload = json.writeValueAsString(request);
+        var outcomes = simultaneous(() -> first.register(payload, true).statusCode(),
+                () -> second.register(payload, true).statusCode());
+        assertEquals(Set.of(201, 409), new HashSet<>(outcomes));
+        assertEquals(1, count("select count(*) from replica.access_account where login_identifier=?", identifier));
+        String invalidLogin = "invalid." + UUID.randomUUID();
+        request.put("login", invalidLogin);
+        request.put("alias", "x");
+        assertEquals(400, first.register(json.writeValueAsString(request), true).statusCode());
+        assertEquals(0, count("select count(*) from replica.access_account where login_identifier=?", invalidLogin));
+        request.put("alias", "Valid alias");
+        request.put("password", "short");
+        assertEquals(400, first.register(json.writeValueAsString(request), true).statusCode());
+        request.put("password", "a".repeat(73));
+        assertEquals(400, first.register(json.writeValueAsString(request), true).statusCode());
+        assertEquals(0, count("select count(*) from replica.access_account where login_identifier=?", invalidLogin));
+        // Even a privileged function failure after the account INSERT rolls it back.
+        try (var c = login("fixture_runtime")) {
+            assertEquals("23514", assertThrows(SQLException.class, () -> scalar(c,
+                    "select replica.register_account(?, ?, ?, null, null)",
+                    invalidLogin, "fixture-unused-hash", "x")).getSQLState());
+            assertEquals("42501", assertThrows(SQLException.class, () -> scalar(c,
+                    "select count(*) from replica.account_profile")).getSQLState());
+        }
+        assertEquals(0, count("select count(*) from replica.access_account where login_identifier=?", invalidLogin));
+        try (var c = admin()) {
+            assertEquals("23514", assertThrows(SQLException.class, () -> execute(c, """
+                    insert into replica.access_account(login_identifier,password_hash,student_id)
+                    values (?, 'unused', ?)
+                    """, invalidLogin, upgradedStudent)).getSQLState());
+        }
+    }
+
+    @Test void migrationPreservesExistingAccountsAndBackfillsTheirPublicAlias() throws Exception {
+        assertEquals(1, count("select count(*) from replica_meta.flyway_schema_history where success and version='3'"));
+        assertEquals(1, count("""
+                select count(*) from replica.access_account a
+                join replica.account_profile p on p.account_id=a.id
+                where a.id=? and a.university_id=? and a.student_id=?
+                  and a.password_hash='fixture-unused-hash' and p.alias='Existing alias'
+                  and p.declared_university is null and p.declared_career is null
+                """, upgradedAccount, upgradedUniversity, upgradedStudent));
+    }
+
+    private record CommunityAccount(String login, String password, UUID id, Browser browser) {}
+
+    private CommunityAccount communityAccount(String alias) throws Exception {
+        var json = bean(tools.jackson.databind.ObjectMapper.class);
+        String identifier = "pilot." + UUID.randomUUID();
+        String secret = UUID.randomUUID().toString();
+        var browser = new Browser();
+        browser.csrf();
+        var created = browser.register(json.writeValueAsString(Map.of(
+                "login", identifier, "password", secret, "alias", alias)), true);
+        assertEquals(201, created.statusCode());
+        UUID accountId = UUID.fromString(json.readTree(created.body()).get("accountId").asText());
+        assertEquals(200, browser.login(identifier, secret).statusCode());
+        browser.csrf();
+        return new CommunityAccount(identifier, secret, accountId, browser);
+    }
+
+    private UUID community() throws Exception {
+        UUID communityId = UUID.randomUUID();
+        try (var c = admin()) {
+            execute(c, """
+                    insert into replica.community(id,slug,name,description,rules)
+                    values (?,?,'Pilot community','Test group','Respect other members')
+                    """, communityId, "pilot-" + communityId);
+        }
+        return communityId;
+    }
+
+    private void join(UUID communityId, CommunityAccount account, String role) throws Exception {
+        try (var c = admin()) {
+            execute(c, "insert into replica.community_membership(community_id,account_id,role) values (?,?,?)",
+                    communityId, account.id(), role);
+        }
+    }
+
+    private String postPayload(UUID requestKey, String title, String body) throws Exception {
+        return bean(tools.jackson.databind.ObjectMapper.class).writeValueAsString(Map.of(
+                "requestKey", requestKey, "title", title, "body", body,
+                "authorAccountId", upgradedAccount, "role", "ADMIN"));
+    }
+
+    @Test void communityMembersSharePostsAndOtherAccountsCannotAccessDirectRoutes() throws Exception {
+        long studentsBefore = count("select count(*) from replica.student");
+        var first = communityAccount("First pilot member");
+        var second = communityAccount("Second pilot member");
+        var outside = communityAccount("Other community administrator");
+        UUID pilot = community();
+        UUID other = community();
+        join(pilot, first, "MEMBER");
+        join(pilot, second, "MEMBER");
+        join(other, outside, "ADMIN");
+        String path = "/api/communities/" + pilot + "/posts";
+        var json = bean(tools.jackson.databind.ObjectMapper.class);
+        assertEquals(401, new Browser().get("/api/me/communities").statusCode());
+        assertEquals(401, new Browser().get(path).statusCode());
+        var mine = first.browser().get("/api/me/communities?accountId=" + outside.id());
+        assertEquals(200, mine.statusCode());
+        assertEquals(pilot.toString(), json.readTree(mine.body()).get(0).get("id").asText());
+        assertEquals(1, json.readTree(mine.body()).size());
+        var empty = communityAccount("Member without membership");
+        assertTrue(json.readTree(empty.browser().get("/api/me/communities").body()).isEmpty());
+        assertEquals(404, empty.browser().get(path).statusCode());
+        assertEquals(404, outside.browser().get(path).statusCode());
+        String payload = postPayload(UUID.randomUUID(), "How do sessions work?", "A question shared with the pilot.");
+        assertEquals(404, outside.browser().jsonPost(path, payload, true).statusCode());
+        assertEquals(404, empty.browser().jsonPost(path, payload, true).statusCode());
+        assertEquals(403, first.browser().jsonPost(path, payload, false).statusCode());
+        var created = first.browser().jsonPost(path, payload, true);
+        assertEquals(201, created.statusCode());
+        assertEquals(first.id().toString(), json.readTree(created.body()).get("authorAccountId").asText());
+        var read = second.browser().get(path);
+        assertEquals(200, read.statusCode());
+        var posts = json.readTree(read.body()).get("posts");
+        assertEquals(1, posts.size());
+        assertEquals("A question shared with the pilot.", posts.get(0).get("body").asText());
+        assertEquals("First pilot member", posts.get(0).get("authorAlias").asText());
+        assertEquals(7, posts.get(0).size());
+        assertFalse(read.body().contains("password"));
+        assertFalse(read.body().contains(first.login()));
+        assertFalse(read.body().contains("studentId"));
+        assertFalse(read.body().contains("balance"));
+        assertEquals(studentsBefore, count("select count(*) from replica.student"));
+        assertEquals(204, first.browser().post("/api/auth/logout", "", true).statusCode());
+        assertEquals(401, first.browser().get(path).statusCode());
+        first.browser().csrf();
+        assertEquals(200, first.browser().login(outside.login(), outside.password()).statusCode());
+        assertEquals(404, first.browser().get(path).statusCode());
+        var changed = json.readTree(first.browser().get("/api/me/communities").body());
+        assertEquals(1, changed.size());
+        assertEquals(other.toString(), changed.get(0).get("id").asText());
+        try (var c = login("fixture_runtime")) {
+            assertEquals("42501", assertThrows(SQLException.class, () -> scalar(c,
+                    "select count(*) from replica.community_post")).getSQLState());
+        }
+    }
+
+    @Test void communityPagesAreChronologicalStableAndMembershipRevocationTakesEffect() throws Exception {
+        var member = communityAccount("Pagination member");
+        UUID pilot = community();
+        join(pilot, member, "MEMBER");
+        String path = "/api/communities/" + pilot + "/posts";
+        var json = bean(tools.jackson.databind.ObjectMapper.class);
+        for (int i = 0; i < 3; i++) {
+            assertEquals(201, member.browser().jsonPost(path,
+                    postPayload(UUID.randomUUID(), "Question " + i, "Content"), true).statusCode());
+        }
+        // Equal timestamps exercise the UUID tie-breaker as well as the cursor.
+        try (var c = admin()) {
+            execute(c, "update replica.community_post set created_at='2026-01-01T00:00:00Z' where community_id=?", pilot);
+        }
+        var first = json.readTree(member.browser().get(path + "?limit=2").body());
+        assertEquals(2, first.get("posts").size());
+        String cursor = "?limit=2&beforeTime=" + java.net.URLEncoder.encode(first.get("nextBeforeTime").asText(),
+                java.nio.charset.StandardCharsets.UTF_8) + "&beforeId=" + first.get("nextBeforeId").asText();
+        var fresh = member.browser().jsonPost(path,
+                postPayload(UUID.randomUUID(), "Newest question", "New content"), true);
+        assertEquals(201, fresh.statusCode());
+        var older = json.readTree(member.browser().get(path + cursor).body());
+        assertEquals(1, older.get("posts").size());
+        assertTrue(older.get("nextBeforeTime").isNull());
+        var seen = new HashSet<String>();
+        first.get("posts").forEach(post -> seen.add(post.get("id").asText()));
+        assertTrue(seen.add(older.get("posts").get(0).get("id").asText()));
+        var newest = json.readTree(member.browser().get(path + "?limit=2").body());
+        assertEquals("Newest question", newest.get("posts").get(0).get("title").asText());
+        assertEquals(400, member.browser().get(path + "?limit=0").statusCode());
+        assertEquals(400, member.browser().get(path + "?limit=51").statusCode());
+        assertEquals(400, member.browser().get(path + "?beforeId=" + UUID.randomUUID()).statusCode());
+        try (var c = admin()) {
+            execute(c, "update replica.community_membership set active=false where community_id=? and account_id=?",
+                    pilot, member.id());
+        }
+        assertEquals(404, member.browser().get(path).statusCode());
+        assertEquals(404, member.browser().jsonPost(path,
+                postPayload(UUID.randomUUID(), "Denied post", "Content"), true).statusCode());
+    }
+
+    @Test void communityPostRetriesAreIdempotentAndInvalidContentIsRejected() throws Exception {
+        var member = communityAccount("Retry member");
+        UUID pilot = community();
+        join(pilot, member, "MEMBER");
+        String path = "/api/communities/" + pilot + "/posts";
+        var json = bean(tools.jackson.databind.ObjectMapper.class);
+        UUID key = UUID.randomUUID();
+        String payload = postPayload(key, "One question", "Once only");
+        var replies = simultaneous(() -> member.browser().jsonPost(path, payload, true),
+                () -> member.browser().jsonPost(path, payload, true));
+        assertEquals(201, replies.getFirst().statusCode());
+        assertEquals(201, replies.getLast().statusCode());
+        assertEquals(json.readTree(replies.getFirst().body()).get("id"),
+                json.readTree(replies.getLast().body()).get("id"));
+        assertEquals(1, count("select count(*) from replica.community_post where community_id=?", pilot));
+        assertEquals(409, member.browser().jsonPost(path, postPayload(key, "Changed question", "Once only"), true).statusCode());
+        assertEquals(400, member.browser().jsonPost(path, postPayload(UUID.randomUUID(), "x", "Body"), true).statusCode());
+        assertEquals(400, member.browser().jsonPost(path, postPayload(UUID.randomUUID(), "Valid title", " "), true).statusCode());
+        assertEquals(400, member.browser().jsonPost(path, postPayload(UUID.randomUUID(), "Valid title", "a".repeat(10001)), true).statusCode());
+        assertEquals(1, count("select count(*) from replica.community_post where community_id=?", pilot));
+        try (var c = admin()) {
+            execute(c, "update replica.access_account set enabled=false where id=?", member.id());
+        }
+        assertEquals(401, member.browser().get("/api/me/communities").statusCode());
+    }
+
     @Test void runtimeCannotWriteOrInvokeAcademicFunctions() throws Exception {
         var f=fixture();
         try(var c=login("fixture_runtime")) {

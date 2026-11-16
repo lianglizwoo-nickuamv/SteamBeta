@@ -1,7 +1,7 @@
 package com.example.steambeta.backend.auth;
 
-import com.example.steambeta.backend.library.LibraryService;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.DispatcherType;
 import java.io.IOException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.*;
@@ -20,13 +20,14 @@ public class SecurityConfiguration {
         response.getWriter().write("{\"error\":\""+code+"\"}");
     }
     @Bean SecurityFilterChain security(HttpSecurity http,AccountLookup accounts,PasswordEncoder encoder,
-                                      LibraryService library,ObjectMapper json) throws Exception {
+                                      AccountService identities,ObjectMapper json) throws Exception {
         var provider=new DaoAuthenticationProvider(accounts);
         provider.setPasswordEncoder(encoder);
         http.authenticationProvider(provider)
             .csrf(csrf->csrf.csrfTokenRepository(new HttpSessionCsrfTokenRepository()))
             .authorizeHttpRequests(auth->auth
-                .requestMatchers("/api/auth/csrf","/api/auth/login").permitAll()
+                .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                .requestMatchers("/api/auth/csrf","/api/auth/login","/api/auth/register").permitAll()
                 .anyRequest().authenticated())
             .sessionManagement(session->session.sessionFixation(fixation->fixation.changeSessionId()))
             .requestCache(cache->cache.disable())
@@ -34,7 +35,7 @@ public class SecurityConfiguration {
             .formLogin(form->form.loginProcessingUrl("/api/auth/login").usernameParameter("login")
                 .successHandler((request,response,authentication)->{
                     response.setContentType("application/json;charset=UTF-8");
-                    json.writeValue(response.getWriter(),library.me());
+                    json.writeValue(response.getWriter(),identities.sessionIdentity());
                 })
                 .failureHandler((request,response,exception)->error(response,401,"invalid_credentials")))
             .logout(logout->logout.logoutUrl("/api/auth/logout").invalidateHttpSession(true)

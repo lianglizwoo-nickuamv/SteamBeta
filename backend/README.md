@@ -1,5 +1,14 @@
 # Campus: acceso y biblioteca académica
 
+La prioridad es la comunidad universitaria. La rama codex/community-foundation
+incluye cuentas independientes, registro JavaFX, comunidades y publicaciones.
+Consulta [PILOT-QUICKSTART.md](PILOT-QUICKSTART.md) para ejecutar y probar la entrega.
+Comentarios, reportes y moderación quedan para las siguientes entregas.
+
+La [guía local paso a paso](LOCAL-QUICKSTART.md) indica qué abrir y qué comandos
+ejecutar. La [verificación local](LOCAL-VERIFICATION.md) distingue los resultados
+de la API real de las comprobaciones visuales pendientes.
+
 Cliente JavaFX modular y backend Maven independiente. Java 21, Spring Boot 4.1.2,
 Spring MVC/Security, JPA/Hibernate, PostgreSQL y Flyway. El parent/BOM de Boot
 gestiona las dependencias del backend. El cliente usa HttpClient y Gson.

@@ -31,3 +31,6 @@
 .scroll-pane, .scroll-pane > .viewport { -fx-background-color: #142330; -fx-border-color: transparent; }
 .activity { -fx-background-color: #1c3041; -fx-border-color: #334a5a; -fx-border-width: 0 0 1 0; }
 .activity-name { -fx-font-size: 15px; }
+.text-area { -fx-text-fill: #eff6fa; -fx-control-inner-background: #0f1d28; -fx-border-color: #536c7d; }
+.text-area .content { -fx-background-color: #0f1d28; }
+.post-body { -fx-font-size: 15px; -fx-line-spacing: 3px; }

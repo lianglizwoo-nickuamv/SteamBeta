@@ -12,21 +12,25 @@ import org.springframework.security.core.userdetails.UserDetails;
 public final class AccountPrincipal implements UserDetails, CredentialsContainer {
     private static final long serialVersionUID = 1L;
     private final String login;
+    private final UUID accountId;
     private String passwordHash;
     private final boolean enabled;
     private final UUID universityId;
     private final UUID studentId;
-    public AccountPrincipal(String login, String hash, boolean enabled, UUID universityId, UUID studentId) {
+    public AccountPrincipal(UUID accountId, String login, String hash, boolean enabled, UUID universityId, UUID studentId) {
+        this.accountId=accountId;
         this.login=login; this.passwordHash=hash; this.enabled=enabled;
         this.universityId=universityId; this.studentId=studentId;
     }
     public UUID universityId() { return universityId; }
     public UUID studentId() { return studentId; }
+    public UUID accountId() { return accountId; }
+    public boolean hasAcademicLink() { return universityId != null && studentId != null; }
     @Override public String getUsername() { return login; }
     @Override public String getPassword() { return passwordHash; }
     @Override public boolean isEnabled() { return enabled; }
     @Override public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_STUDENT"));
+        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
     @Override public void eraseCredentials() { passwordHash=null; }
 }

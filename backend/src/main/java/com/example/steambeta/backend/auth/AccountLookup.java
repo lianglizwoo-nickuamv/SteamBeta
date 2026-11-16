@@ -16,6 +16,7 @@ public class AccountLookup implements UserDetailsService {
             throw new UsernameNotFoundException("Invalid credentials");
         }
         var rows=jdbc.query("select * from replica.lookup_access_account(?)", (rs,row)->new AccountPrincipal(
+                rs.getObject("account_id",UUID.class),
                 rs.getString("login_identifier"),rs.getString("password_hash"),rs.getBoolean("enabled"),
                 rs.getObject("university_id",UUID.class),rs.getObject("student_id",UUID.class)),normalized);
         if(rows.isEmpty()) throw new UsernameNotFoundException("Invalid credentials");

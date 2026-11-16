@@ -1,3 +1,134 @@
+# REGISTRO REPLICA v4.0 — primera experiencia de comunidad
+
+La etapa anterior de cuentas independientes mediante API fue aceptada
+expresamente por el usuario antes de esta entrega.
+
+Implementados registro JavaFX, portada Mis comunidades, estado sin membresías,
+lectura cronológica paginada y publicación de título/contenido. Se conservan
+sesiones, CSRF, llamadas fuera del hilo FX y guard de generación de sesión.
+La biblioteca académica es una entrada opcional para cuentas vinculadas.
+
+V4 agrega tres tablas y funciones limitadas. El servidor obtiene el autor del
+principal y comprueba membresía activa en cada operación. add-pilot-members.ps1
+es el procedimiento administrativo local y transaccional para dar acceso.
+Los reintentos de publicación conservan requestKey y no duplican la fila.
+
+## Evidencia de la entrega
+
+- Cliente compilado y 2 pruebas aprobadas.
+- Backend con 3 unitarias y 16 IT aprobados; sin fallos ni omisiones.
+- Miembro publica y otro lee; cuenta ajena y administrador de otro espacio
+  rechazados. Permisos, CSRF, privacidad, paginación estable, validación,
+  reintentos concurrentes, retiro de membresía y cuenta deshabilitada verificados.
+- Pruebas académicas, registro y actualización de esquema existentes conservadas.
+- Copia privada previa a V4 en .replica-work/backups/before-community-v4-20261116-113527.dump,
+  índice legible; V4 aplicada con migrador en steam_academico. V1–V3 sin cambios.
+- Comprobación local con ApiClient real contra 18080, usando dos miembros y una
+  cuenta ajena. Registro, lectura, publicación, reintento y cambio de cuenta
+  completados. Este servidor de QA se detuvo al terminar.
+- Base local al cerrar el QA inicial, 7 cuentas de prueba, 3 estudiantes conservados, 1 comunidad,
+  2 membresías y 1 publicación sintética.
+- Inspección visual directa de acceso y formulario de registro. Recorrido
+  visual completo con credenciales y respuesta retrasada en pantalla pendiente.
+
+Después del QA inicial, el usuario completó el recorrido manual y aportó
+capturas. Se observaron acceso y estado vacío, incorporación al piloto,
+publicación desde una cuenta, lectura desde otra cuenta miembro y estado vacío
+al entrar con una cuenta sin membresía. Quedan pendientes las comprobaciones
+visuales de paginación, errores de red, sesión vencida y respuestas retrasadas.
+Los identificadores y contraseñas de sus cuentas no se incorporan a este registro.
+
+La guía de uso del equipo restringe automatizar diálogos de autenticación.
+No se completó por UI el ingreso de credenciales; la evidencia de ApiClient
+se distingue de una interacción visual.
+
+Un primer intento de iniciar el servidor QA con Windows PowerShell 5 falló
+por carga del módulo Security heredado del entorno de herramientas. Se corrigió
+el lanzador de QA usando PowerShell 7, sin modificar las configuraciones globales.
+No se atribuye ese fallo de preparación a las pruebas funcionales del backend.
+
+Evidencia privada en .replica-work/community-ui-client-test.log,
+community-ui-backend-verify.log, community-ui-local-migration.log y
+community-ui-local-probe.log. Los logs de cierre del servidor QA pueden mostrar
+terminación del proceso de prueba. No se publican credenciales ni tokens.
+
+Sigue PILOT-QUICKSTART.md para reiniciar el backend actualizado, registrar tres
+cuentas de prueba desde JavaFX, incorporar dos miembros y verificar el recorrido.
+Comentarios, reportes y moderación precederán al uso con personas reales.
+La evidencia visual básica del usuario queda registrada arriba. No se declara
+aceptación global de la entrega ni verificación visual de los casos pendientes.
+
+## Entrega anterior
+
+# REGISTRO REPLICA v3.1 — prueba local reproducible
+
+Se pausaron funcionalidades nuevas y se comprobó la entrega de cuentas
+independientes contra el backend y PostgreSQL locales. Al empezar se encontraron
+V1/V2/V3 ya aplicadas, por lo que no se ejecutó otra migración.
+
+Se creó un respaldo privado y se ensayó su restauración en un clúster temporal.
+El comprobador check-local-api.ps1 completó registro, login, perfil y logout
+dos veces, reutilizando la cuenta local.check.member en la segunda ejecución.
+Solo se añadió esa cuenta y su perfil; se conservaron las tres cuentas demo
+y sus registros académicos. El backend real sigue disponible en el puerto 8080.
+
+LOCAL-QUICKSTART.md explica las dos terminales, arranque, resultados, errores,
+parada y reinicio. LOCAL-VERIFICATION.md registra la evidencia y el respaldo.
+Este resultado verifica el recorrido API local; no declara aceptación visual
+ni aceptación del usuario.
+
+## Entrega anterior
+
+# REGISTRO REPLICA v3.0 — fundamento de comunidad
+
+Fecha de revisión y cambios, 16 de noviembre de 2026. Rama
+codex/community-foundation, creada desde ecd62fe con árbol limpio.
+
+## Nueva dirección y primera entrega
+
+La prioridad es una comunidad utilizable sin matrícula ni integración
+universitaria. Se conserva el módulo académico. El modelo y la matriz de
+permisos propuestos están en COMMUNITY-PLAN.md.
+
+Implementado el registro JSON con CSRF, un perfil propio por cuenta, accountId
+en el principal y ROLE_USER. V3 permite ambos identificadores académicos nulos
+juntos, conserva las FK existentes y crea perfiles para cuentas previas. Login
+y /api/me mantienen su respuesta anterior; /api/account es la identidad propia
+para comunidad y declara institutionalIdentityVerified=false.
+
+La universidad y carrera declaradas son opcionales. El servidor no acepta
+asignaciones de matrícula, verificación ni roles desde el registro.
+La admisión al piloto se propone por membresía gestionada por el equipo.
+
+La pantalla JavaFX sigue siendo la biblioteca académica existente. El registro
+de esta entrega se verifica por API. Una cuenta independiente puede iniciar y
+cerrar sesión, consultar su perfil y recibe 403 al pedir datos académicos.
+Comunidad, publicaciones, comentarios y moderación todavía no están implementados.
+
+## Verificación de esta entrega
+
+- Consulta local de solo lectura antes de editar persistencia. V1/V2 exitosas,
+  tres cuentas y tres estudiantes, todas las cuentas vinculadas.
+- V3 preparada y aplicada únicamente en PostgreSQL desechable.
+- Actualización de V2 poblada a V3 verificada con una cuenta previa, preservando
+  IDs, hash y vínculo académico y rellenando su alias.
+- Cliente Maven test, 2 pruebas aprobadas.
+- Backend verify con PostgreSQL temporal 18.6, 3 unitarias y 13 de integración
+  aprobadas, sin fallos ni omisiones.
+- Registro sin crear estudiantes, matrículas ni saldos; perfil privado;
+  login/salida; CSRF; conflicto concurrente de login y rollback de cuenta/perfil.
+- JSON con studentId, universityId, role=ADMIN y verificación=true no asigna
+  esos atributos. Contratos SQL y pruebas académicas anteriores preservados.
+- V1/V2 sin modificaciones. steam_academico conserva V1/V2 en este trabajo.
+- Evidencia local ignorada en .replica-work/community-foundation-verify.log.
+
+Pendientes de próximas entregas, UI de registro y comunidad piloto; publicaciones
+y comentarios con autoría; permisos por comunidad; reportes y conversaciones
+ocultas/eliminadas. Sus pruebas todavía no corresponden a funciones existentes.
+No se ejecutó una aceptación visual nueva.
+
+## Estado anterior conservado como histórico
+
 # REGISTRO REPLICA v2.1 — estado compartible
 
 ## Alcance
