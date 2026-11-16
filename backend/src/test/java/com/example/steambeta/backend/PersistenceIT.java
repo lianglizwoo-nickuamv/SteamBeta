@@ -351,6 +351,12 @@ class PersistenceIT {
             if (includeCsrf) request.header(csrfHeader, csrfToken);
             return http.send(request.build(), java.net.http.HttpResponse.BodyHandlers.ofString());
         }
+        java.net.http.HttpResponse<String> jsonMethod(String method,String path,String body,boolean includeCsrf) throws Exception {
+            var request=java.net.http.HttpRequest.newBuilder(endpoint(path)).header("Content-Type","application/json")
+                    .method(method,body==null?java.net.http.HttpRequest.BodyPublishers.noBody():java.net.http.HttpRequest.BodyPublishers.ofString(body));
+            if(includeCsrf)request.header(csrfHeader,csrfToken);
+            return http.send(request.build(),java.net.http.HttpResponse.BodyHandlers.ofString());
+        }
         void csrf() throws Exception {
             var response=get("/api/auth/csrf");assertEquals(200,response.statusCode());
             var node=bean(tools.jackson.databind.ObjectMapper.class).readTree(response.body());
@@ -618,7 +624,7 @@ class PersistenceIT {
         assertEquals(1, posts.size());
         assertEquals("A question shared with the pilot.", posts.get(0).get("body").asText());
         assertEquals("First pilot member", posts.get(0).get("authorAlias").asText());
-        assertEquals(7, posts.get(0).size());
+        assertEquals(9, posts.get(0).size());
         assertFalse(read.body().contains("password"));
         assertFalse(read.body().contains(first.login()));
         assertFalse(read.body().contains("studentId"));
@@ -703,6 +709,81 @@ class PersistenceIT {
             execute(c, "update replica.access_account set enabled=false where id=?", member.id());
         }
         assertEquals(401, member.browser().get("/api/me/communities").statusCode());
+    }
+
+    @Test void communityConversationOwnershipReportsModerationAndTombstonesAreEnforced() throws Exception {
+        var author=communityAccount("Conversation author");
+        var member=communityAccount("Conversation member");
+        var moderator=communityAccount("Community moderator");
+        var outsider=communityAccount("Unrelated moderator");
+        UUID pilot=community(), other=community();
+        join(pilot,author,"MEMBER");join(pilot,member,"MEMBER");join(pilot,moderator,"MODERATOR");join(other,outsider,"MODERATOR");
+        var json=bean(tools.jackson.databind.ObjectMapper.class);
+        String postsPath="/api/communities/"+pilot+"/posts";
+        var created=author.browser().jsonPost(postsPath,postPayload(UUID.randomUUID(),"Question title","Question body"),true);
+        assertEquals(201,created.statusCode());
+        UUID postId=UUID.fromString(json.readTree(created.body()).get("id").asText());
+        String commentsPath=postsPath+"/"+postId+"/comments";
+        var comment=member.browser().jsonPost(commentsPath,"{\"body\":\"Helpful reply\",\"authorAccountId\":\""+outsider.id()+"\"}",true);
+        assertEquals(201,comment.statusCode());
+        UUID commentId=UUID.fromString(json.readTree(comment.body()).get("id").asText());
+        assertEquals(member.id().toString(),json.readTree(comment.body()).get("authorAccountId").asText());
+
+        String commentRoute="/api/communities/"+pilot+"/comments/"+commentId;
+        assertEquals(404,author.browser().jsonMethod("PATCH",commentRoute,"{\"body\":\"forged edit\"}",true).statusCode());
+        assertEquals(404,author.browser().jsonMethod("DELETE",commentRoute,null,true).statusCode());
+        assertEquals(200,member.browser().jsonMethod("PATCH",commentRoute,"{\"body\":\"Edited reply\"}",true).statusCode());
+        assertEquals(204,member.browser().jsonMethod("DELETE",commentRoute,null,true).statusCode());
+        var deletedComment=json.readTree(member.browser().get(commentsPath).body()).get(0);
+        assertEquals("DELETED",deletedComment.get("status").asText());assertTrue(deletedComment.get("body").isNull());
+
+        String reportPath="/api/communities/"+pilot+"/reports";
+        assertEquals(404,author.browser().jsonPost(reportPath,"{\"targetType\":\"POST\",\"targetId\":\""+postId+"\",\"reason\":\"Self report\"}",true).statusCode());
+        var reported=member.browser().jsonPost(reportPath,"{\"targetType\":\"POST\",\"targetId\":\""+postId+"\",\"reason\":\"Contains private information\"}",true);
+        assertEquals(201,reported.statusCode());
+        assertEquals(409,member.browser().jsonPost(reportPath,"{\"targetType\":\"POST\",\"targetId\":\""+postId+"\",\"reason\":\"Duplicate report\"}",true).statusCode());
+        String queue="/api/communities/"+pilot+"/moderation/reports";
+        assertEquals(404,member.browser().get(queue).statusCode());assertEquals(404,outsider.browser().get(queue).statusCode());
+        var reports=json.readTree(moderator.browser().get(queue).body());assertEquals(1,reports.size());
+        UUID reportId=UUID.fromString(reports.get(0).get("id").asText());
+        String hidePath="/api/communities/"+pilot+"/moderation/hide";
+        assertEquals(404,member.browser().jsonPost(hidePath,"{\"targetType\":\"POST\",\"targetId\":\""+postId+"\",\"reason\":\"Hide it\"}",true).statusCode());
+        assertEquals(204,moderator.browser().jsonPost("/api/communities/"+pilot+"/moderation/reports/"+reportId+"/hide",
+                "{\"decision\":\"RESOLVED\",\"note\":\"Content hidden after review\"}",true).statusCode());
+        assertEquals(404,author.browser().jsonMethod("PATCH",postsPath+"/"+postId,"{\"title\":\"Edited after hide\",\"body\":\"Must not unhide\"}",true).statusCode());
+        assertEquals(0,json.readTree(member.browser().get(postsPath).body()).get("posts").size());
+        assertTrue(json.readTree(moderator.browser().get(queue).body()).isEmpty());
+
+        var commentTarget=author.browser().jsonPost(postsPath,postPayload(UUID.randomUUID(),"Comment report","Parent for comment"),true);
+        UUID commentPost=UUID.fromString(json.readTree(commentTarget.body()).get("id").asText());
+        String commentTargetPath=postsPath+"/"+commentPost+"/comments";
+        var activeComment=member.browser().jsonPost(commentTargetPath,"{\"body\":\"Comment to moderate\"}",true);
+        UUID activeCommentId=UUID.fromString(json.readTree(activeComment.body()).get("id").asText());
+        assertEquals(201,author.browser().jsonPost(reportPath,"{\"targetType\":\"COMMENT\",\"targetId\":\""+activeCommentId+"\",\"reason\":\"Please review this reply\"}",true).statusCode());
+        var commentReports=json.readTree(moderator.browser().get(queue).body());
+        UUID commentReportId=UUID.fromString(commentReports.get(0).get("id").asText());
+        assertEquals(204,moderator.browser().jsonPost("/api/communities/"+pilot+"/moderation/reports/"+commentReportId+"/hide",
+                "{\"decision\":\"RESOLVED\",\"note\":\"Reply hidden after review\"}",true).statusCode());
+        var hiddenComment=json.readTree(member.browser().get(commentTargetPath).body()).get(0);
+        assertEquals("HIDDEN",hiddenComment.get("status").asText());assertTrue(hiddenComment.get("body").isNull());
+        assertEquals(404,member.browser().jsonMethod("PATCH","/api/communities/"+pilot+"/comments/"+activeCommentId,
+                "{\"body\":\"Trying to unhide by editing\"}",true).statusCode());
+
+        var conversation=author.browser().jsonPost(postsPath,postPayload(UUID.randomUUID(),"Conversation remains","Parent text"),true);
+        UUID parent=UUID.fromString(json.readTree(conversation.body()).get("id").asText());
+        String parentComments=postsPath+"/"+parent+"/comments";
+        assertEquals(201,member.browser().jsonPost(parentComments,"{\"body\":\"Preserved reply\"}",true).statusCode());
+        String parentRoute=postsPath+"/"+parent;
+        assertEquals(404,member.browser().jsonMethod("PATCH",parentRoute,"{\"title\":\"Not owner\",\"body\":\"Nope\"}",true).statusCode());
+        assertEquals(204,author.browser().jsonMethod("DELETE",parentRoute,null,true).statusCode());
+        var page=json.readTree(member.browser().get(postsPath).body()).get("posts");
+        var tombstone=java.util.stream.StreamSupport.stream(page.spliterator(),false)
+                .filter(node->parent.toString().equals(node.get("id").asText())).findFirst().orElseThrow();
+        assertEquals("DELETED",tombstone.get("status").asText());assertTrue(tombstone.get("body").isNull());
+        assertEquals(1,tombstone.get("commentCount").asInt());
+        assertEquals("Preserved reply",json.readTree(member.browser().get(parentComments).body()).get(0).get("body").asText());
+        assertEquals(404,member.browser().jsonPost(parentComments,"{\"body\":\"New response after delete\"}",true).statusCode());
+        assertTrue(count("select count(*) from replica.community_moderation_event where community_id=?",pilot)>=2);
     }
 
     @Test void runtimeCannotWriteOrInvokeAcademicFunctions() throws Exception {

@@ -1,5 +1,6 @@
 param(
     [Parameter(Mandatory = $true)][string[]]$Login,
+    [string[]]$ModeratorLogin = @(),
     [string]$PostgresBin = 'C:\Program Files\PostgreSQL\18\bin',
     [string]$DatabaseHost = 'localhost',
     [int]$Port = 5432,
@@ -8,7 +9,9 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $members = @($Login | Select-Object -Unique)
-foreach ($name in $members) {
+$moderators = @($ModeratorLogin | Select-Object -Unique)
+$allAccounts = @($members + $moderators | Select-Object -Unique)
+foreach ($name in $allAccounts) {
     if ($name -cnotmatch '^[a-z0-9][a-z0-9._@-]{2,79}$') {
         throw 'Usa identificadores de acceso existentes, normalizados en minusculas.'
     }
@@ -33,8 +36,9 @@ try {
     if (-not $role -or -not $password) { throw 'Se necesitan ambas variables de migracion.' }
     $env:PGPASSWORD = $password
     # Validation above excludes SQL quotes and separators.
-    $quotedMembers = ($members | ForEach-Object { "'$_'" }) -join ','
-    $expected = $members.Count
+    $quotedMembers = ($allAccounts | ForEach-Object { "'$_'" }) -join ','
+    $quotedModerators = if ($moderators.Count) { ($moderators | ForEach-Object { "'$_'" }) -join ',' } else { "'__no_moderator__'" }
+    $expected = $allAccounts.Count
     $sql = @'
 BEGIN;
 DO $$
@@ -59,17 +63,22 @@ BEGIN
 END;
 $$;
 INSERT INTO replica.community_membership (community_id,account_id,role)
-SELECT 'b4d90f34-ef24-4aa2-9d03-99d6f93742b8',id,'MEMBER'
+SELECT 'b4d90f34-ef24-4aa2-9d03-99d6f93742b8',id,
+       CASE WHEN login_identifier IN (__MODERATORS__) THEN 'MODERATOR' ELSE 'MEMBER' END
 FROM replica.access_account WHERE login_identifier IN (__MEMBERS__) AND enabled
-ON CONFLICT (community_id,account_id) DO UPDATE SET active=true;
+ON CONFLICT (community_id,account_id) DO UPDATE SET
+    role=CASE WHEN EXCLUDED.role='MODERATOR' THEN 'MODERATOR'
+              WHEN replica.community_membership.role IN ('MODERATOR','ADMIN') THEN replica.community_membership.role
+              ELSE 'MEMBER' END,
+    active=true;
 COMMIT;
 '@
-    $sql = $sql.Replace('__MEMBERS__', $quotedMembers).Replace('__COUNT__', [string]$expected)
+    $sql = $sql.Replace('__MEMBERS__', $quotedMembers).Replace('__MODERATORS__', $quotedModerators).Replace('__COUNT__', [string]$expected)
     $options = @('-X', '-w', '-v', 'ON_ERROR_STOP=1', '-h', $DatabaseHost,
                  '-p', [string]$Port, '-U', $role, '-d', $Database)
     $sql | & (Join-Path $PostgresBin 'psql.exe') @options
     if ($LASTEXITCODE -ne 0) { throw 'No se completo el alta del piloto. Revisa la salida de PostgreSQL.' }
-    Write-Output "Piloto preparado. Membresias activas solicitadas: $expected."
+    Write-Output "Piloto preparado. Membresias activas solicitadas: $expected; moderadores promovidos: $($moderators.Count)."
     Write-Output 'Las cuentas ya conectadas pueden pulsar Actualizar comunidades.'
 } finally {
     $env:PGPASSWORD = $previousPassword
