@@ -315,6 +315,12 @@ public final class AcademicWindow {
         var more = button("Más antiguas", "secondary");
         more.setId("olderPosts");
         var heading = new HBox(12, back, refreshPosts);
+        if ("MODERATOR".equals(community.role()) || "ADMIN".equals(community.role())) {
+            var moderation = button("Reportes y moderación", "secondary");
+            moderation.setId("moderationButton");
+            moderation.setOnAction(event -> openModeration(community));
+            heading.getChildren().add(moderation);
+        }
         var content = stack(heading, label(community.name(), "title"),
                 label(community.rules(), "muted"), status, feed, more);
         var scroll = new ScrollPane(content);
@@ -380,13 +386,7 @@ public final class AcademicWindow {
                 status.setText("Publicaciones de más recientes a más antiguas.");
             }
             var dateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.systemDefault());
-            for (var post : page.posts()) {
-                var card = stack(label(post.title(), "section-title"),
-                        label(post.authorAlias() + " · " + dateFormat.format(Instant.parse(post.createdAt())), "muted"),
-                        label(post.body(), "post-body"));
-                card.getStyleClass().add("activity");
-                feed.getChildren().add(card);
-            }
+            for (var post : page.posts()) feed.getChildren().add(postCard(community, post, epoch, dateFormat));
             more.setDisable(false);
             more.setVisible(page.nextBeforeTime() != null);
             more.setManaged(more.isVisible());
@@ -402,6 +402,145 @@ public final class AcademicWindow {
             more.setManaged(true);
             more.setOnAction(event -> loadPosts(community, feed, more, status, beforeTime, beforeId, epoch));
         });
+    }
+
+    private VBox postCard(ApiClient.Community community, ApiClient.Post post, long epoch, DateTimeFormatter dateFormat) {
+        var sessionApi = api;
+        var card = new VBox(10);
+        card.getStyleClass().add("activity");
+        card.getChildren().addAll(label(post.title(), "section-title"),
+                label(post.authorAlias() + " · " + dateFormat.format(Instant.parse(post.createdAt())), "muted"));
+        if (post.body() != null && !post.body().isBlank()) card.getChildren().add(label(post.body(), "post-body"));
+        if ("DELETED".equals(post.status())) card.getChildren().add(label("La publicación fue eliminada; las respuestas existentes se conservan.", "muted"));
+
+        var actions = new HBox(8);
+        if (post.authorAccountId().equals(sessionApi.accountId()) && "ACTIVE".equals(post.status())) {
+            var edit = button("Editar", "secondary"); edit.setOnAction(e -> editPost(community, post, epoch)); actions.getChildren().add(edit);
+            var delete = button("Eliminar", "secondary"); delete.setOnAction(e -> deletePost(community, post, epoch)); actions.getChildren().add(delete);
+        } else if ("ACTIVE".equals(post.status())) {
+            var report = button("Reportar", "secondary"); report.setOnAction(e -> reportContent(community, "POST", post.id())); actions.getChildren().add(report);
+        }
+        card.getChildren().add(actions);
+
+        var comments = new VBox(8);
+        comments.setId("comments-" + post.id());
+        comments.getChildren().add(label("Cargando comentarios…", "muted"));
+        card.getChildren().add(comments);
+        work(() -> sessionApi.comments(community.id(), post.id()), rows -> {
+            if (!scope.current(epoch)) return;
+            comments.getChildren().clear();
+            comments.getChildren().add(label("Comentarios", "field-label"));
+            for (var comment : rows) comments.getChildren().add(commentCard(community, comment, epoch));
+            if ("ACTIVE".equals(post.status())) {
+                var input = new TextField(); input.setPromptText("Escribe un comentario (hasta 5 000 caracteres)");
+                var submit = button("Comentar", "primary"); var state = label("", "error");
+                submit.setOnAction(e -> {
+                    String body = input.getText().strip();
+                    if (body.isEmpty() || body.codePointCount(0, body.length()) > 5000) { state.setText("El comentario debe tener entre 1 y 5 000 caracteres."); return; }
+                    submit.setDisable(true); state.setText("Enviando…");
+                    work(() -> sessionApi.comment(community.id(), post.id(), body), created -> {
+                        if (!scope.current(epoch)) return;
+                        if (scope.current(epoch)) openCommunity(community, "Comentario publicado.");
+                    }, error -> { if (scope.current(epoch) && !expired(error)) { submit.setDisable(false); state.setText(message(error)); } });
+                });
+                comments.getChildren().addAll(input, new HBox(8, submit, state));
+            }
+        }, error -> { if (scope.current(epoch) && !expired(error)) comments.getChildren().setAll(label(message(error), "error")); });
+        return card;
+    }
+
+    private void loadComments(ApiClient.Community community, ApiClient.Post post, VBox container, long epoch) {
+        var sessionApi = api;
+        work(() -> sessionApi.comments(community.id(), post.id()), rows -> {
+            if (!scope.current(epoch)) return;
+            container.getChildren().clear(); container.getChildren().add(label("Comentarios", "field-label"));
+            for (var comment : rows) container.getChildren().add(commentCard(community, comment, epoch));
+        }, error -> { if (scope.current(epoch) && !expired(error)) container.getChildren().setAll(label(message(error), "error")); });
+    }
+
+    private VBox commentCard(ApiClient.Community community, ApiClient.Comment comment, long epoch) {
+        var sessionApi = api;
+        var card = new VBox(6); card.getStyleClass().add("comment-card");
+        card.getChildren().add(label(comment.authorAlias(), "muted"));
+        card.getChildren().add(label(comment.body() == null ? "Comentario eliminado u ocultado." : comment.body(), "post-body"));
+        if ("ACTIVE".equals(comment.status()) && comment.authorAccountId().equals(sessionApi.accountId())) {
+            var edit = button("Editar comentario", "secondary");
+            edit.setOnAction(e -> {
+                var value = editText("Editar comentario", "Actualiza tu comentario", comment.body());
+                if (value != null) work(() -> { sessionApi.editComment(community.id(), comment.id(), value); return true; }, ok -> reloadCommunity(community, epoch), err -> { if (!expired(err)) messageDialog(message(err)); });
+            });
+            var delete = button("Eliminar comentario", "secondary"); delete.setOnAction(e -> {
+                if (confirm("Eliminar comentario", "Se borrará el texto y quedará el marcador.")) work(() -> { sessionApi.deleteComment(community.id(), comment.id()); return true; }, ok -> reloadCommunity(community, epoch), err -> { if (!expired(err)) messageDialog(message(err)); });
+            });
+            card.getChildren().addAll(edit, delete);
+        } else if ("ACTIVE".equals(comment.status())) {
+            var report = button("Reportar comentario", "secondary"); report.setOnAction(e -> reportContent(community, "COMMENT", comment.id())); card.getChildren().add(report);
+        }
+        return card;
+    }
+
+    private void editPost(ApiClient.Community community, ApiClient.Post post, long epoch) {
+        var sessionApi = api;
+        var title = new TextInputDialog(post.title()); title.setTitle("Editar publicación"); title.setHeaderText("Nuevo título");
+        title.showAndWait().ifPresent(newTitle -> {
+            String newBody = editText("Editar publicación", "Nuevo contenido", post.body());
+            if (newBody != null) work(() -> { sessionApi.editPost(community.id(), post.id(), newTitle, newBody); return true; }, ok -> reloadCommunity(community, epoch), err -> { if (!expired(err)) messageDialog(message(err)); });
+        });
+    }
+
+    private void deletePost(ApiClient.Community community, ApiClient.Post post, long epoch) {
+        var sessionApi = api;
+        if (confirm("Eliminar publicación", "Se borrará su texto. Los comentarios existentes quedarán bajo un marcador y no admitirán nuevas respuestas."))
+            work(() -> { sessionApi.deletePost(community.id(), post.id()); return true; }, ok -> reloadCommunity(community, epoch), err -> { if (!expired(err)) messageDialog(message(err)); });
+    }
+
+    private void reportContent(ApiClient.Community community, String type, String id) {
+        var sessionApi = api;
+        var dialog = new TextInputDialog(); dialog.setTitle("Reportar contenido"); dialog.setHeaderText("Explica brevemente el motivo (3–1 000 caracteres)");
+        dialog.showAndWait().ifPresent(reason -> work(() -> { sessionApi.report(community.id(), type, id, reason); return true; }, ok -> messageDialog("Reporte enviado al equipo moderador."), err -> { if (!expired(err)) messageDialog(message(err)); }));
+    }
+
+    private void openModeration(ApiClient.Community community) {
+        long epoch = scope.reset(); var current = api; accountHeader();
+        var back = button("Volver a la comunidad", "secondary"); back.setOnAction(e -> openCommunity(community, ""));
+        var list = new VBox(12); var status = label("Cargando reportes…", "muted");
+        root.setBottom(null); root.setCenter(new ScrollPane(stack(back, label("Reportes pendientes", "title"), status, list)));
+        work(() -> current.reports(community.id()), reports -> {
+            if (!scope.current(epoch)) return;
+            list.getChildren().clear();
+            if (reports.isEmpty()) { status.setText("No hay reportes pendientes."); return; }
+            status.setText("Los reportes y las acciones quedan registrados.");
+            for (var report : reports) {
+                var card = stack(label("Reportado por " + report.reporterAlias(), "section-title"),
+                        label(report.reason(), "muted"), label("Autor: " + report.contentAuthorAlias(), "muted"),
+                        label(report.content() == null ? "Contenido ya eliminado u oculto." : report.content(), "post-body"));
+                var hide = button("Ocultar y resolver", "primary");
+                hide.setOnAction(e -> {
+                    work(() -> { current.hideReported(community.id(), report.id(), "Contenido ocultado tras revisar el reporte."); return true; }, ok -> openModeration(community), err -> { if (!expired(err)) messageDialog(message(err)); });
+                });
+                var dismiss = button("Descartar reporte", "secondary");
+                dismiss.setOnAction(e -> work(() -> { current.resolveReport(community.id(), report.id(), "DISMISSED", "Revisado por el moderador; no se requiere ocultación."); return true; }, ok -> openModeration(community), err -> { if (!expired(err)) messageDialog(message(err)); }));
+                card.getChildren().add(new HBox(8, hide, dismiss)); card.getStyleClass().add("activity"); list.getChildren().add(card);
+            }
+        }, error -> { if (!scope.current(epoch) || expired(error)) return; status.setText(message(error)); });
+    }
+
+    private void reloadCommunity(ApiClient.Community community, long expected) {
+        if (scope.current(expected)) openCommunity(community, "Cambios guardados.");
+    }
+    private boolean confirm(String title, String message) {
+        var alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.CANCEL, ButtonType.OK);
+        alert.setTitle(title); alert.setHeaderText(null); return alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
+    }
+    private void messageDialog(String message) { new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK).showAndWait(); }
+    private String editText(String title, String prompt, String original) {
+        var dialog = new Dialog<String>(); dialog.setTitle(title); dialog.setHeaderText(prompt);
+        var save = new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(save, ButtonType.CANCEL);
+        var text = new TextArea(original); text.setWrapText(true); text.setPrefRowCount(8);
+        dialog.getDialogPane().setContent(text);
+        dialog.setResultConverter(button -> button == save ? text.getText() : null);
+        return dialog.showAndWait().orElse(null);
     }
 
     private String message(Throwable error) {
