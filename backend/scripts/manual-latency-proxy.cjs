@@ -7,7 +7,8 @@ const path=require('node:path');
 const work=path.resolve(__dirname,'../../.replica-work');
 const arm=path.join(work,'hold-next-detail'),release=path.join(work,'release-detail');
 http.createServer((incoming,outgoing)=>{
-  const hold=incoming.method==='GET' && /^\/api\/me\/library\/[a-f0-9-]+$/.test(incoming.url) && fs.existsSync(arm);
+  const hold=incoming.method==='GET' && (/^\/api\/me\/library\/[a-f0-9-]+$/.test(incoming.url)
+    || /^\/api\/communities\/[a-f0-9-]+\/posts(?:\?|$)/.test(incoming.url)) && fs.existsSync(arm);
   if(hold)fs.unlinkSync(arm);
   const upstream=http.request({hostname:'127.0.0.1',port:8080,path:incoming.url,method:incoming.method,headers:incoming.headers},response=>{
     if(!hold){outgoing.writeHead(response.statusCode,response.headers);response.pipe(outgoing);return;}

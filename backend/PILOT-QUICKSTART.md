@@ -135,9 +135,8 @@ mostrar el acceso con el aviso de sesión vencida. Inicia sesión de nuevo.
 
 **Respuesta tardía:** las pruebas automatizadas retienen una respuesta anterior
 y confirman que, al cerrar sesión y entrar con otra cuenta, no puede reemplazar
-la pantalla de la nueva cuenta. La prueba visual de temporización manual no es
-necesaria para aceptar esa protección del guard; la UI sigue mostrando el estado
-actual de la sesión.
+la pantalla de la nueva cuenta. El ensayo visual sigue pendiente y se registra
+por separado de la prueba del guard en PILOT-READINESS.md.
 
 ## 7. Detener y volver a iniciar
 

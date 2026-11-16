@@ -593,7 +593,8 @@ public final class AcademicWindow {
         });
     }
     private <T> void work(Callable<T> operation,Consumer<T> success,Consumer<Throwable> failure) {
-        workers.submit(()->{try{T result=operation.call();Platform.runLater(()->success.accept(result));}
-            catch(Exception error){Platform.runLater(()->failure.accept(error));}});
+        long expected = scope.generation();
+        workers.submit(()->{try{T result=operation.call();Platform.runLater(()->{if(scope.current(expected))success.accept(result);});}
+            catch(Exception error){Platform.runLater(()->{if(scope.current(expected))failure.accept(error);});}});
     }
 }
