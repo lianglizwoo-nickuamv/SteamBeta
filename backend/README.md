@@ -1,9 +1,9 @@
-# Campus: acceso y biblioteca académica
+# Campus: comunidades y biblioteca académica opcional
 
 La prioridad es la comunidad universitaria. La rama codex/community-foundation
-incluye cuentas independientes, registro JavaFX, comunidades y publicaciones.
-Consulta [PILOT-QUICKSTART.md](PILOT-QUICKSTART.md) para ejecutar y probar la entrega.
-Comentarios, reportes y moderación quedan para las siguientes entregas.
+incluye cuentas independientes, registro JavaFX, comunidades, publicaciones,
+comentarios, reportes y moderación inicial. Consulta
+[PILOT-QUICKSTART.md](PILOT-QUICKSTART.md) para ejecutarla y probarla.
 
 La [guía local paso a paso](LOCAL-QUICKSTART.md) indica qué abrir y qué comandos
 ejecutar. La [verificación local](LOCAL-VERIFICATION.md) distingue los resultados
@@ -201,18 +201,13 @@ La suite exige base vacía replica_test_* y nunca usa steam_academico. No omite
 los IT silenciosamente si falta Docker. El script nativo genera credenciales
 de fixture, usa SCRAM y detiene su clúster en finally.
 
-Ejecutado: 2 pruebas cliente, 3 unitarias backend y 10 IT PostgreSQL, todos
-aprobados sin omisiones. Cubren los contratos previos y HTTP con cookies reales,
-CSRF, fijación/invalidation de sesión, acceso correcto/incorrecto/deshabilitado,
-aislamiento de cuentas/universidades, 404, progreso parcial/completo/null, permisos
-de credenciales y reutilización de un pool de una conexión. El callback tardío
-del cliente se probó con una simulación automática del guard de sesión.
+Histórico al redactar esta sección: 2 pruebas cliente, 3 unitarias backend y 10
+IT. La revisión vigente añadió 1 prueba de conexión cliente y cobertura de
+comunidad; la guía PILOT-QUICKSTART.md registra los conteos actuales y el alcance.
 
-Localmente: V2 y carga repetible aplicadas; ApiClient real de JavaFX verificado
-con las tres cuentas, detalles y logout=401. Esto verifica HTTP/DTO, no renderizado
-ni interacciones visuales. El proceso javafx:run se lanzó sin error de arranque,
-pero la prueba manual completa está pendiente: el servicio nativo de pantalla
-devuelve «native pipe is unavailable (os error 2)», incluso tras reconexiones.
+La comprobación de API no sustituye la revisión del renderizado ni de los
+controles. La verificación visual de la nueva interfaz de conversaciones y
+moderación queda pendiente; los pasos se encuentran en PILOT-QUICKSTART.md.
 
 Prueba manual pendiente: entrar como Alba, revisar las tres materias/actividades,
 cerrar sesión, entrar como Bruno y comprobar que solo ve Redes. Verificar error

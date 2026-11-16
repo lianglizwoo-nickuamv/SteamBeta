@@ -1,28 +1,42 @@
-# REGISTRO REPLICA v4.0 — primera experiencia de comunidad
+# REGISTRO REPLICA v5.0 — conversación y moderación de comunidad
 
 La etapa anterior de cuentas independientes mediante API fue aceptada
 expresamente por el usuario antes de esta entrega.
 
 Implementados registro JavaFX, portada Mis comunidades, estado sin membresías,
-lectura cronológica paginada y publicación de título/contenido. Se conservan
+lectura cronológica paginada, publicaciones, comentarios de un nivel, reportes,
+edición y borrado propios, y cola de moderación por comunidad. Se conservan
 sesiones, CSRF, llamadas fuera del hilo FX y guard de generación de sesión.
 La biblioteca académica es una entrada opcional para cuentas vinculadas.
 
-V4 agrega tres tablas y funciones limitadas. El servidor obtiene el autor del
-principal y comprueba membresía activa en cada operación. add-pilot-members.ps1
-es el procedimiento administrativo local y transaccional para dar acceso.
-Los reintentos de publicación conservan requestKey y no duplican la fila.
+V4 agrega comunidad, membresías y publicaciones. V5 agrega comentarios, reportes,
+estado de ocultación y bitácora de moderación. Las operaciones de contenido son
+funciones limitadas de PostgreSQL; el servidor obtiene el autor de la sesión y
+comprueba membresía y rol por cada operación. Los borrados son lógicos, eliminan
+el texto y dejan marcadores. Las respuestas previas a una publicación eliminada
+se conservan; una edición no restaura contenido oculto. El script
+add-pilot-members.ps1 agrega miembros y moderadores con una transacción.
 
 ## Evidencia de la entrega
 
-- Cliente compilado y 2 pruebas aprobadas.
-- Backend con 3 unitarias y 16 IT aprobados; sin fallos ni omisiones.
+- Cliente compilado con Java 21; 3 pruebas aprobadas.
+- Backend con 3 unitarias y 17 IT aprobados; sin fallos ni omisiones.
+- En steam_academico: preflight confirmó V1–V4, 10 cuentas, 3 estudiantes,
+  1 comunidad, 4 membresías y 2 publicaciones. Se creó y verificó un respaldo
+  privado antes de V5; la migración V5 terminó correctamente. Las tablas nuevas
+  se agregaron sin borrar o reescribir datos existentes.
+- Las cuentas locales existentes quedaron configuradas para una práctica de
+  dos miembros y una moderadora. El backend normal arrancó contra V5 en puerto
+  alterno; perfil y publicaciones protegidos respondieron 401 sin sesión. La
+  instancia temporal se detuvo al concluir.
 - Miembro publica y otro lee; cuenta ajena y administrador de otro espacio
   rechazados. Permisos, CSRF, privacidad, paginación estable, validación,
   reintentos concurrentes, retiro de membresía y cuenta deshabilitada verificados.
 - Pruebas académicas, registro y actualización de esquema existentes conservadas.
 - Copia privada previa a V4 en .replica-work/backups/before-community-v4-20261116-113527.dump,
-  índice legible; V4 aplicada con migrador en steam_academico. V1–V3 sin cambios.
+índice legible; V4 fue aplicada con migrador en steam_academico. V1–V4 son
+inmutables. V5 se validó en PostgreSQL temporal y fue aplicada localmente tras
+preflight y un respaldo nuevo, privado y verificado.
 - Comprobación local con ApiClient real contra 18080, usando dos miembros y una
   cuenta ajena. Registro, lectura, publicación, reintento y cambio de cuenta
   completados. Este servidor de QA se detuvo al terminar.
@@ -34,8 +48,10 @@ Los reintentos de publicación conservan requestKey y no duplican la fila.
 Después del QA inicial, el usuario completó el recorrido manual y aportó
 capturas. Se observaron acceso y estado vacío, incorporación al piloto,
 publicación desde una cuenta, lectura desde otra cuenta miembro y estado vacío
-al entrar con una cuenta sin membresía. Quedan pendientes las comprobaciones
-visuales de paginación, errores de red, sesión vencida y respuestas retrasadas.
+al entrar con una cuenta sin membresía. En la presente entrega se verificaron
+automáticamente cursor/paginación, conexión rechazada, 401 por sesión sin estado,
+y aislamiento de respuestas tardías. La revisión visual de pantallas nuevas de
+comentarios, reportes y moderación se entrega al usuario con pasos reproducibles.
 Los identificadores y contraseñas de sus cuentas no se incorporan a este registro.
 
 La guía de uso del equipo restringe automatizar diálogos de autenticación.

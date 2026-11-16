@@ -1,11 +1,10 @@
 # SteamBeta · Comunidad universitaria
 
 La prioridad es una comunidad universitaria independiente de registros académicos.
-Esta rama incluye registro JavaFX, comunidades propias, publicaciones y membresías
-administradas por el equipo. Sigue [la guía del piloto](backend/PILOT-QUICKSTART.md)
-para ejecutar y comprobar el recorrido con tres cuentas de prueba.
-Comentarios, reportes y moderación siguen pendientes. La biblioteca descrita
-debajo se conserva como módulo académico opcional.
+Esta rama incluye registro JavaFX, comunidades, publicaciones, comentarios,
+reportes y moderación. Sigue [la guía del piloto](backend/PILOT-QUICKSTART.md)
+para ejecutar y comprobar el recorrido con cuentas de prueba. La biblioteca
+académica se conserva como módulo opcional.
 
 Para ejecutar la entrega actual por primera vez, sigue la
 [guía local paso a paso](backend/LOCAL-QUICKSTART.md). Incluye un comprobador
@@ -141,10 +140,11 @@ Windows; detalles, variables y contratos REST en [backend/README.md](backend/REA
 ```
 
 Las pruebas de integración exigen una base vacía replica_test_* en un clúster
-desechable; nunca usar datos reales como fixtures. La última ejecución aprobó
-2 pruebas del cliente, 3 unitarias backend y 10 IT. La prueba visual JavaFX con
-dos cuentas y respuesta tardía sigue pendiente; no se presenta la prueba API como
-aceptación visual. Ver [REPLICA-STATE](backend/REPLICA-STATE.md).
+desechable; nunca usar datos reales como fixtures. La entrega vigente aprobó
+3 pruebas del cliente, 3 unitarias backend y 17 IT PostgreSQL. Las pantallas
+nuevas deben revisarse visualmente con los pasos de
+[PILOT-QUICKSTART](backend/PILOT-QUICKSTART.md); los resultados HTTP no se
+presentan como aceptación visual. Ver [REPLICA-STATE](backend/REPLICA-STATE.md).
 
 ## Antes de publicar
 
