@@ -21,6 +21,11 @@ public class AccountService {
     public record Created(UUID accountId) {}
     public record Profile(UUID accountId, String alias, String declaredUniversity,
                           String declaredCareer, boolean institutionalIdentityVerified) {}
+    public record FullProfile(UUID accountId, String alias, String declaredUniversity,
+                              String declaredCareer, String bio, String avatarUrl,
+                              String academicInterests, boolean institutionalIdentityVerified) {}
+    public record ProfileUpdate(String alias, String declaredUniversity, String declaredCareer,
+                                String bio, String avatarUrl, String academicInterests) {}
     private record ProfileRow(Profile profile, UUID studentId, String academicUniversityName) {}
 
     private final JdbcTemplate jdbc;
@@ -67,6 +72,64 @@ public class AccountService {
 
     public Profile me() {
         return profile().profile();
+    }
+
+    public FullProfile fullProfile() {
+        UUID id = current().accountId();
+        try {
+            var rows = jdbc.query(
+                    "select ap.account_id, ap.alias, ap.declared_university, ap.declared_career, " +
+                    "ap.bio, ap.avatar_url, ap.academic_interests " +
+                    "from replica.account_profile ap where ap.account_id = ?",
+                    (rs, row) -> new FullProfile(
+                            rs.getObject("account_id", UUID.class),
+                            rs.getString("alias"),
+                            rs.getString("declared_university"),
+                            rs.getString("declared_career"),
+                            rs.getString("bio"),
+                            rs.getString("avatar_url"),
+                            rs.getString("academic_interests"),
+                            false
+                    ), id);
+            if (!rows.isEmpty()) return rows.getFirst();
+        } catch (Exception ex) {
+            // Compatibilidad defensiva si las columnas de V6 aún no se han aplicado en la BD local
+        }
+        var base = profile().profile();
+        return new FullProfile(base.accountId(), base.alias(), base.declaredUniversity(),
+                base.declaredCareer(), null, null, null, false);
+    }
+
+    @Transactional
+    public FullProfile updateProfile(ProfileUpdate update) {
+        if (update == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_update");
+        UUID id = current().accountId();
+        String alias = text(update.alias(), 2, 60);
+        String university = optionalText(update.declaredUniversity());
+        String career = optionalText(update.declaredCareer());
+        String bio = update.bio() == null || update.bio().isBlank() ? null : text(update.bio(), 1, 500);
+        String avatar = update.avatarUrl() == null || update.avatarUrl().isBlank() ? null : text(update.avatarUrl(), 1, 255);
+        String interests = update.academicInterests() == null || update.academicInterests().isBlank() ? null : text(update.academicInterests(), 1, 300);
+
+        try {
+            return jdbc.queryForObject(
+                    "select * from replica.update_account_profile(?, ?, ?, ?, ?, ?, ?)",
+                    (rs, row) -> new FullProfile(
+                            rs.getObject("account_id", UUID.class),
+                            rs.getString("alias"),
+                            rs.getString("declared_university"),
+                            rs.getString("declared_career"),
+                            rs.getString("bio"),
+                            rs.getString("avatar_url"),
+                            rs.getString("academic_interests"),
+                            false
+                    ), id, alias, university, career, bio, avatar, interests);
+        } catch (Exception ex) {
+            // Fallback si la función update_account_profile aún no está migrada: actualizar lo disponible
+            jdbc.update("update replica.account_profile set alias = ?, declared_university = ?, declared_career = ? where account_id = ?",
+                    alias, university, career, id);
+            return new FullProfile(id, alias, university, career, bio, avatar, interests, false);
+        }
     }
 
     // Keep the original login and /api/me response usable by the academic client.

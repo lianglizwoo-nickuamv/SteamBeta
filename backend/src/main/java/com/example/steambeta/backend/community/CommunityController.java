@@ -14,6 +14,10 @@ public class CommunityController {
         this.community = community;
     }
 
+    // =========================================================================
+    // Operaciones Base de Comunidad y Publicaciones (V4 & V5)
+    // =========================================================================
+
     @GetMapping("/api/me/communities")
     public List<CommunityService.Community> mine() {
         return community.mine();
@@ -21,9 +25,9 @@ public class CommunityController {
 
     @GetMapping("/api/communities/{communityId}/posts")
     public CommunityService.Page posts(@PathVariable UUID communityId,
-                                      @RequestParam(required = false) Instant beforeTime,
-                                      @RequestParam(required = false) UUID beforeId,
-                                      @RequestParam(defaultValue = "20") int limit) {
+                                       @RequestParam(required = false) Instant beforeTime,
+                                       @RequestParam(required = false) UUID beforeId,
+                                       @RequestParam(defaultValue = "20") int limit) {
         return community.posts(communityId, beforeTime, beforeId, limit);
     }
 
@@ -42,7 +46,9 @@ public class CommunityController {
 
     @DeleteMapping("/api/communities/{communityId}/posts/{postId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletePost(@PathVariable UUID communityId, @PathVariable UUID postId) { community.deletePost(communityId, postId); }
+    public void deletePost(@PathVariable UUID communityId, @PathVariable UUID postId) {
+        community.deletePost(communityId, postId);
+    }
 
     @GetMapping("/api/communities/{communityId}/posts/{postId}/comments")
     public List<CommunityService.Comment> comments(@PathVariable UUID communityId, @PathVariable UUID postId) {
@@ -64,16 +70,20 @@ public class CommunityController {
 
     @DeleteMapping("/api/communities/{communityId}/comments/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteComment(@PathVariable UUID communityId, @PathVariable UUID commentId) { community.deleteComment(communityId, commentId); }
+    public void deleteComment(@PathVariable UUID communityId, @PathVariable UUID commentId) {
+        community.deleteComment(communityId, commentId);
+    }
 
     @PostMapping("/api/communities/{communityId}/reports")
     @ResponseStatus(HttpStatus.CREATED)
-    public java.util.UUID report(@PathVariable UUID communityId, @RequestBody CommunityService.ReportDraft draft) {
+    public UUID report(@PathVariable UUID communityId, @RequestBody CommunityService.ReportDraft draft) {
         return community.report(communityId, draft);
     }
 
     @GetMapping("/api/communities/{communityId}/moderation/reports")
-    public List<CommunityService.Report> reports(@PathVariable UUID communityId) { return community.reports(communityId); }
+    public List<CommunityService.Report> reports(@PathVariable UUID communityId) {
+        return community.reports(communityId);
+    }
 
     @PostMapping("/api/communities/{communityId}/moderation/hide")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -93,5 +103,144 @@ public class CommunityController {
     public void hideReported(@PathVariable UUID communityId, @PathVariable UUID reportId,
                              @RequestBody CommunityService.Resolution resolution) {
         community.hideReported(communityId, reportId, resolution);
+    }
+
+    // =========================================================================
+    // FASE 2: Creación de Comunidades, Invitaciones y Gestión de Miembros
+    // =========================================================================
+
+    @PostMapping("/api/communities")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommunityService.Community createCommunity(@RequestBody CommunityService.CommunityCreate request) {
+        return community.createCommunity(request);
+    }
+
+    @GetMapping("/api/communities/explore")
+    public List<CommunityService.CommunityOverview> exploreCommunities() {
+        return community.exploreCommunities();
+    }
+
+    @PostMapping("/api/communities/{communityId}/invitations")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommunityService.Invitation createInvitation(@PathVariable UUID communityId,
+                                                         @RequestBody CommunityService.InvitationDraft draft) {
+        return community.createInvitation(communityId, draft);
+    }
+
+    @PostMapping("/api/communities/join")
+    public CommunityService.Community joinByCode(@RequestBody CommunityService.JoinDraft draft) {
+        return community.joinByCode(draft);
+    }
+
+    @GetMapping("/api/communities/{communityId}/members")
+    public List<CommunityService.Member> members(@PathVariable UUID communityId) {
+        return community.members(communityId);
+    }
+
+    @PutMapping("/api/communities/{communityId}/members/{targetId}/role")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateMemberRole(@PathVariable UUID communityId, @PathVariable UUID targetId,
+                                 @RequestBody CommunityService.RoleUpdate update) {
+        community.updateMemberRole(communityId, targetId, update);
+    }
+
+    @DeleteMapping("/api/communities/{communityId}/members/{targetId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeMember(@PathVariable UUID communityId, @PathVariable UUID targetId) {
+        community.removeMember(communityId, targetId);
+    }
+
+    // =========================================================================
+    // FASE 3: Q&A Académico
+    // =========================================================================
+
+    @PostMapping("/api/communities/{communityId}/questions")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommunityService.Question createQuestion(@PathVariable UUID communityId,
+                                                    @RequestBody CommunityService.QuestionDraft draft) {
+        return community.createQuestion(communityId, draft);
+    }
+
+    @GetMapping("/api/communities/{communityId}/questions")
+    public List<CommunityService.Question> questions(@PathVariable UUID communityId,
+                                                     @RequestParam(required = false) String status,
+                                                     @RequestParam(required = false) String subject,
+                                                     @RequestParam(required = false) String search,
+                                                     @RequestParam(defaultValue = "20") int limit) {
+        return community.questions(communityId, status, subject, search, limit);
+    }
+
+    @PostMapping("/api/communities/{communityId}/posts/{postId}/solution/{commentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void acceptSolution(@PathVariable UUID communityId, @PathVariable UUID postId,
+                               @PathVariable UUID commentId) {
+        community.acceptSolution(communityId, postId, commentId);
+    }
+
+    // =========================================================================
+    // FASE 4: Recursos Académicos
+    // =========================================================================
+
+    @PostMapping("/api/communities/{communityId}/resources")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommunityService.ResourceItem publishResource(@PathVariable UUID communityId,
+                                                         @RequestBody CommunityService.ResourceDraft draft) {
+        return community.publishResource(communityId, draft);
+    }
+
+    @GetMapping("/api/communities/{communityId}/resources")
+    public List<CommunityService.ResourceItem> resources(@PathVariable UUID communityId,
+                                                         @RequestParam(required = false) String type,
+                                                         @RequestParam(required = false) String subject,
+                                                         @RequestParam(required = false) String search) {
+        return community.resources(communityId, type, subject, search);
+    }
+
+    // =========================================================================
+    // FASE 5: Calendario y Actividades
+    // =========================================================================
+
+    @PostMapping("/api/communities/{communityId}/events")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommunityService.EventItem createEvent(@PathVariable UUID communityId,
+                                                   @RequestBody CommunityService.EventDraft draft) {
+        return community.createEvent(communityId, draft);
+    }
+
+    @GetMapping("/api/communities/{communityId}/events")
+    public List<CommunityService.EventItem> events(@PathVariable UUID communityId,
+                                                   @RequestParam(required = false) Instant from,
+                                                   @RequestParam(required = false) Instant to) {
+        return community.events(communityId, from, to);
+    }
+
+    @GetMapping("/api/me/events/upcoming")
+    public List<CommunityService.UpcomingEvent> myUpcomingEvents(@RequestParam(defaultValue = "10") int limit) {
+        return community.myUpcomingEvents(limit);
+    }
+
+    // =========================================================================
+    // FASE 6 & 7: Notificaciones y Estadísticas
+    // =========================================================================
+
+    @GetMapping("/api/me/notifications")
+    public List<CommunityService.NotificationItem> myNotifications(@RequestParam(defaultValue = "20") int limit) {
+        return community.myNotifications(limit);
+    }
+
+    @PostMapping("/api/me/notifications/{id}/read")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void markNotificationRead(@PathVariable UUID id) {
+        community.markNotificationRead(id);
+    }
+
+    @GetMapping("/api/me/notifications/unread-count")
+    public long unreadNotificationsCount() {
+        return community.unreadNotificationsCount();
+    }
+
+    @GetMapping("/api/communities/{communityId}/stats")
+    public CommunityService.CommunityStats stats(@PathVariable UUID communityId) {
+        return community.stats(communityId);
     }
 }

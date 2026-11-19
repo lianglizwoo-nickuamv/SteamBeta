@@ -21,4 +21,14 @@ public class AccountController {
     public AccountService.Profile me() {
         return accounts.me();
     }
+
+    @GetMapping("/api/account/full")
+    public AccountService.FullProfile fullProfile() {
+        return accounts.fullProfile();
+    }
+
+    @PatchMapping("/api/account")
+    public AccountService.FullProfile updateProfile(@RequestBody AccountService.ProfileUpdate update) {
+        return accounts.updateProfile(update);
+    }
 }
