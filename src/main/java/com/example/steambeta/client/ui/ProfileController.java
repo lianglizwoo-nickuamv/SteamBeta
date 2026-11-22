@@ -34,14 +34,12 @@ public final class ProfileController {
     private ApiClient api;
     private SessionScope scope;
     private ExecutorService workers;
-    private MainLayoutController navigator;
     private ApiClient.Profile currentProfile;
 
     public void init(ApiClient api, SessionScope scope, ExecutorService workers, MainLayoutController navigator) {
         this.api = api;
         this.scope = scope;
         this.workers = workers;
-        this.navigator = navigator;
 
         loadProfile();
     }

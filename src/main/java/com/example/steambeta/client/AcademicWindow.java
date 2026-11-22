@@ -28,7 +28,6 @@ public final class AcademicWindow {
     });
 
     private ApiClient api;
-    private ApiClient.Identity identity;
     private boolean closing;
     private MainLayoutController mainLayoutController;
 
@@ -54,7 +53,6 @@ public final class AcademicWindow {
         var authView = ViewLoader.<AuthController>load("Auth.fxml");
         authView.controller().init(scope, workers, (client, signedIdentity) -> {
             this.api = client;
-            this.identity = signedIdentity;
             showMainLayout();
         }, notice, presetLogin);
 
@@ -77,7 +75,6 @@ public final class AcademicWindow {
     private void logout() {
         var previous = api;
         api = null;
-        identity = null;
         mainLayoutController = null;
         showAuthView("Sesión cerrada correctamente.", "");
 
@@ -98,7 +95,6 @@ public final class AcademicWindow {
         scope.reset();
         var previous = api;
         api = null;
-        identity = null;
         mainLayoutController = null;
 
         var empty = ViewLoader.<EmptyStateController>load("EmptyState.fxml");
