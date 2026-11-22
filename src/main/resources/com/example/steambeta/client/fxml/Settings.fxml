@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.SettingsController">
+<ScrollPane fitToWidth="true" styleClass="app-background" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.SettingsController">
     <VBox spacing="16.0">
         <padding>
             <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
@@ -15,13 +15,13 @@
             <HBox alignment="CENTER_LEFT" spacing="16.0">
                 <VBox spacing="4.0">
                     <HBox alignment="CENTER_LEFT" spacing="12.0">
-                        <Label styleClass="title" text="⚙️ Configuración y Estado del Sistema" />
+                        <Label styleClass="title" text="Configuración y Estado del Sistema" />
                         <Label styleClass="badge-admin" text="DIAGNÓSTICO" />
                     </HBox>
                     <Label styleClass="muted" text="Parámetros de conexión, seguridad de sesión y entorno institucional." />
                 </VBox>
                 <Region HBox.hgrow="ALWAYS" />
-                <Button onAction="#onPingConnection" styleClass="primary" text="⚡ Comprobar Conexión" />
+                <Button onAction="#onPingConnection" styleClass="primary" text="Comprobar Conexión" />
             </HBox>
             <Separator />
         </VBox>
@@ -39,7 +39,7 @@
             </HBox>
             <HBox alignment="CENTER_LEFT" spacing="12.0">
                 <Label styleClass="field-label" text="Motor de Base de Datos:" />
-                <Label styleClass="badge-resolved" text="PostgreSQL 18 · steam_academico" />
+                <Label styleClass="badge-resolved" text="PostgreSQL · steam_academico" />
             </HBox>
             <Label styleClass="muted" text="Esquema relacional administrado por Flyway con Row-Level Security y funciones SECURITY DEFINER." />
         </VBox>

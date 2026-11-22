@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="cellContainer" alignment="TOP_LEFT" minHeight="58.0" minWidth="65.0" onMouseClicked="#onCellClicked" spacing="4.0" styleClass="calendar-day-cell" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.CalendarDayCellController">
+    <padding>
+        <Insets bottom="4.0" left="6.0" right="6.0" top="4.0" />
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="4.0">
+        <Label fx:id="dayNumberLabel" styleClass="field-label" text="1" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Label fx:id="eventCountBadge" managed="false" styleClass="module-badge" text="0" visible="false" />
+    </HBox>
+
+    <VBox fx:id="eventsPreviewBox" spacing="2.0" VBox.vgrow="ALWAYS" />
+</VBox>

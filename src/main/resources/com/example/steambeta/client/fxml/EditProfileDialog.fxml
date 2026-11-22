@@ -4,50 +4,57 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefWidth="540.0" spacing="16.0" style="-fx-background-color: #0b1120; -fx-padding: 24; -fx-border-color: #1e293b; -fx-border-width: 1; -fx-border-radius: 8;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.EditProfileDialogController">
+<VBox prefWidth="540.0" spacing="14.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.EditProfileDialogController">
+    <padding>
+        <Insets bottom="20.0" left="22.0" right="22.0" top="20.0" />
+    </padding>
+
     <!-- Encabezado con Icono y Título -->
     <VBox spacing="4.0">
         <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <Label style="-fx-font-size: 24px;" text="👤" />
-            <VBox spacing="2.0">
-                <Label styleClass="title" text="Editar Perfil Universitario" />
-                <Label styleClass="muted" text="Actualiza tu información personal, académica y privacidad de correo." />
-            </VBox>
+            <Label styleClass="title" text="Editar Perfil Universitario" />
         </HBox>
+        <Label styleClass="muted" text="Actualiza tu información personal, académica, intereses y privacidad de correo." />
         <Separator />
     </VBox>
 
     <!-- Formulario Principal -->
-    <VBox spacing="12.0" style="-fx-background-color: #161f30; -fx-padding: 20; -fx-background-radius: 8; -fx-border-color: #233148; -fx-border-radius: 8;">
+    <VBox spacing="10.0" styleClass="card">
         <VBox spacing="4.0">
             <Label styleClass="field-label" text="NOMBRE O ALIAS VISIBLE EN EL CAMPUS (2 a 60 caracteres):" />
-            <TextField fx:id="aliasField" promptText="Tu nombre o apodo académico" />
+            <TextField fx:id="aliasField" promptText="Tu nombre o apodo académico" styleClass="input" />
         </VBox>
 
-        <HBox spacing="16.0">
+        <HBox spacing="14.0">
             <VBox spacing="4.0" HBox.hgrow="ALWAYS">
                 <Label styleClass="field-label" text="UNIVERSIDAD DECLARADA:" />
-                <TextField fx:id="uniField" promptText="Ej. Universidad Central, Politécnico..." />
+                <TextField fx:id="uniField" promptText="Ej. Universidad Central, Politécnico..." styleClass="input" />
             </VBox>
             <VBox spacing="4.0" HBox.hgrow="ALWAYS">
                 <Label styleClass="field-label" text="CARRERA O ESPECIALIDAD:" />
-                <TextField fx:id="careerField" promptText="Ej. Ingeniería Informática..." />
+                <TextField fx:id="careerField" promptText="Ej. Ingeniería Informática..." styleClass="input" />
+            </VBox>
+        </HBox>
+
+        <HBox spacing="14.0">
+            <VBox maxWidth="160.0" prefWidth="150.0" spacing="4.0">
+                <Label styleClass="field-label" text="SEMESTRE ACTUAL (1-20):" />
+                <TextField fx:id="semesterField" promptText="Ej. 1, 3, 5..." styleClass="input" />
+            </VBox>
+            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                <Label styleClass="field-label" text="INTERESES ACADÉMICOS:" />
+                <TextField fx:id="interestsField" promptText="Ej. Inteligencia Artificial, Algoritmos..." styleClass="input" />
             </VBox>
         </HBox>
 
         <VBox spacing="4.0">
-            <Label styleClass="field-label" text="SEMESTRE ACTUAL (Número de 1 a 20):" />
-            <TextField fx:id="semesterField" promptText="Ej. 1, 3, 5..." />
+            <Label styleClass="field-label" text="BIOGRAFÍA ACADÉMICA (Hasta 500 caracteres):" />
+            <TextArea fx:id="bioArea" prefRowCount="3" promptText="Cuéntale a tus compañeros tus áreas de interés y proyectos..." styleClass="text-area" wrapText="true" />
         </VBox>
 
-        <VBox spacing="4.0">
-            <Label styleClass="field-label" text="BIOGRAFÍA E INTERESES ACADÉMICOS (Hasta 500 caracteres):" />
-            <TextArea fx:id="bioArea" prefRowCount="3" promptText="Cuéntale a tus compañeros tus áreas de interés y proyectos..." wrapText="true" />
-        </VBox>
+        <CheckBox fx:id="emailPublicCheck" styleClass="check-box" text="Hacer visible mi correo electrónico para otros estudiantes del campus" />
 
-        <CheckBox fx:id="emailPublicCheck" style="-fx-text-fill: #e2e8f0;" text="🌐 Hacer visible mi correo electrónico para otros estudiantes" />
-
-        <Label fx:id="errorLabel" style="-fx-text-fill: #f87171; -fx-font-weight: bold;" visible="false" />
+        <Label fx:id="errorLabel" managed="false" styleClass="status-error" visible="false" />
     </VBox>
 
     <!-- Botones de Acción -->

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefWidth="540.0" spacing="14.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.EditStudyProfileDialogController">
+    <padding>
+        <Insets bottom="20.0" left="22.0" right="22.0" top="20.0" />
+    </padding>
+
+    <!-- Encabezado con Icono y Título -->
+    <VBox spacing="4.0">
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label styleClass="title" text="Ficha de Equipos de Estudio" />
+        </HBox>
+        <Label styleClass="muted" text="Configura las materias donde buscas o brindas apoyo, tu disponibilidad horaria y visibilidad." />
+        <Separator />
+    </VBox>
+
+    <!-- Formulario Principal -->
+    <VBox spacing="10.0" styleClass="card">
+        <VBox spacing="4.0">
+            <Label styleClass="field-label" text="MATERIAS DE ESTUDIO (Separadas por coma):" />
+            <TextField fx:id="subjectsField" promptText="Ej. Álgebra Lineal, Estructuras de Datos, Física II..." styleClass="input" />
+        </VBox>
+
+        <VBox spacing="4.0">
+            <Label styleClass="field-label" text="TEMAS O INTERESES DE ESTUDIO (Separados por coma):" />
+            <TextField fx:id="interestsField" promptText="Ej. Preparación para parciales, Programación funcional..." styleClass="input" />
+        </VBox>
+
+        <HBox spacing="14.0">
+            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                <Label styleClass="field-label" text="¿EN QUÉ PUEDES APOYAR?:" />
+                <TextField fx:id="canHelpField" promptText="Ej. Resolución de ejercicios, Teoría..." styleClass="input" />
+            </VBox>
+            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                <Label styleClass="field-label" text="¿EN QUÉ NECESITAS APOYO?:" />
+                <TextField fx:id="needsHelpField" promptText="Ej. Demostraciones matemáticas, Proyectos..." styleClass="input" />
+            </VBox>
+        </HBox>
+
+        <VBox spacing="4.0">
+            <Label styleClass="field-label" text="DISPONIBILIDAD HORARIA:" />
+            <ComboBox fx:id="availabilityCombo" maxWidth="Infinity" styleClass="combo-box" />
+        </VBox>
+
+        <CheckBox fx:id="visibleCheck" selected="true" styleClass="check-box" text="Hacer mi ficha visible en la búsqueda de compañeros de estudio" />
+
+        <Label fx:id="errorLabel" managed="false" styleClass="status-error" visible="false" />
+    </VBox>
+
+    <!-- Botones de Acción -->
+    <HBox alignment="CENTER_RIGHT" spacing="12.0">
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnCancel" onAction="#onCancel" styleClass="secondary" text="Cancelar" />
+        <Button fx:id="btnSave" onAction="#onSave" styleClass="primary" text="Guardar Ficha" />
+    </HBox>
+</VBox>

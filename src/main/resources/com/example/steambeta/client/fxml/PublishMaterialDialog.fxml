@@ -4,73 +4,59 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefWidth="580.0" spacing="16.0"
-      style="-fx-background-color: #0b1120; -fx-padding: 24; -fx-border-color: #1e293b; -fx-border-width: 1; -fx-border-radius: 8;"
-      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.example.steambeta.client.ui.PublishMaterialDialogController">
+<VBox prefWidth="580.0" spacing="14.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.PublishMaterialDialogController">
+    <padding>
+        <Insets bottom="20.0" left="22.0" right="22.0" top="20.0" />
+    </padding>
 
     <!-- Encabezado -->
     <VBox spacing="4.0">
         <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <Label styleClass="brand" text="🔄" />
-            <VBox spacing="2.0">
-                <Label styleClass="title" text="Publicar Material de Intercambio" />
-                <Label styleClass="muted" text="Comparte libros, calculadoras, apuntes u otro material académico sin costo." />
-            </VBox>
+            <Label styleClass="title" text="Publicar Material de Intercambio" />
         </HBox>
+        <Label styleClass="muted" text="Comparte libros, calculadoras, apuntes u otro material académico sin costo." />
         <Separator />
     </VBox>
 
     <!-- Formulario -->
-    <VBox spacing="12.0" style="-fx-background-color: #161f30; -fx-padding: 20; -fx-background-radius: 8; -fx-border-color: #233148; -fx-border-radius: 8;">
-
+    <VBox spacing="10.0" styleClass="card">
         <!-- Título -->
         <VBox spacing="4.0">
-            <Label styleClass="field-label" text="TÍTULO DEL MATERIAL (3–160 caracteres):" />
-            <TextField fx:id="titleField" promptText="Ej. Cálculo de Swokowski — Edición 2 en buen estado" />
+            <Label styleClass="field-label" text="TÍTULO DEL MATERIAL (2–160 caracteres):" />
+            <TextField fx:id="titleField" promptText="Ej. Álgebra de Baldor / Calculadora Casio fx-991LA" styleClass="input" />
         </VBox>
 
-        <!-- Descripción -->
-        <VBox spacing="4.0">
-            <Label styleClass="field-label" text="DESCRIPCIÓN (5–3000 caracteres):" />
-            <TextArea fx:id="descriptionArea" prefRowCount="3"
-                      promptText="Estado del material, edición, si tiene marcas, notas, etc." wrapText="true" />
-        </VBox>
-
-        <!-- Categoría + Tipo -->
-        <HBox spacing="16.0">
+        <!-- Categoría y Tipo de Intercambio -->
+        <HBox spacing="14.0">
             <VBox spacing="4.0" HBox.hgrow="ALWAYS">
                 <Label styleClass="field-label" text="CATEGORÍA DE MATERIAL:" />
-                <ComboBox fx:id="categoryCombo" maxWidth="Infinity" />
+                <ComboBox fx:id="categoryCombo" maxWidth="Infinity" styleClass="combo-box" />
             </VBox>
             <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-                <Label styleClass="field-label" text="MODALIDAD DE INTERCAMBIO:" />
-                <ComboBox fx:id="typeCombo" maxWidth="Infinity" />
+                <Label styleClass="field-label" text="MODALIDAD:" />
+                <ComboBox fx:id="typeCombo" maxWidth="Infinity" styleClass="combo-box" />
             </VBox>
         </HBox>
 
-        <!-- Contacto -->
+        <!-- Descripción -->
         <VBox spacing="4.0">
-            <Label styleClass="field-label" text="INFORMACIÓN DE CONTACTO:" />
-            <TextField fx:id="contactField" promptText="Ej. mensaje interno, correo, teléfono..." />
+            <Label styleClass="field-label" text="DESCRIPCIÓN Y ESTADO DEL ARTÍCULO (Opcional):" />
+            <TextArea fx:id="descriptionArea" prefRowCount="3" promptText="Detalla el estado físico del material, edición o condiciones..." styleClass="text-area" wrapText="true" />
         </VBox>
 
-        <Label fx:id="errorLabel" style="-fx-text-fill: #f87171; -fx-font-weight: bold;"
-               text="" visible="false" wrapText="true" />
+        <!-- Información de Contacto -->
+        <VBox spacing="4.0">
+            <Label styleClass="field-label" text="INFORMACIÓN DE CONTACTO (Opcional):" />
+            <TextField fx:id="contactField" promptText="Ej. @mi_usuario en Telegram o entrega en biblioteca campus" styleClass="input" />
+        </VBox>
+
+        <Label fx:id="errorLabel" managed="false" styleClass="status-error" text="" visible="false" wrapText="true" />
     </VBox>
 
-    <!-- Info -->
-    <VBox spacing="4.0" style="-fx-background-color: #0f172a; -fx-padding: 12; -fx-background-radius: 6; -fx-border-color: #1e293b; -fx-border-radius: 6;">
-        <Label style="-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #38bdf8;" text="ℹ️ Categorías disponibles:" />
-        <Label styleClass="muted" text="BOOK • CALCULATOR • LAB_EQUIPMENT • NOTES • TOOL • OTHER" wrapText="true" />
-        <Label styleClass="muted" text="Modalidades: EXCHANGE (trueque), GIFT (donación), LOAN (préstamo)." wrapText="true" />
-    </VBox>
-
-    <!-- Botones -->
+    <!-- Botones de Acción -->
     <HBox alignment="CENTER_RIGHT" spacing="12.0">
         <Region HBox.hgrow="ALWAYS" />
         <Button fx:id="btnCancel" onAction="#onCancel" styleClass="secondary" text="Cancelar" />
         <Button fx:id="btnSubmit" onAction="#onSubmit" styleClass="primary" text="+ Publicar Material" />
     </HBox>
-
 </VBox>

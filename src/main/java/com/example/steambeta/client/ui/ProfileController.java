@@ -4,7 +4,7 @@ import com.example.steambeta.client.ApiClient;
 import com.example.steambeta.client.SessionScope;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutorService;
 
 /**
  * Controlador de Perfil Estudiantil (FXML) — SteamBeta Campus:
- * Visualización y edición de datos académicos y correo privado en PostgreSQL.
+ * Visualización y edición de datos académicos, intereses, comunidades y participación en PostgreSQL.
  * Construcción 100% basada en FXML.
  */
 public final class ProfileController {
@@ -24,6 +24,11 @@ public final class ProfileController {
     @FXML private Label aliasLabel;
     @FXML private Label handleLabel;
     @FXML private Label roleBadge;
+    @FXML private Label verifiedBadge;
+    @FXML private Label communitiesCountBadge;
+    @FXML private Label postsCountBadge;
+
+    @FXML private Label interestsLabel;
     @FXML private Label emailLabel;
     @FXML private Label emailTag;
     @FXML private Label universityLabel;
@@ -48,7 +53,7 @@ public final class ProfileController {
         long epoch = scope.generation();
         statusLabel.setVisible(true);
         statusLabel.setManaged(true);
-        statusLabel.setText("Cargando tu perfil estudiantil desde PostgreSQL…");
+        statusLabel.setText("Cargando tu perfil estudiantil desde PostgreSQL...");
 
         workers.submit(() -> {
             try {
@@ -80,14 +85,31 @@ public final class ProfileController {
         handleLabel.setText(p.login() != null ? "@" + p.login() : "@estudiante");
         roleBadge.setText(p.globalRole() != null ? p.globalRole() : "USER");
 
+        if (p.institutionalIdentityVerified()) {
+            verifiedBadge.setVisible(true);
+            verifiedBadge.setManaged(true);
+        } else {
+            verifiedBadge.setVisible(false);
+            verifiedBadge.setManaged(false);
+        }
+
+        communitiesCountBadge.setText(p.communitiesCount() + " Comunidades");
+        postsCountBadge.setText(p.postsCount() + " Aportes");
+
+        if (p.academicInterests() != null && !p.academicInterests().isBlank()) {
+            interestsLabel.setText(p.academicInterests());
+        } else {
+            interestsLabel.setText("Aún no has registrado intereses académicos. Edita tu perfil para agregarlos.");
+        }
+
         String emailDisplay = (p.email() != null && !p.email().isBlank()) ? p.email() : "Sin correo registrado";
         emailLabel.setText(emailDisplay);
         emailTag.getStyleClass().removeAll("tag-pill", "brand-badge");
         if (p.emailPublic()) {
-            emailTag.setText("🌐 Visible en el campus");
+            emailTag.setText("Visible en el campus");
             emailTag.getStyleClass().add("tag-pill");
         } else {
-            emailTag.setText("🔒 Correo privado (Solo tú lo ves)");
+            emailTag.setText("Correo confidencial");
             emailTag.getStyleClass().add("brand-badge");
         }
 

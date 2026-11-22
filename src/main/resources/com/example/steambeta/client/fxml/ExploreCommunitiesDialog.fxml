@@ -4,11 +4,14 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefHeight="600.0" prefWidth="780.0" spacing="16.0" style="-fx-background-color: #0b1120; -fx-padding: 24; -fx-border-color: #1e293b; -fx-border-width: 1; -fx-border-radius: 8;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ExploreCommunitiesDialogController">
+<VBox prefHeight="600.0" prefWidth="780.0" spacing="14.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ExploreCommunitiesDialogController">
+    <padding>
+        <Insets bottom="20.0" left="22.0" right="22.0" top="20.0" />
+    </padding>
+
     <!-- Encabezado -->
     <VBox spacing="4.0">
         <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <Label styleClass="brand" text="🌐" />
             <Label styleClass="title" text="Catálogo de Comunidades Públicas" />
         </HBox>
         <Label styleClass="muted" text="Consulta los espacios académicos, grupos de estudio y proyectos abiertos en SteamBeta Campus." />
@@ -17,28 +20,27 @@
 
     <!-- Barra de Búsqueda y Filtros -->
     <HBox alignment="CENTER_LEFT" spacing="12.0">
-        <TextField fx:id="searchField" onAction="#onFilter" prefWidth="320.0" promptText="Buscar por nombre o descripción..." />
-        <ComboBox fx:id="categoryFilterCombo" prefWidth="180.0" promptText="Todas las categorías" />
-        <Button onAction="#onFilter" styleClass="secondary" text="🔍 Buscar" />
-        <Button onAction="#onReset" styleClass="secondary" text="Limpiar" />
+        <TextField fx:id="searchField" onAction="#onFilter" prefWidth="300.0" promptText="Buscar por nombre o descripción..." styleClass="input" />
+        <ComboBox fx:id="categoryFilterCombo" onAction="#onFilter" prefWidth="180.0" styleClass="combo-box" />
+        <Button onAction="#onFilter" styleClass="secondary" text="Buscar" />
+        <Button onAction="#onReset" styleClass="secondary" text="Restablecer" />
         <Region HBox.hgrow="ALWAYS" />
         <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar" />
     </HBox>
 
-    <Label fx:id="statusLabel" styleClass="muted" text="Consultando comunidades públicas disponibles…" />
+    <Label fx:id="statusLabel" styleClass="muted" text="Cargando espacios..." />
 
     <!-- Listado con Scroll -->
-    <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+    <ScrollPane fitToWidth="true" styleClass="scroll-pane" VBox.vgrow="ALWAYS">
         <VBox fx:id="listBox" spacing="12.0">
             <padding>
-                <Insets bottom="10.0" left="4.0" right="10.0" top="4.0" />
+                <Insets bottom="8.0" left="4.0" right="4.0" top="4.0" />
             </padding>
         </VBox>
     </ScrollPane>
 
-    <!-- Pie de Ventana -->
+    <!-- Pie -->
     <HBox alignment="CENTER_RIGHT" spacing="12.0">
-        <Region HBox.hgrow="ALWAYS" />
-        <Button fx:id="btnClose" onAction="#onClose" styleClass="secondary" text="Cerrar" />
+        <Button onAction="#onClose" styleClass="secondary" text="Cerrar" />
     </HBox>
 </VBox>

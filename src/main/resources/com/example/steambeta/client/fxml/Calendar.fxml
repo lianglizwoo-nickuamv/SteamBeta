@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.CalendarController">
+<ScrollPane fitToWidth="true" styleClass="app-background" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.CalendarController">
     <VBox spacing="14.0">
         <padding>
             <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
@@ -15,29 +15,104 @@
             <HBox alignment="CENTER_LEFT" spacing="16.0">
                 <VBox spacing="4.0">
                     <HBox alignment="CENTER_LEFT" spacing="12.0">
-                        <Label styleClass="title" text="Calendario Académico y Fechas Clave" />
+                        <Label styleClass="title" text="Calendario y Fechas Clave" />
                         <Label styleClass="badge-admin" text="AGENDA CAMPUS" />
                     </HBox>
-                    <Label styleClass="muted" text="Fechas límite de entregas, exámenes y sesiones colaborativas de tus comunidades." />
+                    <Label styleClass="muted" text="Cronograma de exámenes, fechas límites de entrega y reuniones de tus comunidades universitarias." />
                 </VBox>
                 <Region HBox.hgrow="ALWAYS" />
-                <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar Calendario" />
+                <!-- Modos de Visualización -->
+                <HBox alignment="CENTER_RIGHT" spacing="6.0">
+                    <Button fx:id="viewMonthBtn" onAction="#onViewMonthly" styleClass="tab-btn-active" text="Vista Mensual" />
+                    <Button fx:id="viewWeekBtn" onAction="#onViewWeekly" styleClass="tab-btn" text="Vista Semanal" />
+                    <Button fx:id="viewAgendaBtn" onAction="#onViewAgenda" styleClass="tab-btn" text="Agenda" />
+                    <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar" />
+                </HBox>
             </HBox>
             <Separator />
         </VBox>
 
-        <!-- Filtros por tipo de evento -->
-        <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <Label styleClass="field-label" text="Filtrar por tipo:" />
+        <!-- Barra de Navegación de Fechas y Filtros -->
+        <HBox alignment="CENTER_LEFT" spacing="12.0">
+            <!-- Navegación de Mes -->
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                <Button onAction="#onPrevMonth" styleClass="secondary" text="&lt; Anterior" />
+                <Label fx:id="monthTitleLabel" alignment="CENTER" minWidth="170.0" styleClass="section-title" text="Noviembre 2026" />
+                <Button onAction="#onNextMonth" styleClass="secondary" text="Siguiente &gt;" />
+                <Button onAction="#onToday" styleClass="secondary" text="Hoy" />
+            </HBox>
+
+            <Separator orientation="VERTICAL" />
+
+            <!-- Filtros por tipo de evento -->
+            <Label styleClass="field-label" text="FILTRAR:" />
             <Button fx:id="filterAllBtn" onAction="#onFilterAll" styleClass="tab-btn-active" text="Todos" />
-            <Button fx:id="filterExamsBtn" onAction="#onFilterExams" styleClass="tab-btn" text="📝 Exámenes" />
-            <Button fx:id="filterSubsBtn" onAction="#onFilterSubs" styleClass="tab-btn" text="📦 Entregas" />
-            <Button fx:id="filterMeetingsBtn" onAction="#onFilterMeetings" styleClass="tab-btn" text="👥 Reuniones" />
+            <Button fx:id="filterExamsBtn" onAction="#onFilterExams" styleClass="tab-btn" text="Exámenes" />
+            <Button fx:id="filterSubsBtn" onAction="#onFilterSubs" styleClass="tab-btn" text="Entregas" />
+            <Button fx:id="filterMeetingsBtn" onAction="#onFilterMeetings" styleClass="tab-btn" text="Reuniones" />
         </HBox>
 
-        <Label fx:id="statusLabel" styleClass="muted" text="Consultando eventos próximos…" />
+        <Label fx:id="statusLabel" styleClass="muted" text="Sincronizando agenda universitaria..." />
 
-        <!-- Listado de Eventos -->
-        <VBox fx:id="eventsListBox" spacing="12.0" />
+        <!-- Disposición Principal: Calendario Interactivo a la Izquierda y Detalle a la Derecha -->
+        <HBox spacing="18.0">
+            <!-- Contenedor del Calendario / Cuadrícula -->
+            <VBox fx:id="calendarContainer" spacing="6.0" HBox.hgrow="ALWAYS">
+                <!-- Fila de Cabecera de Días de la Semana -->
+                <GridPane fx:id="dayHeadersGrid" hgap="4.0" styleClass="calendar-day-header">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="14.28" />
+                        <ColumnConstraints percentWidth="14.28" />
+                        <ColumnConstraints percentWidth="14.28" />
+                        <ColumnConstraints percentWidth="14.28" />
+                        <ColumnConstraints percentWidth="14.28" />
+                        <ColumnConstraints percentWidth="14.28" />
+                        <ColumnConstraints percentWidth="14.32" />
+                    </columnConstraints>
+                    <Label alignment="CENTER" maxWidth="Infinity" styleClass="field-label" text="LUN" GridPane.columnIndex="0" />
+                    <Label alignment="CENTER" maxWidth="Infinity" styleClass="field-label" text="MAR" GridPane.columnIndex="1" />
+                    <Label alignment="CENTER" maxWidth="Infinity" styleClass="field-label" text="MIÉ" GridPane.columnIndex="2" />
+                    <Label alignment="CENTER" maxWidth="Infinity" styleClass="field-label" text="JUE" GridPane.columnIndex="3" />
+                    <Label alignment="CENTER" maxWidth="Infinity" styleClass="field-label" text="VIE" GridPane.columnIndex="4" />
+                    <Label alignment="CENTER" maxWidth="Infinity" styleClass="field-label" text="SÁB" GridPane.columnIndex="5" />
+                    <Label alignment="CENTER" maxWidth="Infinity" styleClass="field-label" text="DOM" GridPane.columnIndex="6" />
+               <rowConstraints>
+                  <RowConstraints />
+               </rowConstraints>
+                </GridPane>
+
+                <!-- Cuadrícula Dinámica para las Celdas FXML -->
+                <GridPane fx:id="calendarGrid" hgap="4.0" styleClass="calendar-grid" vgap="4.0">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="14.28" />
+                        <ColumnConstraints percentWidth="14.28" />
+                        <ColumnConstraints percentWidth="14.28" />
+                        <ColumnConstraints percentWidth="14.28" />
+                        <ColumnConstraints percentWidth="14.28" />
+                        <ColumnConstraints percentWidth="14.28" />
+                        <ColumnConstraints percentWidth="14.32" />
+                    </columnConstraints>
+                </GridPane>
+
+                <!-- Vista Alternativa: Lista / Agenda -->
+                <VBox fx:id="agendaListBox" managed="false" spacing="8.0" visible="false" />
+            </VBox>
+
+            <!-- Panel Lateral de Detalle del Día Seleccionado y Próximos Hitos -->
+            <VBox maxWidth="350.0" minWidth="300.0" prefWidth="330.0" spacing="14.0">
+                <!-- Detalle del Día Seleccionado -->
+                <VBox spacing="10.0" styleClass="card-elevated">
+                    <Label fx:id="selectedDayTitleLabel" styleClass="section-title" text="Hitos del Día Seleccionado" />
+                    <Label fx:id="selectedDateDisplayLabel" styleClass="badge-admin" text="Hoy" />
+                    <VBox fx:id="selectedDayEventsBox" spacing="8.0" />
+                </VBox>
+
+                <!-- Información del Contrato de Datos -->
+                <VBox spacing="8.0" styleClass="card">
+                    <Label styleClass="section-title" text="Alcance de la Agenda" />
+                    <Label styleClass="muted" text="Los eventos proceden de las comunidades en las que estás matriculado. La agenda general visualiza los hitos próximos disponibles en el servidor." wrapText="true" />
+                </VBox>
+            </VBox>
+        </HBox>
     </VBox>
 </ScrollPane>

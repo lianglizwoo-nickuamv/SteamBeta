@@ -5,7 +5,6 @@ import com.example.steambeta.client.EnvironmentConfig;
 import com.example.steambeta.client.SessionScope;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -18,8 +17,8 @@ import java.util.concurrent.ExecutorService;
 
 /**
  * Controlador Principal de Layout (FXML) — SteamBeta Campus:
- * Gestiona el Shell persistente, barra de navegación, estados de conexión,
- * conteo asíncrono de notificaciones y enrutamiento hacia los 13 módulos en contentArea.
+ * Gestiona el Shell persistente, barra de navegación, diagnóstico real de conectividad,
+ * conteo asíncrono de notificaciones y enrutamiento hacia los módulos independientes.
  */
 public final class MainLayoutController {
 
@@ -81,14 +80,15 @@ public final class MainLayoutController {
         this.workers = workers;
         this.onLogout = onLogout;
 
-        // Entorno y conexión
+        // Entorno y diagnóstico real de conexión
         var env = EnvironmentConfig.getCurrentEnvironment();
-        connectionBadge.setText("● Conectado: " + env.getDisplayName());
+        connectionBadge.setText("○ Verificando: " + env.getDisplayName());
+        connectionBadge.getStyleClass().setAll("badge-pending");
 
         // Alias en botón de perfil
         var profile = api.getCachedProfile();
         if (profile != null && profile.alias() != null && !profile.alias().isBlank()) {
-            profileBtn.setText("👤 " + profile.alias());
+            profileBtn.setText("● " + profile.alias());
         }
 
         // Permisos de moderación general
@@ -98,14 +98,25 @@ public final class MainLayoutController {
             adminSection.setManaged(true);
         }
 
-        // Conteo asíncrono de notificaciones
+        // Diagnóstico real de conectividad asíncrona y conteo de notificaciones
         workers.submit(() -> {
             try {
                 long unread = api.unreadNotificationsCount();
-                if (unread > 0) {
-                    Platform.runLater(() -> notifBtn.setText("🔔 (" + unread + ")"));
-                }
-            } catch (Exception ignored) {}
+                Platform.runLater(() -> {
+                    connectionBadge.setText("● En línea: " + env.getDisplayName());
+                    connectionBadge.getStyleClass().setAll("badge-resolved");
+                    if (unread > 0) {
+                        notifBtn.setText("Avisos (" + unread + ")");
+                    } else {
+                        notifBtn.setText("Avisos");
+                    }
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    connectionBadge.setText("✕ Sin respuesta: " + env.getDisplayName());
+                    connectionBadge.getStyleClass().setAll("badge-danger");
+                });
+            }
         });
 
         navigateTo("HOME");
@@ -115,11 +126,11 @@ public final class MainLayoutController {
         // Actualizar estilos activos de los botones
         for (var entry : navMap.entrySet()) {
             if (entry.getValue() != null) {
-                entry.getValue().getStyleClass().removeAll("tab-btn-active", "tab-btn");
+                entry.getValue().getStyleClass().removeAll("nav-item-active", "tab-btn-active", "nav-item", "tab-btn");
                 if (entry.getKey().equals(viewId)) {
-                    entry.getValue().getStyleClass().add("tab-btn-active");
+                    entry.getValue().getStyleClass().add("nav-item-active");
                 } else {
-                    entry.getValue().getStyleClass().add("tab-btn");
+                    entry.getValue().getStyleClass().add("nav-item");
                 }
             }
         }
@@ -127,8 +138,13 @@ public final class MainLayoutController {
         contentArea.getChildren().clear();
 
         switch (viewId) {
-            case "HOME", "COMMUNITIES" -> {
+            case "HOME" -> {
                 var view = ViewLoader.<HomeController>load("Home.fxml");
+                view.controller().init(api, scope, workers, this);
+                contentArea.setCenter(view.root());
+            }
+            case "COMMUNITIES" -> {
+                var view = ViewLoader.<CommunitiesController>load("Communities.fxml");
                 view.controller().init(api, scope, workers, this);
                 contentArea.setCenter(view.root());
             }

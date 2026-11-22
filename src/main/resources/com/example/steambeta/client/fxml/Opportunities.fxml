@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.OpportunitiesController">
+<ScrollPane fitToWidth="true" styleClass="app-background" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.OpportunitiesController">
     <VBox spacing="14.0">
         <padding>
             <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
@@ -15,7 +15,7 @@
             <HBox alignment="CENTER_LEFT" spacing="16.0">
                 <VBox spacing="4.0">
                     <HBox alignment="CENTER_LEFT" spacing="12.0">
-                        <Label styleClass="title" text="🚀 Oportunidades Campus" />
+                        <Label styleClass="title" text="Oportunidades Campus" />
                         <Label styleClass="badge-admin" text="CONVOCATORIAS" />
                     </HBox>
                     <Label styleClass="muted" text="Encuentra becas, pasantías profesionales, concursos universitarios y actividades extracurriculares." />
@@ -33,13 +33,15 @@
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <Label styleClass="field-label" text="Categoría:" />
             <Button fx:id="filterAllBtn" onAction="#onFilterAll" styleClass="tab-btn-active" text="Todas" />
-            <Button fx:id="filterScholarshipsBtn" onAction="#onFilterScholarships" styleClass="tab-btn" text="🎓 Becas" />
-            <Button fx:id="filterInternshipsBtn" onAction="#onFilterInternships" styleClass="tab-btn" text="💼 Pasantías" />
-            <Button fx:id="filterContestsBtn" onAction="#onFilterContests" styleClass="tab-btn" text="🏆 Concursos" />
-            <Button fx:id="filterEventsBtn" onAction="#onFilterEvents" styleClass="tab-btn" text="🎪 Eventos" />
+            <Button fx:id="filterScholarshipsBtn" onAction="#onFilterScholarships" styleClass="tab-btn" text="Becas" />
+            <Button fx:id="filterInternshipsBtn" onAction="#onFilterInternships" styleClass="tab-btn" text="Pasantías" />
+            <Button fx:id="filterContestsBtn" onAction="#onFilterContests" styleClass="tab-btn" text="Concursos" />
+            <Button fx:id="filterEventsBtn" onAction="#onFilterEvents" styleClass="tab-btn" text="Eventos" />
         </HBox>
 
+        <Label fx:id="statusLabel" styleClass="muted" text="Cargando oportunidades desde PostgreSQL..." />
+
         <!-- Listado de Oportunidades -->
-        <VBox fx:id="oppListBox" spacing="12.0" />
+        <VBox fx:id="opportunitiesListBox" spacing="12.0" />
     </VBox>
 </ScrollPane>

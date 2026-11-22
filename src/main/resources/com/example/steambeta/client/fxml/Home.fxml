@@ -4,45 +4,129 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.HomeController">
+<ScrollPane fitToWidth="true" styleClass="app-background" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.HomeController">
     <VBox spacing="16.0">
         <padding>
             <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
         </padding>
 
-        <!-- Cabecera de Módulo -->
-        <VBox spacing="10.0">
-            <HBox alignment="CENTER_LEFT" spacing="16.0">
-                <VBox spacing="4.0">
-                    <HBox alignment="CENTER_LEFT" spacing="12.0">
-                        <Label styleClass="title" text="Mis Comunidades Universitarias" />
-                        <Label styleClass="badge-admin" text="CAMPUS HUB" />
-                    </HBox>
-                    <Label styleClass="muted" text="Espacios de estudio, proyectos, asignaturas y grupos en los que participas." />
-                </VBox>
-                <Region HBox.hgrow="ALWAYS" />
-                <HBox alignment="CENTER_RIGHT" spacing="10.0">
-                    <Button onAction="#onCreateCommunity" styleClass="primary" text="+ Crear Comunidad" />
-                    <Button onAction="#onJoinWithCode" styleClass="secondary" text="🔑 Unirse con Código" />
-                    <Button onAction="#onExplorePublic" styleClass="secondary" text="🔍 Explorar Espacios" />
-                    <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar" />
-                </HBox>
+        <!-- Saludo y Bienvenida -->
+        <VBox spacing="6.0">
+            <HBox alignment="CENTER_LEFT" spacing="12.0">
+                <Label fx:id="greetingLabel" styleClass="title" text="Bienvenido a SteamBeta Campus" />
+                <Label styleClass="badge-admin" text="PANEL ESTUDIANTIL" />
             </HBox>
+            <Label fx:id="studentSubLabel" styleClass="muted" text="Resumen personal de tus asignaturas, entregas y actividades colaborativas." />
             <Separator />
         </VBox>
 
-        <Label fx:id="statusLabel" styleClass="muted" text="Cargando tus comunidades universitarias…" />
+        <!-- Métricas Rápidas en 4 Tarjetas Elevadas -->
+        <HBox spacing="14.0">
+            <!-- Métrica 1: Tareas Pendientes -->
+            <VBox spacing="6.0" styleClass="card-elevated" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <Label styleClass="field-label" text="TAREAS PENDIENTES" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="badge-pending" text="Kanban" />
+                </HBox>
+                <Label fx:id="pendingTasksCountLabel" styleClass="display" text="0" />
+                <Label styleClass="muted" text="Pendientes en tu planificador" />
+            </VBox>
 
-        <!-- Disposición en 2 Columnas: Comunidades e Hitos Próximos -->
-        <HBox spacing="20.0">
-            <!-- Columna Izquierda: Tarjetas de Comunidades -->
-            <VBox fx:id="communityListBox" spacing="12.0" HBox.hgrow="ALWAYS" />
+            <!-- Métrica 2: Comunidades Activas -->
+            <VBox spacing="6.0" styleClass="card-elevated" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <Label styleClass="field-label" text="MIS COMUNIDADES" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="badge-resolved" text="Espacios" />
+                </HBox>
+                <Label fx:id="communitiesCountLabel" styleClass="display" text="0" />
+                <Label styleClass="muted" text="Grupos donde participas" />
+            </VBox>
 
-            <!-- Columna Derecha: Panel de Próximas Fechas Clave -->
-            <VBox fx:id="upcomingCard" maxWidth="340.0" minWidth="300.0" prefWidth="320.0" spacing="10.0" styleClass="card">
-                <Label styleClass="section-title" text="📅 Próximas Fechas Clave" />
-                <Label styleClass="muted" text="Exámenes y entregas de tus asignaturas:" />
-                <VBox fx:id="upcomingEventsBox" spacing="8.0" />
+            <!-- Métrica 3: Próximos Eventos -->
+            <VBox spacing="6.0" styleClass="card-elevated" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <Label styleClass="field-label" text="FECHAS CLAVE" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="badge-academic" text="Agenda" />
+                </HBox>
+                <Label fx:id="upcomingEventsCountLabel" styleClass="display" text="0" />
+                <Label styleClass="muted" text="Exámenes y entregas próximas" />
+            </VBox>
+
+            <!-- Métrica 4: Avisos sin leer -->
+            <VBox spacing="6.0" styleClass="card-elevated" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <Label styleClass="field-label" text="AVISOS PENDIENTES" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="badge-resolved" text="Bandeja" />
+                </HBox>
+                <Label fx:id="unreadNotificationsCountLabel" styleClass="display" text="0" />
+                <Label styleClass="muted" text="Notificaciones académicas" />
+            </VBox>
+        </HBox>
+
+        <!-- Disposición en 2 Columnas Principales -->
+        <HBox spacing="18.0">
+            <!-- Columna Izquierda: Entregas Inmediatas y Accesos Rápidos -->
+            <VBox spacing="14.0" HBox.hgrow="ALWAYS">
+                <!-- Sección: Próximos Vencimientos y Exámenes -->
+                <VBox spacing="10.0" styleClass="card">
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label styleClass="section-title" text="Próximas Fechas Clave y Entregas" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button onAction="#onOpenCalendar" styleClass="secondary" text="Ver Calendario Completo →" />
+                    </HBox>
+                    <Label styleClass="muted" text="Hitos académicos sincronizados con tus comunidades universitarias:" />
+                    <VBox fx:id="urgentEventsBox" spacing="8.0" />
+                </VBox>
+
+                <!-- Sección: Accesos Rápidos -->
+                <VBox spacing="10.0" styleClass="card">
+                    <Label styleClass="section-title" text="Accesos Rápidos al Campus" />
+                    <HBox spacing="10.0">
+                        <Button maxWidth="Infinity" onAction="#onOpenCommunities" styleClass="secondary" text="● Explorar Comunidades" HBox.hgrow="ALWAYS" />
+                        <Button maxWidth="Infinity" onAction="#onOpenTasks" styleClass="secondary" text="✓ Mi Planificación" HBox.hgrow="ALWAYS" />
+                        <Button maxWidth="Infinity" onAction="#onOpenQuestions" styleClass="secondary" text="? Consultas Q&amp;A" HBox.hgrow="ALWAYS" />
+                        <Button maxWidth="Infinity" onAction="#onOpenLibrary" styleClass="secondary" text="≡ Biblioteca" HBox.hgrow="ALWAYS" />
+                    </HBox>
+                </VBox>
+            </VBox>
+
+            <!-- Columna Derecha: Estado Académico y Resumen Personal -->
+            <VBox maxWidth="350.0" minWidth="290.0" prefWidth="320.0" spacing="14.0">
+                <!-- Ficha del Estudiante -->
+                <VBox spacing="10.0" styleClass="card">
+                    <Label styleClass="section-title" text="Tu Ficha Académica" />
+                    <VBox spacing="6.0">
+                        <HBox spacing="8.0">
+                            <Label styleClass="field-label" text="Alias:" />
+                            <Label fx:id="aliasSummaryLabel" styleClass="identity" text="Estudiante" />
+                        </HBox>
+                        <HBox spacing="8.0">
+                            <Label styleClass="field-label" text="Universidad:" />
+                            <Label fx:id="uniSummaryLabel" styleClass="muted" text="No declarada" />
+                        </HBox>
+                        <HBox spacing="8.0">
+                            <Label styleClass="field-label" text="Carrera:" />
+                            <Label fx:id="careerSummaryLabel" styleClass="muted" text="No declarada" />
+                        </HBox>
+                        <HBox spacing="8.0">
+                            <Label styleClass="field-label" text="Semestre:" />
+                            <Label fx:id="semesterSummaryLabel" styleClass="muted" text="No especificado" />
+                        </HBox>
+                    </VBox>
+                    <Separator />
+                    <Button onAction="#onOpenProfile" styleClass="secondary" text="Editar Mi Perfil →" />
+                </VBox>
+
+                <!-- Consejos y Estado del Sistema -->
+                <VBox spacing="8.0" styleClass="card">
+                    <Label styleClass="section-title" text="Colaboración Universitaria" />
+                    <Label styleClass="muted" text="Participa activamente en tus comunidades resolviendo dudas de compañeros, compartiendo apuntes y coordinando entregas grupales." wrapText="true" />
+                    <Button onAction="#onRefreshDashboard" styleClass="secondary" text="Actualizar Indicadores" />
+                </VBox>
             </VBox>
         </HBox>
     </VBox>

@@ -4,14 +4,15 @@ import com.example.steambeta.client.ApiClient;
 import com.example.steambeta.client.SessionScope;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import java.util.*;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import java.util.concurrent.ExecutorService;
 
 /**
  * Controlador de Equipos de Estudio (FXML) — SteamBeta Campus:
  * Conecta estudiantes según materias de apoyo mutuo y compatibilidad horaria.
+ * Construcción 100% basada en FXML (Sin TextInputDialog ni Alert nativos).
  */
 public final class StudyTeamsController {
 
@@ -22,6 +23,7 @@ public final class StudyTeamsController {
     private ApiClient api;
     private SessionScope scope;
     private ExecutorService workers;
+    private ApiClient.StudyProfile currentProfile;
 
     public void init(ApiClient api, SessionScope scope, ExecutorService workers) {
         this.api = api;
@@ -40,6 +42,7 @@ public final class StudyTeamsController {
                 var p = api.studyProfile();
                 Platform.runLater(() -> {
                     if (!scope.current(epoch)) return;
+                    this.currentProfile = p;
                     myProfileCard.getChildren().clear();
 
                     var card = ViewLoader.<StudyMatchCardController>load("StudyMatchCard.fxml");
@@ -63,7 +66,7 @@ public final class StudyTeamsController {
 
                     if (matches.isEmpty()) {
                         var empty = ViewLoader.<EmptyStateController>load("EmptyState.fxml");
-                        empty.controller().set("🤝", "No se encontraron compañeros para esta materia",
+                        empty.controller().set("◆", "No se encontraron compañeros para esta materia",
                                 "Prueba con otra materia o comparte tu ficha para que otros te contacten.", null, null);
                         matchesListBox.getChildren().add(empty.root());
                     } else {
@@ -90,23 +93,19 @@ public final class StudyTeamsController {
 
     @FXML
     private void onEditProfile() {
-        var dialog = new TextInputDialog();
-        dialog.setTitle("Ficha de Estudio");
-        dialog.setHeaderText("Materias de estudio separadas por coma");
-        dialog.setContentText("Materias:");
+        var dialogLoader = ViewLoader.<EditStudyProfileDialogController>load("EditStudyProfileDialog.fxml");
+        if (currentProfile != null) {
+            dialogLoader.controller().setProfile(currentProfile);
+        }
 
-        dialog.showAndWait().ifPresent(subsText -> {
-            var subs = Arrays.stream(subsText.split(","))
-                    .map(String::strip).filter(s -> !s.isBlank()).toList();
+        Stage owner = myProfileCard.getScene() != null ? (Stage) myProfileCard.getScene().getWindow() : null;
+        var modal = UiHelper.createModalStage(dialogLoader.root(), "Editar Ficha de Estudio", owner);
 
-            workers.submit(() -> {
-                try {
-                    api.updateStudyProfile(subs, List.of(), "Apoyo general", "Resolución de ejercicios", "Tardes", true);
-                    Platform.runLater(this::loadProfileAndMatches);
-                } catch (Exception ex) {
-                    Platform.runLater(() -> UiHelper.alert("Error", "No se pudo actualizar la ficha.", Alert.AlertType.ERROR));
-                }
-            });
+        dialogLoader.controller().init(api, workers, updated -> {
+            loadProfileAndMatches();
+            UiHelper.showSuccess(owner, "Ficha Actualizada", "Tu disponibilidad y materias de estudio han sido guardadas en PostgreSQL.");
         });
+
+        modal.showAndWait();
     }
 }

@@ -21,6 +21,7 @@ public final class EditProfileDialogController {
     @FXML private TextField uniField;
     @FXML private TextField careerField;
     @FXML private TextField semesterField;
+    @FXML private TextField interestsField;
     @FXML private TextArea bioArea;
     @FXML private CheckBox emailPublicCheck;
     @FXML private Label errorLabel;
@@ -43,6 +44,7 @@ public final class EditProfileDialogController {
         uniField.setText(p.declaredUniversity() != null ? p.declaredUniversity() : "");
         careerField.setText(p.declaredCareer() != null ? p.declaredCareer() : "");
         semesterField.setText(p.declaredSemester() != null ? String.valueOf(p.declaredSemester()) : "");
+        interestsField.setText(p.academicInterests() != null ? p.academicInterests() : "");
         bioArea.setText(p.bio() != null ? p.bio() : "");
         emailPublicCheck.setSelected(p.emailPublic());
     }
@@ -66,6 +68,10 @@ public final class EditProfileDialogController {
         } catch (NumberFormatException e) {
             return null;
         }
+    }
+
+    public String getInterests() {
+        return interestsField.getText() == null ? "" : interestsField.getText().strip();
     }
 
     public String getBio() {
@@ -98,17 +104,18 @@ public final class EditProfileDialogController {
 
         String uni = getUniversity();
         String car = getCareer();
+        String interests = getInterests();
         boolean pub = isEmailPublic();
 
         if (api == null || workers == null) return;
 
         btnSave.setDisable(true);
         btnCancel.setDisable(true);
-        showError("Guardando perfil en PostgreSQL...", "#38bdf8");
+        showStatus("Guardando perfil en PostgreSQL...", "status-pending");
 
         workers.submit(() -> {
             try {
-                var updated = api.updateProfile(al, uni, car, sem, bio, null, null, pub);
+                var updated = api.updateProfile(al, uni, car, sem, bio, null, interests, pub);
                 Platform.runLater(() -> {
                     if (onSaved != null) onSaved.accept(updated);
                     close();
@@ -117,7 +124,7 @@ public final class EditProfileDialogController {
                 Platform.runLater(() -> {
                     btnSave.setDisable(false);
                     btnCancel.setDisable(false);
-                    showError(ex.getMessage(), "#f87171");
+                    showError(ex.getMessage() != null ? ex.getMessage() : "Error al actualizar perfil.");
                 });
             }
         });
@@ -129,13 +136,14 @@ public final class EditProfileDialogController {
     }
 
     private void showError(String message) {
-        showError(message, "#f87171");
+        showStatus(message, "status-error");
     }
 
-    private void showError(String message, String color) {
+    private void showStatus(String message, String styleClass) {
         errorLabel.setText(message);
-        errorLabel.setStyle("-fx-text-fill: " + color + "; -fx-font-weight: bold;");
+        errorLabel.getStyleClass().setAll(styleClass);
         errorLabel.setVisible(true);
+        errorLabel.setManaged(true);
     }
 
     private void close() {

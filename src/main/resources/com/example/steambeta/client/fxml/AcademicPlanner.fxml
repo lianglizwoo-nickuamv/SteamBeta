@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.AcademicPlannerController">
+<ScrollPane fitToWidth="true" styleClass="app-background" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.AcademicPlannerController">
     <VBox spacing="16.0">
         <padding>
             <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
@@ -15,10 +15,10 @@
             <HBox alignment="CENTER_LEFT" spacing="16.0">
                 <VBox spacing="4.0">
                     <HBox alignment="CENTER_LEFT" spacing="12.0">
-                        <Label styleClass="title" text="📋 Organizador Académico" />
-                        <Label styleClass="badge-admin" text="MI PLANIFICACIÓN" />
+                        <Label styleClass="title" text="Organizador y Planificación Personal" />
+                        <Label styleClass="badge-admin" text="TABLERO KANBAN" />
                     </HBox>
-                    <Label styleClass="muted" text="Organiza tus entregas, deberes y proyectos por estado de avance." />
+                    <Label styleClass="muted" text="Gestiona tus entregas, deberes y proyectos por estado de avance." />
                 </VBox>
                 <Region HBox.hgrow="ALWAYS" />
                 <HBox alignment="CENTER_RIGHT" spacing="10.0">
@@ -29,29 +29,45 @@
             <Separator />
         </VBox>
 
-        <!-- Tablero Kanban de 4 Columnas -->
+        <!-- Tablero Kanban de 4 Columnas con clases semánticas -->
         <HBox spacing="14.0">
             <!-- Columna 1: Pendiente -->
-            <VBox prefWidth="260.0" spacing="10.0" style="-fx-background-color: #0b1120; -fx-padding: 12; -fx-background-radius: 8; -fx-border-color: #1e293b; -fx-border-radius: 8;" HBox.hgrow="ALWAYS">
-                <Label style="-fx-text-fill: #f59e0b;" styleClass="card-title" text="⏳ Pendiente" />
+            <VBox prefWidth="260.0" spacing="10.0" styleClass="kanban-col" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <Label styleClass="kanban-col-header" text="Pendiente" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="badge-pending" text="Por iniciar" />
+                </HBox>
                 <VBox fx:id="pendingCol" spacing="10.0" />
             </VBox>
 
             <!-- Columna 2: En Proceso -->
-            <VBox prefWidth="260.0" spacing="10.0" style="-fx-background-color: #0b1120; -fx-padding: 12; -fx-background-radius: 8; -fx-border-color: #1e293b; -fx-border-radius: 8;" HBox.hgrow="ALWAYS">
-                <Label style="-fx-text-fill: #38bdf8;" styleClass="card-title" text="⚡ En Proceso" />
+            <VBox prefWidth="260.0" spacing="10.0" styleClass="kanban-col" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <Label styleClass="kanban-col-header" text="En Proceso" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="badge-academic" text="En curso" />
+                </HBox>
                 <VBox fx:id="progressCol" spacing="10.0" />
             </VBox>
 
             <!-- Columna 3: En Revisión -->
-            <VBox prefWidth="260.0" spacing="10.0" style="-fx-background-color: #0b1120; -fx-padding: 12; -fx-background-radius: 8; -fx-border-color: #1e293b; -fx-border-radius: 8;" HBox.hgrow="ALWAYS">
-                <Label style="-fx-text-fill: #a855f7;" styleClass="card-title" text="🔍 En Revisión" />
+            <VBox prefWidth="260.0" spacing="10.0" styleClass="kanban-col" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <Label styleClass="kanban-col-header" text="En Revisión" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="badge-academic" text="Revisando" />
+                </HBox>
                 <VBox fx:id="reviewCol" spacing="10.0" />
             </VBox>
 
             <!-- Columna 4: Completada -->
-            <VBox prefWidth="260.0" spacing="10.0" style="-fx-background-color: #0b1120; -fx-padding: 12; -fx-background-radius: 8; -fx-border-color: #1e293b; -fx-border-radius: 8;" HBox.hgrow="ALWAYS">
-                <Label style="-fx-text-fill: #10b981;" styleClass="card-title" text="✓ Completada" />
+            <VBox prefWidth="260.0" spacing="10.0" styleClass="kanban-col" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <Label styleClass="kanban-col-header" text="Completada" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="badge-resolved" text="Finalizado" />
+                </HBox>
                 <VBox fx:id="completedCol" spacing="10.0" />
             </VBox>
         </HBox>
