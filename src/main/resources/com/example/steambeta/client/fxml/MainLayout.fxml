@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="rootPane" prefHeight="820.0" prefWidth="1240.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.MainLayoutController">
+    <!-- Encabezado Superior Persistente -->
+    <top>
+        <HBox fx:id="topBar" alignment="CENTER_LEFT" spacing="12.0" styleClass="topbar">
+            <padding>
+                <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+            </padding>
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                <Label styleClass="brand" text="SteamBeta" />
+                <Label styleClass="brand-badge" text="CAMPUS" />
+            </HBox>
+            <Label fx:id="connectionBadge" styleClass="badge-resolved" text="● Conectado: steam_academico" />
+            <Region HBox.hgrow="ALWAYS" />
+            <TextField fx:id="searchField" onAction="#onSearchAction" prefWidth="300.0" promptText="Buscar en el campus (comunidades, dudas, apuntes)..." />
+            <Button fx:id="notifBtn" onAction="#onNotificationsClicked" styleClass="secondary" text="🔔" />
+            <Button fx:id="profileBtn" onAction="#onProfileClicked" styleClass="secondary" text="👤 Mi Perfil" />
+            <Button fx:id="logoutBtn" onAction="#onLogoutClicked" styleClass="secondary" text="Cerrar sesión" />
+        </HBox>
+    </top>
+
+    <!-- Barra Lateral de Navegación (Sidebar) -->
+    <left>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefWidth="240.0" styleClass="sidebar">
+            <VBox fx:id="sidebar" spacing="4.0" styleClass="sidebar">
+                <padding>
+                    <Insets bottom="16.0" left="10.0" right="10.0" top="12.0" />
+                </padding>
+
+                <!-- Categoría: Académico -->
+                <Label styleClass="nav-category-label" text="ACADÉMICO" />
+                <Button fx:id="navHome" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavHome" styleClass="tab-btn" text="🏠  Inicio" />
+                <Button fx:id="navCommunities" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavCommunities" styleClass="tab-btn" text="👥  Comunidades" />
+                <Button fx:id="navQuestions" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavQuestions" styleClass="tab-btn" text="❓  Preguntas Académicas" />
+                <Button fx:id="navLibrary" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavLibrary" styleClass="tab-btn" text="📚  Biblioteca Univ." />
+                <Button fx:id="navCalendar" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavCalendar" styleClass="tab-btn" text="📅  Calendario" />
+
+                <!-- Categoría: Colaboración -->
+                <Label styleClass="nav-category-label" text="COLABORACIÓN" />
+                <Button fx:id="navTasks" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavTasks" styleClass="tab-btn" text="📋  Mi Planificación" />
+                <Button fx:id="navStudyTeams" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavStudyTeams" styleClass="tab-btn" text="🤝  Equipos de Estudio" />
+                <Button fx:id="navExchange" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavExchange" styleClass="tab-btn" text="🔄  Intercambio" />
+                <Button fx:id="navOpportunities" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavOpportunities" styleClass="tab-btn" text="🚀  Oportunidades" />
+
+                <!-- Categoría: Cuenta y Sistema -->
+                <Label styleClass="nav-category-label" text="CUENTA Y SISTEMA" />
+                <Button fx:id="navNotifications" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavNotifications" styleClass="tab-btn" text="🔔  Notificaciones" />
+                <Button fx:id="navProfile" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavProfile" styleClass="tab-btn" text="👤  Mi Perfil" />
+                <Button fx:id="navSettings" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavSettings" styleClass="tab-btn" text="⚙️  Configuración" />
+
+                <!-- Categoría: Administración (Moderadores Globales) -->
+                <VBox fx:id="adminSection" managed="false" spacing="4.0" visible="false">
+                    <Label styleClass="nav-category-label" text="ADMINISTRACIÓN" />
+                    <Button fx:id="navControlCenter" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavControlCenter" styleClass="tab-btn" text="🛡️  Control Center" />
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </left>
+
+    <!-- Área Central Dinámica para Carga de Vistas FXML -->
+    <center>
+        <BorderPane fx:id="contentArea" />
+    </center>
+</BorderPane>

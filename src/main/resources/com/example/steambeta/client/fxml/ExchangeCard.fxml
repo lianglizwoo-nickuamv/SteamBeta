@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="6.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ExchangeCardController">
+    <HBox alignment="CENTER_LEFT" spacing="8.0">
+        <Label fx:id="typeBadge" styleClass="badge-resolved" text="DONATION" />
+        <Label fx:id="catBadge" styleClass="badge-role" text="BOOKS" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Label fx:id="ownerLabel" styleClass="muted" text="Publicado por: Sofia" />
+    </HBox>
+
+    <Label fx:id="titleLabel" styleClass="card-title" text="Título del libro o material" />
+    <Label fx:id="descLabel" styleClass="muted" text="Estado, edición y detalles..." wrapText="true" />
+    <Label fx:id="contactLabel" styleClass="field-label" text="Contacto: @usuario" />
+</VBox>

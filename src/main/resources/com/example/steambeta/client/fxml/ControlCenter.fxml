@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ControlCenterController">
+    <VBox spacing="14.0">
+        <padding>
+            <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
+        </padding>
+
+        <!-- Cabecera de Módulo -->
+        <VBox spacing="10.0">
+            <HBox alignment="CENTER_LEFT" spacing="16.0">
+                <VBox spacing="4.0">
+                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                        <Label styleClass="title" text="🛡️ SteamBeta Control Center" />
+                        <Label styleClass="badge-admin" text="MODERACIÓN GENERAL" />
+                    </HBox>
+                    <Label styleClass="muted" text="Panel de supervisión global restringido a los 4 moderadores autorizados. Toda acción queda auditada." />
+                </VBox>
+                <Region HBox.hgrow="ALWAYS" />
+                <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar" />
+            </HBox>
+            <Separator />
+        </VBox>
+
+        <!-- Pestañas internas -->
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Button fx:id="btnStudents" onAction="#onTabStudents" styleClass="tab-btn-active" text="👥 Ficha de Estudiantes" />
+            <Button fx:id="btnAudit" onAction="#onTabAudit" styleClass="tab-btn" text="📜 Bitácora de Auditoría" />
+        </HBox>
+
+        <!-- Barra de búsqueda de estudiantes -->
+        <HBox fx:id="searchBar" alignment="CENTER_LEFT" spacing="10.0">
+            <TextField fx:id="studentQueryField" onAction="#onSearchStudent" prefWidth="300.0" promptText="Buscar por login o alias..." />
+            <Button onAction="#onSearchStudent" styleClass="secondary" text="🔍 Buscar" />
+        </HBox>
+
+        <Label fx:id="statusLabel" styleClass="muted" text="Listo." />
+
+        <!-- Listado dinámico de datos -->
+        <VBox fx:id="subContentBox" spacing="10.0" />
+    </VBox>
+</ScrollPane>

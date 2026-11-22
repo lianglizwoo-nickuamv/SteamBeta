@@ -8,12 +8,19 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 
-/** Cliente HTTP con soporte CSRF, cookies y contratos de SteamBeta Campus. */
+/** Cliente HTTP con soporte CSRF, cookies, entornos centrales y contratos de SteamBeta Campus. */
 public final class ApiClient {
-    // Registros de identidad y perfil
+    // Identidad y perfil
     public record Identity(String studentId, String alias, String universityName) {}
-    public record Profile(String accountId, String alias, String declaredUniversity, String declaredCareer,
-                          String bio, String avatarUrl, String academicInterests, boolean institutionalIdentityVerified) {}
+    public record Profile(String accountId, String login, String email, boolean emailVerified,
+                          boolean emailPublic, String alias, String declaredUniversity, String declaredCareer,
+                          Integer declaredSemester, String bio, String avatarUrl, String academicInterests,
+                          String globalRole, boolean institutionalIdentityVerified,
+                          int communitiesCount, int postsCount) {
+        public boolean isGlobalModerator() {
+            return "GLOBAL_MODERATOR".equalsIgnoreCase(globalRole) || "ADMIN".equalsIgnoreCase(globalRole);
+        }
+    }
 
     // Registros académicos de biblioteca (V1)
     public record Subject(String offeringId, String code, String name, String termCode, String sectionCode,
@@ -21,8 +28,12 @@ public final class ApiClient {
     public record Activity(String activityId, String code, String name, boolean required, boolean completed) {}
     public record Detail(Subject summary, List<Activity> activities) {}
 
-    // Registros de Comunidad y Publicaciones (V4 & V5)
-    public record Community(String id, String slug, String name, String description, String rules, String role) {}
+    // Comunidad y Publicaciones (V4 & V5)
+    public record Community(String id, String slug, String name, String description, String rules, String role, String initialInvitationCode) {
+        public Community(String id, String slug, String name, String description, String rules, String role) {
+            this(id, slug, name, description, rules, role, null);
+        }
+    }
     public record Post(String id, String communityId, String authorAccountId, String authorAlias,
                        String title, String body, String createdAt, String status, long commentCount) {}
     public record PostPage(List<Post> posts, String nextBeforeTime, String nextBeforeId) {}
@@ -31,7 +42,7 @@ public final class ApiClient {
     public record Report(String id, String postId, String commentId, String reason, String reporterAlias,
                          String createdAt, String contentAuthorAlias, String content, String contentStatus) {}
 
-    // FASE 2: Exploración, Invitaciones y Miembros
+    // Exploración, Invitaciones y Miembros (FASE 2)
     public record CommunityOverview(String id, String slug, String name, String description, String category,
                                      String visibility, long memberCount, boolean isMember, String userRole) {}
     public record Invitation(String id, String communityId, String code, Integer maxUses, int usedCount,
@@ -39,55 +50,127 @@ public final class ApiClient {
     public record Member(String accountId, String alias, String role, String declaredUniversity,
                          String declaredCareer, String avatarUrl, String joinedAt) {}
 
-    // FASE 3: Q&A Académico
+    // Q&A Académico (FASE 3)
     public record Question(String id, String communityId, String authorAccountId, String authorAlias,
                            String title, String body, String subjectTag, List<String> tags,
                            String createdAt, String status, long commentCount, boolean isResolved,
                            String resolvedCommentId) {}
 
-    // FASE 4: Recursos Académicos
+    // Recursos Académicos (FASE 4)
     public record ResourceItem(String id, String communityId, String uploaderAccountId, String uploaderAlias,
                                String title, String description, String resourceType, String externalUrl,
                                String originalFilename, Long fileSizeBytes, String mimeType,
                                String subjectName, String createdAt) {}
 
-    // FASE 5: Calendario y Actividades
+    // Calendario y Actividades (FASE 5)
     public record EventItem(String id, String communityId, String creatorAccountId, String creatorAlias,
                             String title, String description, String eventType, String eventDate,
                             String status, String createdAt) {}
     public record UpcomingEvent(String id, String communityId, String communityName, String title,
                                 String description, String eventType, String eventDate, String status) {}
 
-    // FASE 6 & 7: Notificaciones y Estadísticas
+    // Notificaciones y Estadísticas (FASE 6 & 7)
     public record NotificationItem(String id, String communityId, String sourceActorAlias, String type,
                                    String title, String message, boolean read, String createdAt) {}
     public record CommunityStats(String communityId, long totalMembers, long totalPosts, long totalQuestions,
                                  long resolvedQuestions, long totalResources, long upcomingEvents) {}
 
+    // Control Center de Moderación Global (V11)
+    public record StudentOverview(String accountId, String loginIdentifier, String alias,
+                                  String declaredUniversity, String declaredCareer, boolean enabled,
+                                  String globalRole, String createdAt, long activeSanctionsCount,
+                                  long communitiesCount, long postsCount) {}
+    public record AuditLogEntry(String id, String moderatorAlias, String targetLogin,
+                                String action, String reason, String createdAt) {}
+    public record SanctionItem(String id, String action, String reason, String evidenceContext,
+                               String expiresAt, String createdAt, boolean active,
+                               String appealStatus, String appealNote) {}
+
+    // Organizador Académico (V11)
+    public record TaskItem(String id, String accountId, String communityId, String title,
+                           String description, String status, String priority,
+                           String dueDate, String projectName, String createdAt) {}
+
+    // Equipos de Estudio (V11)
+    public record StudyProfile(String accountId, String alias, String declaredUniversity,
+                               String declaredCareer, List<String> subjects, List<String> interests,
+                               String canHelpWith, String needsHelpWith, String availability, boolean visible) {}
+
+    // Oportunidades Campus (V11)
+    public record OpportunityItem(String id, String title, String description, String category,
+                                   String sourceInstitution, String sourceUrl, String deadline, String createdAt) {}
+
+    // Intercambio de Materiales (V11)
+    public record ExchangeItem(String id, String ownerAccountId, String ownerAlias, String communityId,
+                               String title, String description, String category, String exchangeType,
+                               String status, String contactInfo, String createdAt) {}
+
+
     private record Csrf(String headerName, String token) {}
 
     public static final class Failure extends RuntimeException {
         private final int status;
-        public Failure(int status) { super("HTTP request failed with status " + status); this.status = status; }
+        private final String responseBody;
+
+        public Failure(int status) {
+            super("HTTP request failed with status " + status);
+            this.status = status;
+            this.responseBody = "";
+        }
+
+        public Failure(int status, String body) {
+            super(extractMessage(status, body));
+            this.status = status;
+            this.responseBody = body != null ? body : "";
+        }
+
+        private static String extractMessage(int status, String body) {
+            if (body != null && !body.isBlank()) {
+                try {
+                    var map = new Gson().fromJson(body, java.util.Map.class);
+                    if (map != null) {
+                        if (map.containsKey("message") && map.get("message") != null) {
+                            return String.valueOf(map.get("message"));
+                        }
+                        if (map.containsKey("error") && map.get("error") != null) {
+                            return String.valueOf(map.get("error"));
+                        }
+                    }
+                } catch (Exception ignored) {}
+            }
+            return "Error HTTP " + status;
+        }
+
         public int status() { return status; }
+        public String responseBody() { return responseBody; }
     }
 
     private final URI base;
     private final CookieManager cookies = new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER);
-    private final HttpClient http = HttpClient.newBuilder().cookieHandler(cookies).connectTimeout(Duration.ofSeconds(4)).build();
+    private HttpClient http;
     private final Gson json = new Gson();
     private Csrf csrf;
     private String accountId;
+    private Profile cachedProfile;
+
+    private synchronized HttpClient getHttp() {
+        if (http == null) {
+            http = HttpClient.newBuilder().cookieHandler(cookies).connectTimeout(Duration.ofSeconds(6)).build();
+        }
+        return http;
+    }
 
     public ApiClient() {
-        this(System.getProperty("replica.api.url", System.getenv().getOrDefault("REPLICA_API_URL", "http://localhost:8080")));
+        this(EnvironmentConfig.getApiUrl());
     }
 
     public ApiClient(String url) {
         base = URI.create(url.replaceAll("/+$", "") + "/");
         if (!Set.of("http", "https").contains(base.getScheme()) || base.getHost() == null || base.getUserInfo() != null)
-            throw new IllegalArgumentException("Invalid backend URL");
+            throw new IllegalArgumentException("Invalid backend URL: " + url);
     }
+
+    public URI getBaseUri() { return base; }
 
     private String request(String path, String body) throws Exception {
         return request(path, body, "application/x-www-form-urlencoded", body == null ? "GET" : "POST");
@@ -98,7 +181,7 @@ public final class ApiClient {
     }
 
     private String request(String path, String body, String contentType, String method) throws Exception {
-        long timeout = Long.parseLong(System.getenv().getOrDefault("REPLICA_HTTP_TIMEOUT_SECONDS", "12"));
+        long timeout = Long.parseLong(System.getenv().getOrDefault("STEAMBETA_HTTP_TIMEOUT_SECONDS", "15"));
         var builder = HttpRequest.newBuilder(base.resolve(path.substring(1))).timeout(Duration.ofSeconds(timeout))
                 .header("Accept", "application/json");
         if (method.equals("GET")) {
@@ -109,8 +192,8 @@ public final class ApiClient {
             if (body != null) builder.header("Content-Type", contentType);
             builder.method(method, body == null ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(body));
         }
-        var response = http.send(builder.build(), HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() < 200 || response.statusCode() >= 300) throw new Failure(response.statusCode());
+        var response = getHttp().send(builder.build(), HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) throw new Failure(response.statusCode(), response.body());
         return response.body();
     }
 
@@ -122,31 +205,192 @@ public final class ApiClient {
         csrf = json.fromJson(request("/api/auth/csrf", null), Csrf.class);
         var identity = json.fromJson(request("/api/auth/login", "login=" + encode(login) + "&password=" + encode(password)), Identity.class);
         csrf = json.fromJson(request("/api/auth/csrf", null), Csrf.class);
-        accountId = profile().accountId();
+        cachedProfile = profile();
+        accountId = cachedProfile.accountId();
         return identity;
     }
 
-    public void register(String login, String password, String alias, String university, String career) throws Exception {
+    public void register(String alias, String login, String email, String password, String confirmPassword) throws Exception {
         csrf = json.fromJson(request("/api/auth/csrf", null), Csrf.class);
         var data = new LinkedHashMap<String, String>();
-        data.put("login", login); data.put("password", password); data.put("alias", alias);
-        data.put("declaredUniversity", university); data.put("declaredCareer", career);
+        data.put("alias", alias);
+        data.put("login", login);
+        data.put("email", email);
+        data.put("password", password);
+        data.put("confirmPassword", confirmPassword);
         request("/api/auth/register", json.toJson(data), "application/json");
     }
 
     public Profile profile() throws Exception {
         try {
-            return json.fromJson(request("/api/account/full", null), Profile.class);
+            cachedProfile = json.fromJson(request("/api/account/full", null), Profile.class);
+            return cachedProfile;
         } catch (Exception fallback) {
-            return json.fromJson(request("/api/account", null), Profile.class);
+            cachedProfile = json.fromJson(request("/api/account", null), Profile.class);
+            return cachedProfile;
         }
     }
 
+    public Profile getCachedProfile() { return cachedProfile; }
+
+    public Profile updateProfile(String alias, String university, String career, Integer semester,
+                                 String bio, String avatarUrl, String interests, Boolean emailPublic) throws Exception {
+        var data = new LinkedHashMap<String, Object>();
+        data.put("alias", alias);
+        data.put("declaredUniversity", university);
+        data.put("declaredCareer", career);
+        data.put("declaredSemester", semester);
+        data.put("bio", bio);
+        data.put("avatarUrl", avatarUrl);
+        data.put("academicInterests", interests);
+        data.put("emailPublic", emailPublic);
+        cachedProfile = json.fromJson(request("/api/account", json.toJson(data), "application/json", "PATCH"), Profile.class);
+        return cachedProfile;
+    }
+
     public Profile updateProfile(String alias, String university, String career, String bio, String avatarUrl, String interests) throws Exception {
-        var data = new LinkedHashMap<String, String>();
-        data.put("alias", alias); data.put("declaredUniversity", university); data.put("declaredCareer", career);
-        data.put("bio", bio); data.put("avatarUrl", avatarUrl); data.put("academicInterests", interests);
-        return json.fromJson(request("/api/account", json.toJson(data), "application/json", "PATCH"), Profile.class);
+        return updateProfile(alias, university, career, null, bio, avatarUrl, interests, false);
+    }
+
+    public List<SanctionItem> mySanctions() throws Exception {
+        return List.of(json.fromJson(request("/api/account/sanctions", null), SanctionItem[].class));
+    }
+
+    public void appealSanction(String sanctionId, String note) throws Exception {
+        var data = Map.of("note", note);
+        request("/api/account/sanctions/" + UUID.fromString(sanctionId) + "/appeal", json.toJson(data), "application/json");
+    }
+
+    // =========================================================================
+    // Control Center (Moderación Global)
+    // =========================================================================
+
+    public List<StudentOverview> controlCenterSearchStudents(String query) throws Exception {
+        String path = "/api/control-center/students?limit=25";
+        if (query != null && !query.isBlank()) path += "&query=" + encode(query);
+        return List.of(json.fromJson(request(path, null), StudentOverview[].class));
+    }
+
+    public void controlCenterApplySanction(String targetAccountId, String action, String reason, String evidence, Integer durationHours) throws Exception {
+        var data = new LinkedHashMap<String, Object>();
+        data.put("action", action);
+        data.put("reason", reason);
+        data.put("evidenceContext", evidence);
+        data.put("durationHours", durationHours);
+        request("/api/control-center/students/" + UUID.fromString(targetAccountId) + "/sanctions",
+                json.toJson(data), "application/json");
+    }
+
+    public List<AuditLogEntry> controlCenterAuditLogs() throws Exception {
+        return List.of(json.fromJson(request("/api/control-center/audit-logs?limit=40", null), AuditLogEntry[].class));
+    }
+
+    public void controlCenterResolveAppeal(String sanctionId, String decision, String note) throws Exception {
+        var data = Map.of("decision", decision, "note", note);
+        request("/api/control-center/appeals/" + UUID.fromString(sanctionId) + "/resolution", json.toJson(data), "application/json");
+    }
+
+    // =========================================================================
+    // Organizador Académico (Tareas y Proyectos)
+    // =========================================================================
+
+    public List<TaskItem> myTasks(String statusFilter) throws Exception {
+        String path = "/api/me/tasks";
+        if (statusFilter != null && !statusFilter.isBlank()) path += "?status=" + encode(statusFilter);
+        return List.of(json.fromJson(request(path, null), TaskItem[].class));
+    }
+
+    public TaskItem createTask(String title, String description, String priority, String dueDateIso, String projectName) throws Exception {
+        var data = new LinkedHashMap<String, Object>();
+        data.put("title", title);
+        data.put("description", description);
+        data.put("priority", priority);
+        data.put("dueDate", dueDateIso);
+        data.put("projectName", projectName);
+        return json.fromJson(request("/api/me/tasks", json.toJson(data), "application/json"), TaskItem.class);
+    }
+
+    public void updateTask(String taskId, String status, String priority, String dueDateIso) throws Exception {
+        var data = new LinkedHashMap<String, Object>();
+        if (status != null) data.put("status", status);
+        if (priority != null) data.put("priority", priority);
+        if (dueDateIso != null) data.put("dueDate", dueDateIso);
+        request("/api/me/tasks/" + UUID.fromString(taskId), json.toJson(data), "application/json", "PATCH");
+    }
+
+    public void deleteTask(String taskId) throws Exception {
+        request("/api/me/tasks/" + UUID.fromString(taskId), null, "application/json", "DELETE");
+    }
+
+    // =========================================================================
+    // Equipos de Estudio
+    // =========================================================================
+
+    public StudyProfile studyProfile() throws Exception {
+        return json.fromJson(request("/api/study-teams/profile", null), StudyProfile.class);
+    }
+
+    public StudyProfile updateStudyProfile(List<String> subjects, List<String> interests, String canHelpWith, String needsHelpWith, String availability, boolean visible) throws Exception {
+        var data = new LinkedHashMap<String, Object>();
+        data.put("subjects", subjects);
+        data.put("interests", interests);
+        data.put("canHelpWith", canHelpWith);
+        data.put("needsHelpWith", needsHelpWith);
+        data.put("availability", availability);
+        data.put("visible", visible);
+        return json.fromJson(request("/api/study-teams/profile", json.toJson(data), "application/json", "PUT"), StudyProfile.class);
+    }
+
+    public List<StudyProfile> findStudyMatches(String subject) throws Exception {
+        String path = "/api/study-teams/matches";
+        if (subject != null && !subject.isBlank()) path += "?subject=" + encode(subject);
+        return List.of(json.fromJson(request(path, null), StudyProfile[].class));
+    }
+
+    // =========================================================================
+    // Oportunidades Campus
+    // =========================================================================
+
+    public List<OpportunityItem> opportunities(String category) throws Exception {
+        String path = "/api/opportunities";
+        if (category != null && !category.isBlank()) path += "?category=" + encode(category);
+        return List.of(json.fromJson(request(path, null), OpportunityItem[].class));
+    }
+
+    public OpportunityItem createOpportunity(String title, String description, String category, String institution, String url, String deadlineIso) throws Exception {
+        var data = new LinkedHashMap<String, Object>();
+        data.put("title", title);
+        data.put("description", description);
+        data.put("category", category);
+        data.put("sourceInstitution", institution);
+        data.put("sourceUrl", url);
+        data.put("deadline", deadlineIso);
+        return json.fromJson(request("/api/opportunities", json.toJson(data), "application/json"), OpportunityItem.class);
+    }
+
+    // =========================================================================
+    // Intercambio Universitario de Materiales
+    // =========================================================================
+
+    public List<ExchangeItem> exchangeItems(String category) throws Exception {
+        String path = "/api/exchange/items";
+        if (category != null && !category.isBlank()) path += "?category=" + encode(category);
+        return List.of(json.fromJson(request(path, null), ExchangeItem[].class));
+    }
+
+    public ExchangeItem createExchangeItem(String title, String description, String category, String type, String contactInfo) throws Exception {
+        var data = new LinkedHashMap<String, Object>();
+        data.put("title", title);
+        data.put("description", description);
+        data.put("category", category);
+        data.put("exchangeType", type);
+        data.put("contactInfo", contactInfo);
+        return json.fromJson(request("/api/exchange/items", json.toJson(data), "application/json"), ExchangeItem.class);
+    }
+
+    public void updateExchangeStatus(String itemId, String status) throws Exception {
+        var data = Map.of("status", status);
+        request("/api/exchange/items/" + UUID.fromString(itemId) + "/status", json.toJson(data), "application/json", "PATCH");
     }
 
     // =========================================================================
@@ -155,6 +399,18 @@ public final class ApiClient {
 
     public List<Community> communities() throws Exception {
         return List.of(json.fromJson(request("/api/me/communities", null), Community[].class));
+    }
+
+    public static String toSlug(String text) {
+        if (text == null || text.isBlank()) return "comunidad";
+        String normalized = java.text.Normalizer.normalize(text.strip(), java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+        String slug = normalized.toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("^-+|-+$", "");
+        if (slug.length() < 3) slug = slug + "-comunidad";
+        if (slug.length() > 80) slug = slug.substring(0, 80);
+        return slug;
     }
 
     public Community createCommunity(String slug, String name, String description, String rules, String category, String visibility) throws Exception {
@@ -244,7 +500,7 @@ public final class ApiClient {
     }
 
     // =========================================================================
-    // Moderación y Reportes (V5)
+    // Moderación y Reportes Comunitarios (V5)
     // =========================================================================
 
     public void report(String communityId, String targetType, String targetId, String reason) throws Exception {
@@ -272,7 +528,7 @@ public final class ApiClient {
     }
 
     // =========================================================================
-    // FASE 3: Q&A Académico
+    // Q&A Académico
     // =========================================================================
 
     public Question createQuestion(String communityId, UUID requestKey, String title, String body, String subject, List<String> tags) throws Exception {
@@ -297,7 +553,7 @@ public final class ApiClient {
     }
 
     // =========================================================================
-    // FASE 4: Recursos Académicos
+    // Recursos Académicos
     // =========================================================================
 
     public ResourceItem publishResource(String communityId, String title, String description, String resourceType,
@@ -320,7 +576,7 @@ public final class ApiClient {
     }
 
     // =========================================================================
-    // FASE 5: Calendario y Actividades
+    // Calendario y Actividades
     // =========================================================================
 
     public EventItem createEvent(String communityId, String title, String description, String eventType, String eventDateIso) throws Exception {
@@ -343,7 +599,7 @@ public final class ApiClient {
     }
 
     // =========================================================================
-    // FASE 6 & 7: Notificaciones y Estadísticas
+    // Notificaciones y Estadísticas
     // =========================================================================
 
     public List<NotificationItem> notifications(int limit) throws Exception {
@@ -389,6 +645,7 @@ public final class ApiClient {
         cookies.getCookieStore().removeAll();
         csrf = null;
         accountId = null;
+        cachedProfile = null;
     }
 
     private static String encode(String value) {

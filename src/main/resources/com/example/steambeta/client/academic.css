@@ -324,6 +324,16 @@
     -fx-text-fill: #38bdf8;
     -fx-font-weight: 700;
     -fx-background-radius: 6;
+    -fx-border-color: transparent transparent transparent #38bdf8;
+    -fx-border-width: 0 0 0 3;
+}
+
+.nav-category-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #64748b;
+    -fx-padding: 14 8 4 8;
+    -fx-letter-spacing: 1px;
 }
 
 /* Indicadores de Estado y Notificaciones */
@@ -335,6 +345,65 @@
 .success-label {
     -fx-text-fill: #34d399;
     -fx-font-size: 13px;
+}
+
+.status-pending {
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 13px;
+}
+
+.status-error {
+    -fx-text-fill: #f87171;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+
+.status-success {
+    -fx-text-fill: #34d399;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+
+.hint-neutral {
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 12px;
+}
+
+.hint-success {
+    -fx-text-fill: #34d399;
+    -fx-font-size: 12px;
+}
+
+.hint-error {
+    -fx-text-fill: #f87171;
+    -fx-font-size: 12px;
+}
+
+.text-field-error {
+    -fx-border-color: #ef4444;
+}
+
+.text-field-error:focused {
+    -fx-border-color: #f87171;
+}
+
+.auth-card {
+    -fx-background-color: #111c33;
+    -fx-background-radius: 12;
+    -fx-border-color: #1e293b;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 30;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.35), 16, 0.2, 0, 4);
+}
+
+.auth-intro-card {
+    -fx-background-color: #0b1120;
+    -fx-background-radius: 12;
+    -fx-border-color: #1e293b;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 30;
 }
 
 .notification-unread {
@@ -423,4 +492,113 @@
     -fx-font-weight: bold;
     -fx-font-size: 15px;
     -fx-text-fill: #f8fafc;
+}
+
+
+/* =========================================================================
+   Diálogos Modales y DialogPane (SteamBeta Dark System)
+   ========================================================================= */
+
+.dialog-pane {
+    -fx-background-color: #0f172a;
+    -fx-border-color: #334155;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 0;
+}
+
+.dialog-pane > .header-panel {
+    -fx-background-color: #1e293b;
+    -fx-padding: 16 20;
+    -fx-border-color: #334155;
+    -fx-border-width: 0 0 1 0;
+    -fx-background-radius: 10 10 0 0;
+}
+
+.dialog-pane > .header-panel .label {
+    -fx-text-fill: #f8fafc;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+}
+
+.dialog-pane > .content {
+    -fx-background-color: #0f172a;
+    -fx-padding: 18 20;
+}
+
+.dialog-pane .label {
+    -fx-text-fill: #f8fafc;
+}
+
+.dialog-pane > .button-bar {
+    -fx-background-color: #0b1120;
+    -fx-padding: 12 20;
+    -fx-border-color: #1e293b;
+    -fx-border-width: 1 0 0 0;
+    -fx-background-radius: 0 0 10 10;
+}
+
+.dialog-pane .button {
+    -fx-background-color: #1e293b;
+    -fx-text-fill: #f8fafc;
+    -fx-background-radius: 6;
+    -fx-border-color: #334155;
+    -fx-border-radius: 6;
+    -fx-padding: 8 18;
+    -fx-cursor: hand;
+}
+
+.dialog-pane .button:hover {
+    -fx-background-color: #334155;
+    -fx-text-fill: #38bdf8;
+    -fx-border-color: #38bdf8;
+}
+
+.dialog-pane .button:default {
+    -fx-background-color: #0284c7;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-border-color: #38bdf8;
+}
+
+.dialog-pane .button:default:hover {
+    -fx-background-color: #0369a1;
+}
+
+/* Badges de Estado de Solicitudes */
+.badge-pending {
+    -fx-background-color: #78350f;
+    -fx-text-fill: #fef08a;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 3 8;
+    -fx-background-radius: 10;
+    -fx-border-color: #f59e0b;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+}
+
+.badge-approved {
+    -fx-background-color: #064e3b;
+    -fx-text-fill: #a7f3d0;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 3 8;
+    -fx-background-radius: 10;
+    -fx-border-color: #10b981;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+}
+
+.badge-rejected {
+    -fx-background-color: #7f1d1d;
+    -fx-text-fill: #fecaca;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 3 8;
+    -fx-background-radius: 10;
+    -fx-border-color: #ef4444;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
 }

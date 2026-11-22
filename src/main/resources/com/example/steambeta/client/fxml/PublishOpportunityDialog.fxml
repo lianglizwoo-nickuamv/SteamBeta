@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefWidth="600.0" spacing="16.0"
+      style="-fx-background-color: #0b1120; -fx-padding: 24; -fx-border-color: #1e293b; -fx-border-width: 1; -fx-border-radius: 8;"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.steambeta.client.ui.PublishOpportunityDialogController">
+
+    <!-- Encabezado -->
+    <VBox spacing="4.0">
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label styleClass="brand" text="🚀" />
+            <VBox spacing="2.0">
+                <Label styleClass="title" text="Publicar Oportunidad Campus" />
+                <Label styleClass="muted" text="Comparte becas, pasantías, concursos u otras convocatorias de interés universitario." />
+            </VBox>
+        </HBox>
+        <Separator />
+    </VBox>
+
+    <!-- Formulario -->
+    <VBox spacing="12.0" style="-fx-background-color: #161f30; -fx-padding: 20; -fx-background-radius: 8; -fx-border-color: #233148; -fx-border-radius: 8;">
+
+        <!-- Título -->
+        <VBox spacing="4.0">
+            <Label styleClass="field-label" text="TÍTULO DE LA CONVOCATORIA (3–160 caracteres):" />
+            <TextField fx:id="titleField" promptText="Ej. Beca de Excelencia Académica 2026 — UNAM" />
+        </VBox>
+
+        <!-- Descripción -->
+        <VBox spacing="4.0">
+            <Label styleClass="field-label" text="DESCRIPCIÓN (5–4000 caracteres):" />
+            <TextArea fx:id="descriptionArea" prefRowCount="4"
+                      promptText="Requisitos, beneficios, procedimiento de postulación..." wrapText="true" />
+        </VBox>
+
+        <!-- Categoría + Institución -->
+        <HBox spacing="16.0">
+            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                <Label styleClass="field-label" text="CATEGORÍA:" />
+                <ComboBox fx:id="categoryCombo" maxWidth="Infinity" />
+            </VBox>
+            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                <Label styleClass="field-label" text="INSTITUCIÓN / FUENTE (2–160 chars):" />
+                <TextField fx:id="institutionField" promptText="Ej. Ministerio de Educación, Empresa XYZ..." />
+            </VBox>
+        </HBox>
+
+        <!-- URL + Fecha límite -->
+        <HBox spacing="16.0">
+            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                <Label styleClass="field-label" text="ENLACE OFICIAL (https://...):" />
+                <TextField fx:id="urlField" promptText="https://convocatoria.edu/beca-2026" />
+            </VBox>
+            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                <Label styleClass="field-label" text="FECHA LÍMITE (AAAA-MM-DD, opcional):" />
+                <TextField fx:id="deadlineField" promptText="2026-12-31" />
+            </VBox>
+        </HBox>
+
+        <Label fx:id="errorLabel" style="-fx-text-fill: #f87171; -fx-font-weight: bold;"
+               text="" visible="false" wrapText="true" />
+    </VBox>
+
+    <!-- Info de categorías -->
+    <VBox spacing="4.0" style="-fx-background-color: #0f172a; -fx-padding: 12; -fx-background-radius: 6; -fx-border-color: #1e293b; -fx-border-radius: 6;">
+        <Label style="-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #38bdf8;" text="ℹ️ Categorías disponibles:" />
+        <Label styleClass="muted" text="SCHOLARSHIP (beca) • INTERNSHIP (pasantía) • COURSE (curso) • CONTEST (concurso) • CALL (convocatoria) • VOLUNTEER (voluntariado) • EVENT (evento) • JOB (empleo)" wrapText="true" />
+    </VBox>
+
+    <!-- Botones -->
+    <HBox alignment="CENTER_RIGHT" spacing="12.0">
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnCancel" onAction="#onCancel" styleClass="secondary" text="Cancelar" />
+        <Button fx:id="btnSubmit" onAction="#onSubmit" styleClass="primary" text="+ Publicar Convocatoria" />
+    </HBox>
+
+</VBox>

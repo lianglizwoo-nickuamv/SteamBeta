@@ -1,16 +1,26 @@
 package com.example.steambeta.client.ui;
 
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.paint.Color;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-/** Utilitarios de UI para componentes modernos de SteamBeta Campus. */
+/**
+ * Utilidades no visuales compartidas para SteamBeta Campus:
+ * Proporciona formateo de fechas y configuración de ventanas modales FXML.
+ * Toda la interfaz visual se construye 100% mediante FXML y CSS sin diálogos Modena nativos de Windows.
+ */
 public final class UiHelper {
+    public static final String STYLESHEET =
+            UiHelper.class.getResource("/com/example/steambeta/client/academic.css") != null
+                    ? UiHelper.class.getResource("/com/example/steambeta/client/academic.css").toExternalForm()
+                    : "";
+
     public static final DateTimeFormatter DATE_TIME =
             DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.systemDefault());
     public static final DateTimeFormatter DATE_SHORT =
@@ -18,40 +28,9 @@ public final class UiHelper {
 
     private UiHelper() {}
 
-    public static Label label(String text, String styleClass) {
-        var l = new Label(text);
-        if (styleClass != null && !styleClass.isBlank()) {
-            l.getStyleClass().add(styleClass);
-        }
-        l.setWrapText(true);
-        return l;
-    }
-
-    public static Button button(String text, String styleClass) {
-        var b = new Button(text);
-        if (styleClass != null && !styleClass.isBlank()) {
-            b.getStyleClass().add(styleClass);
-        }
-        return b;
-    }
-
-    public static VBox stack(int spacing, Node... nodes) {
-        var box = new VBox(spacing, nodes);
-        box.setPadding(new Insets(16));
-        return box;
-    }
-
-    public static VBox card(Node... nodes) {
-        var box = new VBox(10, nodes);
-        box.getStyleClass().add("card");
-        return box;
-    }
-
-    public static Label badge(String text, String styleClass) {
-        var b = new Label(text);
-        b.getStyleClass().add(styleClass);
-        return b;
-    }
+    // -------------------------------------------------------------------------
+    // 1. UTILIDADES DE FORMATO DE FECHA
+    // -------------------------------------------------------------------------
 
     public static String formatDate(String iso) {
         if (iso == null || iso.isBlank()) return "";
@@ -62,23 +41,78 @@ public final class UiHelper {
         }
     }
 
+    public static String formatDateShort(String iso) {
+        if (iso == null || iso.isBlank()) return "";
+        try {
+            return DATE_SHORT.format(Instant.parse(iso));
+        } catch (Exception e) {
+            return iso;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // 2. VENTANAS MODALES ESTILIZADAS CON ACADEMIC.CSS (100% FXML)
+    // -------------------------------------------------------------------------
+
+    public static Stage createModalStage(Parent root, String title, Stage owner) {
+        Stage modal = new Stage();
+        modal.initModality(Modality.APPLICATION_MODAL);
+        if (owner != null) {
+            modal.initOwner(owner);
+        }
+        modal.setTitle(title);
+        Scene scene = new Scene(root);
+        scene.setFill(Color.web("#0a0f1d"));
+        if (!STYLESHEET.isEmpty()) {
+            scene.getStylesheets().add(STYLESHEET);
+        }
+        modal.setScene(scene);
+        return modal;
+    }
+
+    public static void showSuccess(Stage owner, String title, String message) {
+        var loader = ViewLoader.<MessageDialogController>load("MessageDialog.fxml");
+        loader.controller().set("✓", title, message, false);
+        var modal = createModalStage(loader.root(), title, owner);
+        modal.showAndWait();
+    }
+
+    public static void showInformation(Stage owner, String title, String message) {
+        var loader = ViewLoader.<MessageDialogController>load("MessageDialog.fxml");
+        loader.controller().set("ℹ️", title, message, false);
+        var modal = createModalStage(loader.root(), title, owner);
+        modal.showAndWait();
+    }
+
+    public static void showError(Stage owner, String title, String message) {
+        var loader = ViewLoader.<MessageDialogController>load("MessageDialog.fxml");
+        loader.controller().set("⚠️", title, message, false);
+        var modal = createModalStage(loader.root(), title, owner);
+        modal.showAndWait();
+    }
+
+    public static boolean showConfirm(Stage owner, String title, String message) {
+        var loader = ViewLoader.<MessageDialogController>load("MessageDialog.fxml");
+        loader.controller().set("❓", title, message, true);
+        var modal = createModalStage(loader.root(), title, owner);
+        modal.showAndWait();
+        return loader.controller().isConfirmed();
+    }
+
     public static void alert(String title, String message, Alert.AlertType type) {
-        var alert = new Alert(type, message, ButtonType.OK);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.showAndWait();
+        String icon = switch (type) {
+            case INFORMATION -> "✓";
+            case WARNING -> "⚠️";
+            case ERROR -> "❌";
+            default -> "ℹ️";
+        };
+        var loader = ViewLoader.<MessageDialogController>load("MessageDialog.fxml");
+        loader.controller().set(icon, title, message, false);
+        var modal = createModalStage(loader.root(), title, null);
+        modal.showAndWait();
     }
 
     public static boolean confirm(String title, String message) {
-        var alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.CANCEL, ButtonType.OK);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        return alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
-    }
-
-    public static Region hSpacer() {
-        var r = new Region();
-        HBox.setHgrow(r, Priority.ALWAYS);
-        return r;
+        return showConfirm(null, title, message);
     }
 }

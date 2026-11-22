@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.AcademicQuestionsController">
+    <VBox spacing="14.0">
+        <padding>
+            <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
+        </padding>
+
+        <!-- Cabecera de Módulo -->
+        <VBox spacing="10.0">
+            <HBox alignment="CENTER_LEFT" spacing="16.0">
+                <VBox spacing="4.0">
+                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                        <Label styleClass="title" text="Preguntas y Soluciones Académicas (Q&amp;A)" />
+                        <Label styleClass="badge-admin" text="SISTEMA Q&amp;A" />
+                    </HBox>
+                    <Label styleClass="muted" text="Consulta dudas conceptuales, ejercicios y soluciones validadas de tus asignaturas." />
+                </VBox>
+                <Region HBox.hgrow="ALWAYS" />
+                <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                    <Button onAction="#onNewQuestion" styleClass="primary" text="+ Formular Nueva Pregunta" />
+                    <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar" />
+                </HBox>
+            </HBox>
+            <Separator />
+        </VBox>
+
+        <!-- Barra de Filtros -->
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label styleClass="field-label" text="Comunidad:" />
+            <ComboBox fx:id="commCombo" prefWidth="260.0" promptText="Selecciona una comunidad..." />
+            <Button fx:id="filterAllBtn" onAction="#onFilterAll" styleClass="tab-btn-active" text="Todas" />
+            <Button fx:id="filterOpenBtn" onAction="#onFilterOpen" styleClass="tab-btn" text="❓ Pendientes" />
+            <Button fx:id="filterResolvedBtn" onAction="#onFilterResolved" styleClass="tab-btn" text="✓ Resueltas" />
+            <Region HBox.hgrow="ALWAYS" />
+            <TextField fx:id="searchField" onAction="#onSearch" prefWidth="240.0" promptText="Buscar tema o palabra clave..." />
+        </HBox>
+
+        <Label fx:id="statusLabel" styleClass="muted" text="Cargando preguntas académicas…" />
+
+        <!-- Listado de Preguntas -->
+        <VBox fx:id="questionsListBox" spacing="12.0" />
+    </VBox>
+</ScrollPane>

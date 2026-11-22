@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefWidth="500.0" spacing="18.0" style="-fx-background-color: #0b1120; -fx-padding: 24; -fx-border-color: #1e293b; -fx-border-width: 1; -fx-border-radius: 8;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.JoinCommunityDialogController">
+    <!-- Encabezado Visual -->
+    <VBox spacing="4.0">
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label styleClass="brand" text="🔑" />
+            <Label styleClass="title" text="Unirse con Código" />
+        </HBox>
+        <Label styleClass="muted" text="Introduce el código alfanumérico emitido tras la aprobación de la comunidad." />
+        <Separator />
+    </VBox>
+
+    <!-- Tarjeta de Ingreso de Código -->
+    <VBox spacing="10.0" style="-fx-background-color: #161f30; -fx-padding: 18; -fx-background-radius: 8; -fx-border-color: #233148; -fx-border-radius: 8;">
+        <Label styleClass="field-label" text="CÓDIGO DE INVITACIÓN (Ej. CAMPUS9X2Z):" />
+        <TextField fx:id="codeField" onAction="#onJoin" promptText="EJ. CAMPUS9X2Z" style="-fx-font-family: 'Consolas', monospace; -fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #38bdf8; -fx-background-color: #0f172a; -fx-border-color: #38bdf8; -fx-border-radius: 6; -fx-padding: 10;" />
+        <Label fx:id="statusLabel" styleClass="muted" text="El código se formatea automáticamente en mayúsculas." wrapText="true" />
+    </VBox>
+
+    <!-- Reglas de Invitación -->
+    <VBox spacing="4.0" style="-fx-background-color: #0f172a; -fx-padding: 12; -fx-background-radius: 6; -fx-border-color: #1e293b; -fx-border-radius: 6;">
+        <Label style="-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #94a3b8;" text="ℹ️ Directrices de Invitaciones Campus:" />
+        <Label styleClass="muted" text="• Los códigos son generados criptográficamente y auditados en PostgreSQL." wrapText="true" />
+        <Label styleClass="muted" text="• Cuentan con un límite de 50 usos y una vigencia de 30 días." wrapText="true" />
+        <Label styleClass="muted" text="• Al unirte, accederás de inmediato como Miembro activo del espacio." wrapText="true" />
+    </VBox>
+
+    <!-- Botonera -->
+    <HBox alignment="CENTER_RIGHT" spacing="12.0">
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnCancel" onAction="#onCancel" styleClass="secondary" text="Cancelar" />
+        <Button fx:id="btnJoin" onAction="#onJoin" styleClass="primary" text="Unirme a la Comunidad" />
+    </HBox>
+</VBox>

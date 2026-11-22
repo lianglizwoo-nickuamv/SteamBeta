@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="6.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.MemberCardController">
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <Label fx:id="aliasLabel" styleClass="card-title" text="Estudiante" />
+        <Label fx:id="roleBadge" styleClass="badge-role" text="MEMBER" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Label fx:id="universityLabel" styleClass="muted" text="Universidad" />
+    </HBox>
+</VBox>

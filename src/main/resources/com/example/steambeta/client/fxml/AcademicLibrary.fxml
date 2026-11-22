@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="14.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.AcademicLibraryController">
+    <padding>
+        <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
+    </padding>
+
+    <!-- Cabecera de Módulo -->
+    <VBox spacing="10.0">
+        <HBox alignment="CENTER_LEFT" spacing="16.0">
+            <VBox spacing="4.0">
+                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                    <Label styleClass="title" text="Biblioteca Universitaria" />
+                    <Label styleClass="badge-admin" text="SISTEMA ACADÉMICO" />
+                </HBox>
+                <Label styleClass="muted" text="Materias matriculadas, actividades obligatorias y seguimiento académico." />
+            </VBox>
+            <Region HBox.hgrow="ALWAYS" />
+            <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar Biblioteca" />
+        </HBox>
+        <Separator />
+    </VBox>
+
+    <!-- Contenido en 2 Paneles: Asignaturas y Detalle de Progreso -->
+    <HBox spacing="16.0" VBox.vgrow="ALWAYS">
+        <!-- Panel Izquierdo: Lista de Materias -->
+        <VBox prefWidth="320.0" spacing="10.0">
+            <Label styleClass="section-title" text="Materias Matriculadas" />
+            <ListView fx:id="subjectsList" VBox.vgrow="ALWAYS" />
+            <Label fx:id="libraryStatus" styleClass="muted" text="Consultando matrícula institucional…" />
+        </VBox>
+
+        <!-- Panel Derecho: Detalle de Actividades -->
+        <ScrollPane fitToWidth="true" HBox.hgrow="ALWAYS">
+            <VBox fx:id="detailPane" spacing="14.0">
+                <padding>
+                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                </padding>
+
+                <!-- Estado o detalle vacío -->
+                <Label fx:id="detailStatusLabel" styleClass="muted" text="Selecciona una asignatura de la lista para ver sus actividades." />
+
+                <!-- Contenedor del contenido cargado -->
+                <VBox fx:id="detailContentBox" managed="false" spacing="12.0" visible="false">
+                    <Label fx:id="subjectCodeLabel" styleClass="subject-code" text="INF-101" />
+                    <Label fx:id="subjectNameLabel" styleClass="title" text="Nombre de la Asignatura" />
+                    <Label fx:id="subjectMetaLabel" styleClass="muted" text="Período: 2026-1 · Sección: 01" />
+
+                    <!-- Tarjeta de Progreso -->
+                    <VBox spacing="8.0" styleClass="card">
+                        <Label styleClass="section-title" text="Progreso de Actividades Obligatorias" />
+                        <Label fx:id="progressPercentLabel" styleClass="progress-number" text="0%" />
+                        <ProgressBar fx:id="progressBar" maxWidth="Infinity" progress="0.0" />
+                        <Label fx:id="progressCountsLabel" styleClass="muted" text="0 de 0 completadas" />
+                    </VBox>
+
+                    <Label styleClass="section-title" text="Listado de Actividades y Tareas" />
+                    <VBox fx:id="activitiesListBox" spacing="8.0" />
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </HBox>
+</VBox>

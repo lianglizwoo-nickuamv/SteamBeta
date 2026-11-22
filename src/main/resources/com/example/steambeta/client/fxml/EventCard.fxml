@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="6.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.EventCardController">
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <Label fx:id="typeBadge" styleClass="badge-role" text="EVENTO" />
+        <Label fx:id="commBadge" styleClass="tag-pill" text="Comunidad" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Label fx:id="dateLabel" style="-fx-font-size: 14px;" styleClass="progress-number" text="01/01/2026" />
+    </HBox>
+
+    <Label fx:id="titleLabel" styleClass="card-title" text="Título del examen o entrega" />
+    <Label fx:id="descLabel" styleClass="muted" text="Descripción o temario..." wrapText="true" />
+</VBox>

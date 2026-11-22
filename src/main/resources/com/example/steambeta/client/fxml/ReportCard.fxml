@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="8.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ReportCardController">
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <Label fx:id="reporterLabel" styleClass="card-title" text="Reportado por: Usuario" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Label fx:id="dateLabel" styleClass="muted" text="01/01/2026" />
+    </HBox>
+
+    <Label fx:id="reasonLabel" styleClass="field-label" text="Motivo del reporte" />
+    <Label fx:id="authorLabel" styleClass="muted" text="Autor del contenido original" />
+    <Label fx:id="contentLabel" styleClass="post-body" text="Contenido reportado..." wrapText="true" />
+
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <Button fx:id="hideBtn" onAction="#onHide" styleClass="danger-btn" text="Ocultar y Resolver" />
+        <Button fx:id="dismissBtn" onAction="#onDismiss" styleClass="secondary" text="Descartar Reporte" />
+    </HBox>
+</VBox>

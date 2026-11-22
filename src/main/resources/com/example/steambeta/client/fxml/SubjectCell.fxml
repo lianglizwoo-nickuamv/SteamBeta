@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="3.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.SubjectCellController">
+    <padding>
+        <Insets bottom="6.0" left="6.0" right="6.0" top="6.0" />
+    </padding>
+    <Label fx:id="codeLabel" styleClass="subject-code" text="INF-101" />
+    <Label fx:id="nameLabel" styleClass="subject-name" text="Nombre de la Asignatura" />
+    <Label fx:id="metaLabel" styleClass="muted" text="2026-1 / SEC-A" />
+</VBox>

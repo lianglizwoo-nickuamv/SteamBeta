@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="6.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.TaskCardController">
+    <HBox alignment="CENTER_LEFT" spacing="6.0">
+        <Label fx:id="priorityBadge" styleClass="badge-role" text="MEDIUM" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Label fx:id="dueLabel" styleClass="muted" text="Vence: 01/01" />
+    </HBox>
+
+    <Label fx:id="titleLabel" styleClass="field-label" text="Título de la entrega" wrapText="true" />
+    <Label fx:id="projectBadge" managed="false" styleClass="tag-pill" text="Proyecto" visible="false" />
+    <Label fx:id="descLabel" managed="false" styleClass="muted" text="Detalles de la consigna..." visible="false" wrapText="true" />
+
+    <HBox alignment="CENTER_LEFT" spacing="6.0">
+        <Button fx:id="btnProg" onAction="#onProgress" style="-fx-font-size: 10px; -fx-padding: 3 6;" styleClass="secondary" text="En proceso" />
+        <Button fx:id="btnComp" onAction="#onComplete" style="-fx-font-size: 10px; -fx-padding: 3 6;" styleClass="primary" text="✓ Completar" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnDel" onAction="#onDelete" style="-fx-font-size: 10px; -fx-padding: 3 6;" styleClass="danger-btn" text="✕" />
+    </HBox>
+</VBox>

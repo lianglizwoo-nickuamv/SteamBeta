@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="10.0" style="-fx-background-color: #161f30; -fx-padding: 16; -fx-background-radius: 8; -fx-border-color: #233148; -fx-border-radius: 8;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.CommunityOverviewCardController">
+    <!-- Encabezado con Nombre, Categoría y Visibilidad -->
+    <HBox alignment="CENTER_LEFT" spacing="12.0">
+        <Label fx:id="nameLabel" style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #f8fafc;" text="Nombre del Espacio Universitario" />
+        <Label fx:id="categoryBadge" styleClass="brand-badge" text="ACADEMICA" />
+        <Label fx:id="visibilityBadge" styleClass="badge-admin" text="PUBLIC" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Label fx:id="membershipBadge" styleClass="badge-approved" text="Miembro" />
+    </HBox>
+
+    <!-- Slug y Metadatos -->
+    <HBox alignment="CENTER_LEFT" spacing="12.0">
+        <HBox alignment="CENTER_LEFT" spacing="6.0">
+            <Label styleClass="muted" text="Identificador:" />
+            <Label fx:id="slugLabel" style="-fx-font-family: 'Consolas', monospace; -fx-text-fill: #38bdf8;" text="slug-comunidad" />
+        </HBox>
+        <Separator orientation="VERTICAL" />
+        <Label fx:id="membersLabel" styleClass="muted" text="👥 0 miembros registrados" />
+    </HBox>
+
+    <!-- Descripción del Espacio -->
+    <Label fx:id="descLabel" style="-fx-text-fill: #cbd5e1; -fx-font-size: 13px;" text="Descripción del espacio universitario..." wrapText="true" />
+
+    <!-- Barra Inferior de Acción -->
+    <HBox alignment="CENTER_RIGHT" spacing="10.0">
+        <Label fx:id="roleLabel" styleClass="muted" text="" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnDetails" onAction="#onDetails" styleClass="secondary" text="Consultar Espacio" />
+    </HBox>
+</VBox>

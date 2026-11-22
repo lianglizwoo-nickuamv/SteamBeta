@@ -1,11 +1,13 @@
 package com.example.steambeta.backend.community;
 
 import com.example.steambeta.backend.auth.AccountService;
+import java.security.SecureRandom;
 import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,8 +17,23 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class CommunityService {
+    private static final String CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+    public static String generateUniqueInvitationCode() {
+        StringBuilder sb = new StringBuilder(10);
+        for (int i = 0; i < 10; i++) {
+            sb.append(CODE_ALPHABET.charAt(SECURE_RANDOM.nextInt(CODE_ALPHABET.length())));
+        }
+        return sb.toString();
+    }
+
     // Entidades base existentes
-    public record Community(UUID id, String slug, String name, String description, String rules, String role) {}
+    public record Community(UUID id, String slug, String name, String description, String rules, String role, String initialInvitationCode) {
+        public Community(UUID id, String slug, String name, String description, String rules, String role) {
+            this(id, slug, name, description, rules, role, null);
+        }
+    }
     public record Post(UUID id, UUID communityId, UUID authorAccountId, String authorAlias, String title,
                        String body, Instant createdAt, String status, long commentCount) {}
     public record Page(List<Post> posts, Instant nextBeforeTime, UUID nextBeforeId) {}
@@ -207,20 +224,34 @@ public class CommunityService {
         String category = request.category() == null ? "ACADEMICA" : request.category().strip().toUpperCase(Locale.ROOT);
         String visibility = request.visibility() == null ? "PUBLIC" : request.visibility().strip().toUpperCase(Locale.ROOT);
 
-        return jdbc.queryForObject("select * from replica.create_community(?, ?, ?, ?, ?, ?, ?)",
+        Community created = jdbc.queryForObject(
+                "select * from replica.create_community(?::uuid, ?::text, ?::text, ?::text, ?::text, ?::text, ?::text)",
                 (rs, row) -> new Community(
                         rs.getObject("id", UUID.class),
                         rs.getString("slug"),
                         rs.getString("name"),
                         rs.getString("description"),
                         rs.getString("rules"),
-                        rs.getString("role")
+                        rs.getString("role"),
+                        null
                 ), accounts.current().accountId(), slug, name, description, rules, category, visibility);
+
+        String initialCode = null;
+        if ("INVITE_ONLY".equals(visibility) || "PRIVATE".equals(visibility)) {
+            initialCode = generateUniqueInvitationCode();
+            Timestamp expires = Timestamp.from(Instant.now().plus(30, ChronoUnit.DAYS));
+            jdbc.queryForObject(
+                    "select * from replica.create_community_invitation(?::uuid, ?::uuid, ?::text, ?::integer, ?::timestamptz)",
+                    (rs, row) -> rs.getString("code"),
+                    accounts.current().accountId(), created.id(), initialCode, 50, expires);
+        }
+
+        return new Community(created.id(), created.slug(), created.name(), created.description(), created.rules(), created.role(), initialCode);
     }
 
     @Transactional
     public List<CommunityOverview> exploreCommunities() {
-        return jdbc.query("select * from replica.explore_communities(?)", (rs, row) ->
+        return jdbc.query("select * from replica.explore_communities(?::uuid)", (rs, row) ->
                 new CommunityOverview(
                         rs.getObject("id", UUID.class),
                         rs.getString("slug"),
@@ -236,10 +267,25 @@ public class CommunityService {
 
     @Transactional
     public Invitation createInvitation(UUID communityId, InvitationDraft draft) {
-        if (draft == null || draft.code() == null) throw bad();
-        String code = draft.code().strip().toUpperCase(Locale.ROOT);
-        Timestamp expires = draft.expiresAt() == null ? null : Timestamp.from(draft.expiresAt());
-        return jdbc.queryForObject("select * from replica.create_community_invitation(?, ?, ?, ?, ?)",
+        String code;
+        Integer maxUses = 50;
+        Timestamp expires = Timestamp.from(Instant.now().plus(30, ChronoUnit.DAYS));
+
+        if (draft != null) {
+            code = (draft.code() != null && !draft.code().isBlank())
+                    ? draft.code().strip().toUpperCase(Locale.ROOT)
+                    : generateUniqueInvitationCode();
+            if (draft.maxUses() != null && draft.maxUses() > 0) {
+                maxUses = draft.maxUses();
+            }
+            if (draft.expiresAt() != null) {
+                expires = Timestamp.from(draft.expiresAt());
+            }
+        } else {
+            code = generateUniqueInvitationCode();
+        }
+
+        return jdbc.queryForObject("select * from replica.create_community_invitation(?::uuid, ?::uuid, ?::text, ?::integer, ?::timestamptz)",
                 (rs, row) -> new Invitation(
                         rs.getObject("id", UUID.class),
                         rs.getObject("community_id", UUID.class),
@@ -248,21 +294,22 @@ public class CommunityService {
                         rs.getInt("used_count"),
                         rs.getTimestamp("expires_at") == null ? null : rs.getTimestamp("expires_at").toInstant(),
                         rs.getTimestamp("created_at").toInstant()
-                ), accounts.current().accountId(), communityId, code, draft.maxUses(), expires);
+                ), accounts.current().accountId(), communityId, code, maxUses, expires);
     }
 
     @Transactional
     public Community joinByCode(JoinDraft draft) {
         if (draft == null || draft.code() == null) throw bad();
         String code = draft.code().strip().toUpperCase(Locale.ROOT);
-        return jdbc.queryForObject("select * from replica.join_community_by_code(?, ?)",
+        return jdbc.queryForObject("select * from replica.join_community_by_code(?::uuid, ?::text)",
                 (rs, row) -> new Community(
                         rs.getObject("community_id", UUID.class),
                         rs.getString("slug"),
                         rs.getString("name"),
                         rs.getString("description"),
                         "",
-                        rs.getString("role")
+                        rs.getString("role"),
+                        null
                 ), accounts.current().accountId(), code);
     }
 

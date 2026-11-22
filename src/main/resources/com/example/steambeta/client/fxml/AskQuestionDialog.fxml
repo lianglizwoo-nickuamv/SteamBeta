@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<DialogPane prefWidth="520.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.AskQuestionDialogController">
+    <header>
+        <VBox spacing="4.0">
+            <padding>
+                <Insets bottom="10.0" left="16.0" right="16.0" top="16.0" />
+            </padding>
+            <Label fx:id="headerTitle" styleClass="title" text="Formular Pregunta Académica" />
+            <Label fx:id="headerSubtitle" styleClass="muted" text="Publica tu duda para que otros compañeros o moderadores te ayuden." />
+            <Separator />
+        </VBox>
+    </header>
+    <content>
+        <VBox spacing="10.0">
+            <padding>
+                <Insets bottom="12.0" left="16.0" right="16.0" top="10.0" />
+            </padding>
+            <Label styleClass="field-label" text="Título claro y conciso de la duda:" />
+            <TextField fx:id="titleField" promptText="Ej. ¿Cómo plantear la integral por partes en este problema?" />
+
+            <Label styleClass="field-label" text="Asignatura o materia relacionada:" />
+            <TextField fx:id="subjectField" promptText="Ej. Cálculo II, Física Mecánica, Algoritmos..." />
+
+            <Label styleClass="field-label" text="Descripción detallada:" />
+            <TextArea fx:id="bodyArea" prefRowCount="5" promptText="Explica qué ejercicio estás haciendo, qué dudas tienes y qué has intentado..." wrapText="true" />
+        </VBox>
+    </content>
+    <buttonTypes>
+        <ButtonType fx:constant="OK" />
+        <ButtonType fx:constant="CANCEL" />
+    </buttonTypes>
+</DialogPane>

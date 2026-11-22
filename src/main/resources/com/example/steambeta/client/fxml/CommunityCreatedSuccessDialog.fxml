@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefWidth="540.0" spacing="16.0" style="-fx-background-color: #0b1120; -fx-padding: 24; -fx-border-color: #1e293b; -fx-border-width: 1; -fx-border-radius: 8;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.CommunityCreatedSuccessDialogController">
+    <!-- Encabezado con Icono y Título -->
+    <VBox spacing="4.0">
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label style="-fx-font-size: 24px;" text="🎉" />
+            <VBox spacing="2.0">
+                <Label styleClass="title" text="¡Comunidad Creada Exitosamente!" />
+                <Label styleClass="muted" text="Tu espacio universitario ya está disponible en SteamBeta Campus." />
+            </VBox>
+        </HBox>
+        <Separator />
+    </VBox>
+
+    <!-- Ficha de la Comunidad Creada -->
+    <VBox spacing="12.0" style="-fx-background-color: #161f30; -fx-padding: 16; -fx-background-radius: 8; -fx-border-color: #233148; -fx-border-radius: 8;">
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label fx:id="nameLabel" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #f8fafc;" text="Nombre de la Comunidad" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="categoryBadge" styleClass="brand-badge" text="ACADEMICA" />
+            <Label fx:id="visibilityBadge" styleClass="badge-admin" text="INVITE_ONLY" />
+        </HBox>
+
+        <Label fx:id="roleLabel" style="-fx-text-fill: #38bdf8; -fx-font-weight: bold;" text="Tu rol asignado: Administrador Local (ADMIN)" />
+
+        <Separator />
+
+        <!-- Bloque de Código de Invitación -->
+        <VBox fx:id="invitationBlock" spacing="8.0">
+            <Label styleClass="field-label" text="CÓDIGO DE INVITACIÓN INICIAL GENERADO:" />
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <TextField fx:id="codeField" editable="false" prefWidth="240.0" style="-fx-font-family: 'Consolas', monospace; -fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #38bdf8; -fx-alignment: CENTER;" text="CAMPUS1234" />
+                <Button fx:id="btnCopy" onAction="#onCopyCode" styleClass="primary" text="📋 Copiar Código" />
+            </HBox>
+            <Label styleClass="muted" text="• Válido durante 30 días para un máximo de 50 usos." />
+            <Label styleClass="muted" text="• Comparte este código con tus compañeros para que puedan unirse desde la pantalla principal." />
+        </VBox>
+    </VBox>
+
+    <!-- Botón de Cierre -->
+    <HBox alignment="CENTER_RIGHT" spacing="12.0">
+        <Region HBox.hgrow="ALWAYS" />
+        <Button onAction="#onClose" styleClass="primary" text="✓ Entrar al Espacio" />
+    </HBox>
+</VBox>

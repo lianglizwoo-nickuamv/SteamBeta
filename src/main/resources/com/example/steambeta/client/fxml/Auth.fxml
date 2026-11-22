@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane fitToHeight="true" fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.AuthController">
+    <StackPane alignment="CENTER">
+        <padding>
+            <Insets bottom="40.0" left="24.0" right="24.0" top="40.0" />
+        </padding>
+
+        <HBox alignment="CENTER" maxWidth="960.0" spacing="32.0">
+            <!-- Columna Izquierda: Introducción y Marca Institucional -->
+            <VBox fx:id="introCard" alignment="CENTER_LEFT" maxWidth="460.0" prefWidth="420.0" spacing="20.0" styleClass="auth-intro-card">
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <Label styleClass="brand" text="SteamBeta" />
+                    <Label styleClass="brand-badge" text="CAMPUS" />
+                </HBox>
+                <Label styleClass="display" text="Tu red universitaria&#10;y académica" />
+                <Label styleClass="muted" text="Conecta con comunidades de estudiantes, organiza tus tareas, resuelve dudas y colabora en proyectos académicos." wrapText="true" />
+                <VBox spacing="8.0">
+                    <Label styleClass="muted" text="• Persistencia centralizada en PostgreSQL (steam_academico)" wrapText="true" />
+                    <Label styleClass="muted" text="• Acceso seguro mediante identificador o correo registrado" wrapText="true" />
+                    <Label styleClass="muted" text="• Espacio colaborativo libre de barreras administrativas" wrapText="true" />
+                </VBox>
+            </VBox>
+
+            <!-- Columna Derecha: Tarjeta de Formulario Unificada -->
+            <VBox fx:id="formCard" alignment="CENTER_LEFT" maxWidth="480.0" prefWidth="440.0" spacing="14.0" styleClass="auth-card">
+                <!-- Panel de Inicio de Sesión -->
+                <VBox fx:id="loginPane" spacing="12.0">
+                    <Label styleClass="title" text="Bienvenido a SteamBeta Campus" />
+                    <Label styleClass="muted" text="Ingresa tus credenciales para acceder a la plataforma." />
+
+                    <Label styleClass="field-label" text="Identificador o correo electrónico" />
+                    <TextField fx:id="loginIdentifierField" promptText="Ej. sofia.m o sofia@universidad.edu" />
+
+                    <Label styleClass="field-label" text="Contraseña" />
+                    <HBox alignment="CENTER_LEFT" spacing="8.0">
+                        <StackPane HBox.hgrow="ALWAYS">
+                            <PasswordField fx:id="loginPasswordField" promptText="Tu contraseña institucional" />
+                            <TextField fx:id="loginPasswordVisField" managed="false" promptText="Tu contraseña institucional" visible="false" />
+                        </StackPane>
+                        <Button fx:id="toggleLoginPassBtn" onAction="#onToggleLoginPassword" styleClass="secondary" text="Ver" />
+                    </HBox>
+
+                    <Button fx:id="loginSubmitBtn" defaultButton="true" maxWidth="Infinity" onAction="#onLoginSubmit" styleClass="primary" text="Iniciar sesión" />
+                    <Button maxWidth="Infinity" onAction="#onShowRegister" styleClass="secondary" text="Crear cuenta de estudiante" />
+                </VBox>
+
+                <!-- Panel de Registro de Estudiante -->
+                <VBox fx:id="registerPane" managed="false" spacing="12.0" visible="false">
+                    <Label styleClass="title" text="Registro de Estudiante" />
+                    <Label styleClass="muted" text="Completa estos datos para activar tu cuenta en SteamBeta Campus." />
+
+                    <Label styleClass="field-label" text="1. Nombre o alias público" />
+                    <TextField fx:id="regAliasField" promptText="Tu nombre visible (ej. Sofía Martínez)" />
+
+                    <Label styleClass="field-label" text="2. Identificador de acceso único" />
+                    <TextField fx:id="regLoginField" promptText="Identificador (ej. sofia.m)" />
+
+                    <Label styleClass="field-label" text="3. Correo electrónico" />
+                    <TextField fx:id="regEmailField" promptText="Correo (ej. sofia@universidad.edu)" />
+
+                    <Label styleClass="field-label" text="4. Contraseña segura" />
+                    <StackPane>
+                        <PasswordField fx:id="regPasswordField" promptText="Mínimo 12 caracteres" />
+                        <TextField fx:id="regPasswordVisField" managed="false" promptText="Mínimo 12 caracteres" visible="false" />
+                    </StackPane>
+
+                    <Label styleClass="field-label" text="5. Confirmar contraseña" />
+                    <StackPane>
+                        <PasswordField fx:id="regConfirmField" promptText="Repite tu contraseña" />
+                        <TextField fx:id="regConfirmVisField" managed="false" promptText="Repite tu contraseña" visible="false" />
+                    </StackPane>
+
+                    <Button onAction="#onToggleRegPasswords" styleClass="secondary" text="Ver / Ocultar contraseñas" />
+
+                    <!-- Indicadores en tiempo real -->
+                    <VBox spacing="4.0">
+                        <Label fx:id="hintLength" styleClass="hint-neutral" text="• Mínimo 12 caracteres" />
+                        <Label fx:id="hintMatch" styleClass="hint-neutral" text="• Las contraseñas deben coincidir" />
+                        <Label fx:id="hintBytes" styleClass="hint-neutral" text="• Máximo 72 bytes de longitud" />
+                        <Label fx:id="hintEmail" styleClass="hint-neutral" text="• Correo con formato válido (@)" />
+                    </VBox>
+
+                    <!-- Tarjeta informativa de privacidad -->
+                    <VBox spacing="4.0" styleClass="card">
+                        <Label styleClass="card-title" text="Tu privacidad académica" />
+                        <Label styleClass="muted" text="Tu correo electrónico permanecerá confidencial en PostgreSQL." wrapText="true" />
+                    </VBox>
+
+                    <Button fx:id="registerSubmitBtn" defaultButton="true" maxWidth="Infinity" onAction="#onRegisterSubmit" styleClass="primary" text="Crear mi cuenta en SteamBeta" />
+                    <Button maxWidth="Infinity" onAction="#onShowLogin" styleClass="secondary" text="Ya tengo una cuenta: Volver al inicio" />
+                </VBox>
+
+                <!-- Barra de estado y progreso -->
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <ProgressIndicator fx:id="busyIndicator" managed="false" prefHeight="22.0" prefWidth="22.0" visible="false" />
+                    <Label fx:id="statusLabel" wrapText="true" />
+                </HBox>
+            </VBox>
+        </HBox>
+    </StackPane>
+</ScrollPane>

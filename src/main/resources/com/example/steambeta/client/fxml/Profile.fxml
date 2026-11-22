@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ProfileController">
+    <VBox fx:id="profileContainer" spacing="16.0">
+        <padding>
+            <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
+        </padding>
+
+        <!-- Cabecera de Módulo -->
+        <VBox spacing="10.0">
+            <HBox alignment="CENTER_LEFT" spacing="16.0">
+                <VBox spacing="4.0">
+                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                        <Label styleClass="title" text="Mi Perfil Estudiantil" />
+                        <Label styleClass="badge-admin" text="IDENTIDAD ACADÉMICA" />
+                    </HBox>
+                    <Label styleClass="muted" text="Gestiona tu información personal, correo privado, universidad y biografía." />
+                </VBox>
+                <Region HBox.hgrow="ALWAYS" />
+                <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                    <Button onAction="#onEditProfile" styleClass="primary" text="✏️ Editar Mi Información" />
+                    <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar" />
+                </HBox>
+            </HBox>
+            <Separator />
+        </VBox>
+
+        <!-- Estado / Carga -->
+        <Label fx:id="statusLabel" managed="false" styleClass="muted" text="Cargando tu perfil estudiantil desde PostgreSQL…" visible="false" />
+
+        <!-- Tarjeta 1: Identidad y Avatar -->
+        <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="card">
+            <StackPane fx:id="avatarCircle" prefHeight="72.0" prefWidth="72.0" style="-fx-background-color: #0f172a; -fx-background-radius: 36; -fx-border-color: #38bdf8; -fx-border-radius: 36; -fx-border-width: 2.5;">
+                <Label fx:id="avatarInitials" styleClass="progress-number" text="ST" />
+            </StackPane>
+            <VBox spacing="6.0">
+                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                    <Label fx:id="aliasLabel" styleClass="title" text="Estudiante" />
+                    <Label fx:id="handleLabel" style="-fx-font-weight: bold; -fx-text-fill: #38bdf8;" styleClass="muted" text="@estudiante" />
+                    <Label fx:id="roleBadge" styleClass="badge-role" text="USER" />
+                </HBox>
+                <Label styleClass="muted" text="Perfil académico en SteamBeta Campus" />
+            </VBox>
+        </HBox>
+
+        <!-- Tarjeta 2: Acceso y Correo Privado -->
+        <VBox spacing="10.0" styleClass="card">
+            <Label styleClass="section-title" text="Identidad de Acceso y Contacto" />
+            <HBox alignment="CENTER_LEFT" spacing="12.0">
+                <Label styleClass="field-label" text="Correo electrónico:" />
+                <Label fx:id="emailLabel" styleClass="card-title" text="cargando..." />
+                <Label fx:id="emailTag" styleClass="brand-badge" text="🔒 Correo privado" />
+            </HBox>
+            <Label styleClass="muted" text="Tu correo se mantiene confidencial de manera predeterminada. Puedes cambiar su visibilidad al editar tu perfil." />
+        </VBox>
+
+        <!-- Tarjeta 3: Trayectoria Universitaria -->
+        <VBox spacing="10.0" styleClass="card">
+            <Label styleClass="section-title" text="Trayectoria Universitaria" />
+            <VBox spacing="6.0">
+                <HBox spacing="10.0">
+                    <Label styleClass="field-label" text="Universidad:" />
+                    <Label fx:id="universityLabel" styleClass="post-body" text="No declarada" />
+                </HBox>
+                <HBox spacing="10.0">
+                    <Label styleClass="field-label" text="Carrera:" />
+                    <Label fx:id="careerLabel" styleClass="post-body" text="No declarada" />
+                </HBox>
+                <HBox spacing="10.0">
+                    <Label styleClass="field-label" text="Semestre actual:" />
+                    <Label fx:id="semesterLabel" styleClass="post-body" text="No especificado" />
+                </HBox>
+            </VBox>
+            <Label styleClass="muted" text="Información académica declarada por el estudiante · Sin verificación institucional." />
+        </VBox>
+
+        <!-- Tarjeta 4: Biografía -->
+        <VBox spacing="10.0" styleClass="card">
+            <Label styleClass="section-title" text="Biografía Académica" />
+            <Label fx:id="bioLabel" styleClass="post-body" text="Aún no has escrito una biografía..." wrapText="true" />
+        </VBox>
+    </VBox>
+</ScrollPane>

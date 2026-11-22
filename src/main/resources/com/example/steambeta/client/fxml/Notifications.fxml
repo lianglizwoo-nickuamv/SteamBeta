@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.NotificationCenterController">
+    <VBox spacing="14.0">
+        <padding>
+            <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
+        </padding>
+
+        <!-- Cabecera de Módulo -->
+        <VBox spacing="10.0">
+            <HBox alignment="CENTER_LEFT" spacing="16.0">
+                <VBox spacing="4.0">
+                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                        <Label styleClass="title" text="Centro de Notificaciones" />
+                        <Label styleClass="badge-admin" text="AVISOS CAMPUS" />
+                    </HBox>
+                    <Label styleClass="muted" text="Avisos, menciones y novedades de tus comunidades y proyectos académicos." />
+                </VBox>
+                <Region HBox.hgrow="ALWAYS" />
+                <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar Avisos" />
+            </HBox>
+            <Separator />
+        </VBox>
+
+        <!-- Filtros -->
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label styleClass="field-label" text="Mostrar:" />
+            <Button fx:id="filterAllBtn" onAction="#onFilterAll" styleClass="tab-btn-active" text="Todas" />
+            <Button fx:id="filterUnreadBtn" onAction="#onFilterUnread" styleClass="tab-btn" text="No leídas" />
+        </HBox>
+
+        <Label fx:id="statusLabel" styleClass="muted" text="Cargando notificaciones…" />
+
+        <!-- Listado de Avisos -->
+        <VBox fx:id="notifsListBox" spacing="10.0" />
+    </VBox>
+</ScrollPane>

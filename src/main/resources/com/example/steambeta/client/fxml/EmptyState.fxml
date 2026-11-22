@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="CENTER" spacing="12.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.EmptyStateController">
+    <padding>
+        <Insets bottom="40.0" left="24.0" right="24.0" top="40.0" />
+    </padding>
+    <Label fx:id="iconLabel" style="-fx-font-size: 40px;" styleClass="display" text="📭" />
+    <Label fx:id="titleLabel" styleClass="card-title" text="Sin contenido" />
+    <Label fx:id="subtitleLabel" alignment="CENTER" styleClass="muted" text="No hay elementos para mostrar en esta sección." textAlignment="CENTER" wrapText="true" />
+    <Button fx:id="actionBtn" managed="false" styleClass="primary" visible="false" />
+</VBox>

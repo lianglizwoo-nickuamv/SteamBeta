@@ -23,14 +23,25 @@ public class LibraryService {
                 r.getRequiredCount(),r.getCompletedCount(),r.getProgressPercent());
     }
     public List<LibraryDtos.SubjectSummary> library() {
-        return transactions.execute(()->repository.library().stream().map(this::dto).toList());
+        try {
+            return transactions.execute(()->repository.library().stream().map(this::dto).toList());
+        } catch (Exception ex) {
+            // Usuario independiente de SteamBeta Campus sin matrícula institucional vinculada
+            return Collections.emptyList();
+        }
     }
     public LibraryDtos.Detail detail(UUID offeringId) {
-        return transactions.execute(()->{
-            var summary=repository.summary(offeringId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
-            var activities=repository.activities(offeringId).stream().map(a->new LibraryDtos.Activity(
-                    a.getActivityId(),a.getCode(),a.getName(),a.getRequired(),a.getCompleted())).toList();
-            return new LibraryDtos.Detail(dto(summary),activities);
-        });
+        try {
+            return transactions.execute(()->{
+                var summary=repository.summary(offeringId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
+                var activities=repository.activities(offeringId).stream().map(a->new LibraryDtos.Activity(
+                        a.getActivityId(),a.getCode(),a.getName(),a.getRequired(),a.getCompleted())).toList();
+                return new LibraryDtos.Detail(dto(summary),activities);
+            });
+        } catch (ResponseStatusException rse) {
+            throw rse;
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "offering_not_found");
+        }
     }
 }

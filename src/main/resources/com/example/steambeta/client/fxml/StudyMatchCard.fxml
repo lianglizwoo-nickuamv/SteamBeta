@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="6.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.StudyMatchCardController">
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <Label fx:id="aliasLabel" styleClass="card-title" text="Alias del estudiante" />
+        <Label fx:id="careerBadge" styleClass="badge-role" text="Carrera" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Label fx:id="availBadge" styleClass="tag-pill" text="Disponibilidad: Tardes" />
+    </HBox>
+
+    <Label fx:id="subjectsLabel" styleClass="field-label" text="Materias: Álgebra, Cálculo" />
+    <Label fx:id="helpLabel" styleClass="muted" text="Ofrece apoyo en: Varios temas..." wrapText="true" />
+</VBox>

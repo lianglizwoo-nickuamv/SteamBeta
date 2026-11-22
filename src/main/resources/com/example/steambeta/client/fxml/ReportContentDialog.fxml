@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefWidth="500.0" spacing="16.0"
+      style="-fx-background-color: #0b1120; -fx-padding: 24; -fx-border-color: #1e293b; -fx-border-width: 1; -fx-border-radius: 8;"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.steambeta.client.ui.ReportContentDialogController">
+
+    <!-- Encabezado -->
+    <VBox spacing="4.0">
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label styleClass="brand" text="⚠️" />
+            <VBox spacing="2.0">
+                <Label fx:id="headerLabel" styleClass="title" text="Reportar Contenido" />
+                <Label styleClass="muted" text="El reporte será enviado a los moderadores de la comunidad para revisión." />
+            </VBox>
+        </HBox>
+        <Separator />
+    </VBox>
+
+    <!-- Formulario -->
+    <VBox spacing="10.0" style="-fx-background-color: #161f30; -fx-padding: 18; -fx-background-radius: 8; -fx-border-color: #233148; -fx-border-radius: 8;">
+        <Label styleClass="field-label" text="MOTIVO DEL REPORTE (3–1000 caracteres):" />
+        <TextArea fx:id="reasonArea" prefRowCount="4"
+                  promptText="Describe por qué consideras que este contenido es inapropiado, incorrecto o viola las normas de la comunidad..."
+                  wrapText="true" />
+        <Label fx:id="errorLabel" style="-fx-text-fill: #f87171; -fx-font-weight: bold;" text="" visible="false" wrapText="true" />
+    </VBox>
+
+    <!-- Botones -->
+    <HBox alignment="CENTER_RIGHT" spacing="12.0">
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnCancel" onAction="#onCancel" styleClass="secondary" text="Cancelar" />
+        <Button fx:id="btnSubmit" onAction="#onSubmit" styleClass="primary" text="Enviar Reporte" />
+    </HBox>
+</VBox>

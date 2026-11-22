@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ExchangeController">
+    <VBox spacing="14.0">
+        <padding>
+            <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
+        </padding>
+
+        <!-- Cabecera de Módulo -->
+        <VBox spacing="10.0">
+            <HBox alignment="CENTER_LEFT" spacing="16.0">
+                <VBox spacing="4.0">
+                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                        <Label styleClass="title" text="🔄 Intercambio Universitario de Materiales" />
+                        <Label styleClass="badge-admin" text="TRUEQUE SOLIDARIO" />
+                    </HBox>
+                    <Label styleClass="muted" text="Comparte libros de texto, calculadoras, guías o material académico sin transacciones monetarias." />
+                </VBox>
+                <Region HBox.hgrow="ALWAYS" />
+                <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                    <Button onAction="#onPublish" styleClass="primary" text="+ Publicar Material o Libro" />
+                    <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar" />
+                </HBox>
+            </HBox>
+            <Separator />
+        </VBox>
+
+        <!-- Filtros por categoría -->
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label styleClass="field-label" text="Categoría:" />
+            <Button fx:id="filterAllBtn" onAction="#onFilterAll" styleClass="tab-btn-active" text="Todos" />
+            <Button fx:id="filterBooksBtn" onAction="#onFilterBooks" styleClass="tab-btn" text="📖 Libros" />
+            <Button fx:id="filterToolsBtn" onAction="#onFilterTools" styleClass="tab-btn" text="📐 Herramientas" />
+            <Button fx:id="filterNotesBtn" onAction="#onFilterNotes" styleClass="tab-btn" text="📝 Apuntes" />
+        </HBox>
+
+        <!-- Listado de Materiales -->
+        <VBox fx:id="exchangeListBox" spacing="12.0" />
+    </VBox>
+</ScrollPane>
