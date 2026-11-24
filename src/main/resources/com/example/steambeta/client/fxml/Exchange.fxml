@@ -29,13 +29,15 @@
             <Separator />
         </VBox>
 
-        <!-- Filtros por categoría -->
+        <!-- Filtros por categoría y autor -->
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <Label styleClass="field-label" text="Categoría:" />
             <Button fx:id="filterAllBtn" onAction="#onFilterAll" styleClass="tab-btn-active" text="Todos" />
             <Button fx:id="filterBooksBtn" onAction="#onFilterBooks" styleClass="tab-btn" text="Libros" />
             <Button fx:id="filterToolsBtn" onAction="#onFilterTools" styleClass="tab-btn" text="Herramientas" />
             <Button fx:id="filterNotesBtn" onAction="#onFilterNotes" styleClass="tab-btn" text="Apuntes" />
+            <Separator orientation="VERTICAL" />
+            <Button fx:id="filterMyPostsBtn" onAction="#onFilterMyPosts" styleClass="tab-btn" text="Mis Publicaciones" />
         </HBox>
 
         <!-- Listado de Materiales -->

@@ -1,8 +1,8 @@
 package com.example.steambeta.backend.task;
 
 import com.example.steambeta.backend.auth.AccountService;
-import java.time.Instant;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -32,14 +32,18 @@ public class AcademicTaskService {
             String title,
             String description,
             String priority,
-            Instant dueDate,
+            String dueDateIso,
             String projectName
     ) {}
 
     public record TaskUpdate(
+            String title,
+            String description,
             String status,
             String priority,
-            Instant dueDate
+            String dueDateIso,
+            String projectName,
+            Boolean clearDueDate
     ) {}
 
     private final JdbcTemplate jdbc;
@@ -50,70 +54,77 @@ public class AcademicTaskService {
         this.accounts = accounts;
     }
 
-    public List<TaskItem> myTasks(String statusFilter) {
+    public List<TaskItem> myTasks(String statusFilter, String priorityFilter) {
         UUID accountId = accounts.current().accountId();
-        String sql = "select id, account_id, community_id, title, description, status, priority, due_date, project_name, created_at " +
-                "from replica.academic_task where account_id = ? " +
-                (statusFilter != null && !statusFilter.isBlank() ? "and status = ? " : "") +
-                "order by due_date asc nulls last, created_at desc";
-        try {
-            if (statusFilter != null && !statusFilter.isBlank()) {
-                return jdbc.query(sql, (rs, row) -> mapTask(rs), accountId, statusFilter.strip().toUpperCase(Locale.ROOT));
-            } else {
-                return jdbc.query(sql, (rs, row) -> mapTask(rs), accountId);
-            }
-        } catch (Exception ex) {
-            return List.of();
-        }
+        String status = statusFilter == null || statusFilter.isBlank() ? null : statusFilter.strip().toUpperCase(Locale.ROOT);
+        String priority = priorityFilter == null || priorityFilter.isBlank() ? null : priorityFilter.strip().toUpperCase(Locale.ROOT);
+        return jdbc.query(
+                "select * from replica.my_academic_tasks_v15(?::uuid, ?::text, ?::text)",
+                (rs, row) -> mapTask(rs),
+                accountId, status, priority
+        );
     }
 
     @Transactional
     public TaskItem createTask(TaskDraft draft) {
         if (draft == null || draft.title() == null || draft.title().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_title");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El título de la tarea es obligatorio.");
         }
         UUID accountId = accounts.current().accountId();
         String priority = draft.priority() == null ? "MEDIUM" : draft.priority().strip().toUpperCase(Locale.ROOT);
-        Timestamp due = draft.dueDate() == null ? null : Timestamp.from(draft.dueDate());
+        Timestamp due = parseIsoTimestamp(draft.dueDateIso());
 
-        UUID newId = UUID.randomUUID();
-        try {
-            jdbc.update("insert into replica.academic_task(id, account_id, community_id, title, description, status, priority, due_date, project_name) " +
-                    "values (?, ?, ?, ?, ?, 'PENDING', ?, ?, ?)",
-                    newId, accountId, draft.communityId(), draft.title().strip(), draft.description(),
-                    priority, due, draft.projectName());
-
-            return new TaskItem(newId, accountId, draft.communityId(), draft.title().strip(),
-                    draft.description(), "PENDING", priority, draft.dueDate(), draft.projectName(), Instant.now());
-        } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "could_not_create_task");
-        }
+        return jdbc.queryForObject(
+                "select * from replica.create_academic_task_v15(?::uuid, ?::text, ?::text, ?::text, ?::timestamptz, ?::text)",
+                (rs, row) -> mapTask(rs),
+                accountId, draft.title().strip(), draft.description(), priority, due, draft.projectName()
+        );
     }
 
     @Transactional
-    public void updateTask(UUID taskId, TaskUpdate update) {
-        if (update == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "empty_update");
+    public TaskItem updateTask(UUID taskId, TaskUpdate update) {
+        if (update == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Los datos de actualización están vacíos.");
+        }
         UUID accountId = accounts.current().accountId();
-        Timestamp due = update.dueDate() == null ? null : Timestamp.from(update.dueDate());
+        Timestamp due = parseIsoTimestamp(update.dueDateIso());
+        boolean clearDue = Boolean.TRUE.equals(update.clearDueDate());
 
-        jdbc.update("update replica.academic_task set status = coalesce(?, status), priority = coalesce(?, priority), " +
-                "due_date = coalesce(?, due_date), updated_at = clock_timestamp() where id = ? and account_id = ?",
+        return jdbc.queryForObject(
+                "select * from replica.update_academic_task_v15(?::uuid, ?::uuid, ?::text, ?::text, ?::text, ?::text, ?::timestamptz, ?::text, ?::boolean)",
+                (rs, row) -> mapTask(rs),
+                accountId,
+                taskId,
+                update.title(),
+                update.description(),
                 update.status() == null ? null : update.status().strip().toUpperCase(Locale.ROOT),
                 update.priority() == null ? null : update.priority().strip().toUpperCase(Locale.ROOT),
-                due, taskId, accountId);
+                due,
+                update.projectName(),
+                clearDue
+        );
     }
 
     @Transactional
     public void deleteTask(UUID taskId) {
         UUID accountId = accounts.current().accountId();
-        jdbc.update("delete from replica.academic_task where id = ? and account_id = ?", taskId, accountId);
+        jdbc.query("select replica.delete_academic_task_v15(?::uuid, ?::uuid)", rs -> null, accountId, taskId);
+    }
+
+    private static Timestamp parseIsoTimestamp(String iso) {
+        if (iso == null || iso.isBlank()) return null;
+        try {
+            return Timestamp.from(Instant.parse(iso.strip()));
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Formato de fecha inválido.", ex);
+        }
     }
 
     private static TaskItem mapTask(java.sql.ResultSet rs) throws java.sql.SQLException {
         return new TaskItem(
                 rs.getObject("id", UUID.class),
                 rs.getObject("account_id", UUID.class),
-                rs.getObject("community_id", UUID.class),
+                null,
                 rs.getString("title"),
                 rs.getString("description"),
                 rs.getString("status"),

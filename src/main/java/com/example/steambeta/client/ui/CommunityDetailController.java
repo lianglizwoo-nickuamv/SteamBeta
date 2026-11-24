@@ -35,6 +35,8 @@ public final class CommunityDetailController {
     @FXML private Button btnCalendar;
     @FXML private Button btnMembers;
     @FXML private Button btnModeration;
+    @FXML private Button btnNewResource;
+    @FXML private Button btnNewCalendarEvent;
 
     @FXML private Label tabStatusLabel;
     @FXML private VBox tabContentPane;
@@ -48,7 +50,6 @@ public final class CommunityDetailController {
     private ExecutorService workers;
     private ApiClient.Community community;
     private CommunityDetailNavigationListener navigation;
-    private String activeTab = "POSTS";
 
     public void init(ApiClient.Community community, ApiClient api, SessionScope scope,
                      ExecutorService workers, CommunityDetailNavigationListener navigation) {
@@ -82,7 +83,6 @@ public final class CommunityDetailController {
     }
 
     private void switchTab(String tab) {
-        this.activeTab = tab;
         tabContentPane.getChildren().clear();
 
         // Actualizar estilos activos de pestañas
@@ -101,6 +101,18 @@ public final class CommunityDetailController {
         boolean showComposer = "POSTS".equals(tab);
         bottomComposer.setVisible(showComposer);
         bottomComposer.setManaged(showComposer);
+
+        boolean isCalendar = "CALENDAR".equals(tab);
+        if (btnNewCalendarEvent != null) {
+            btnNewCalendarEvent.setVisible(isCalendar);
+            btnNewCalendarEvent.setManaged(isCalendar);
+        }
+
+        boolean isResources = "RESOURCES".equals(tab);
+        if (btnNewResource != null) {
+            btnNewResource.setVisible(isResources);
+            btnNewResource.setManaged(isResources);
+        }
 
         switch (tab) {
             case "POSTS" -> loadPostsTab();
@@ -219,7 +231,7 @@ public final class CommunityDetailController {
                     if (items.isEmpty()) {
                         var empty = ViewLoader.<EmptyStateController>load("EmptyState.fxml");
                         empty.controller().set("📚", "Sin archivos o enlaces de recursos",
-                                "Aquí se comparten guías, libros recomendados y material de apoyo.", null, null);
+                                "Aquí se comparten guías, libros recomendados y material de apoyo.", "+ Publicar Recurso", this::onNewCommunityResource);
                         tabContentPane.getChildren().add(empty.root());
                     } else {
                         for (var r : items) {
@@ -262,7 +274,7 @@ public final class CommunityDetailController {
                     if (events.isEmpty()) {
                         var empty = ViewLoader.<EmptyStateController>load("EmptyState.fxml");
                         empty.controller().set("📅", "No hay eventos programados",
-                                "No se registran exámenes ni entregas próximas en esta comunidad.", null, null);
+                                "No se registran exámenes ni entregas próximas en esta comunidad.", "+ Crear Evento", this::onNewCommunityEvent);
                         tabContentPane.getChildren().add(empty.root());
                     } else {
                         for (var ev : events) {
@@ -277,10 +289,34 @@ public final class CommunityDetailController {
                     if (!scope.current(epoch)) return;
                     tabStatusLabel.setVisible(true);
                     tabStatusLabel.setManaged(true);
-                    tabStatusLabel.setText("Error al cargar eventos.");
+                    tabStatusLabel.setText("Error al cargar eventos: " + (e.getMessage() != null ? e.getMessage() : ""));
                 });
             }
         });
+    }
+
+    @FXML
+    private void onNewCommunityResource() {
+        Stage owner = tabContentPane.getScene() != null ? (Stage) tabContentPane.getScene().getWindow() : null;
+        var loader = ViewLoader.<PublishResourceDialogController>load("PublishResourceDialog.fxml");
+        var modal = UiHelper.createModalStage(loader.root(), "Publicar Recurso en " + community.name(), owner);
+        loader.controller().init(api, workers, community, item -> {
+            loadResourcesTab();
+            UiHelper.showSuccess(owner, "Recurso Publicado", "'" + item.title() + "' fue añadido a la biblioteca de la comunidad.");
+        });
+        modal.showAndWait();
+    }
+
+    @FXML
+    private void onNewCommunityEvent() {
+        Stage owner = tabContentPane.getScene() != null ? (Stage) tabContentPane.getScene().getWindow() : null;
+        var loader = ViewLoader.<CreateEventDialogController>load("CreateEventDialog.fxml");
+        var modal = UiHelper.createModalStage(loader.root(), "Nuevo Evento en " + community.name(), owner);
+        loader.controller().init(api, workers, List.of(community), community, event -> {
+            loadCalendarTab();
+            UiHelper.showSuccess(owner, "Evento Programado", "'" + event.title() + "' ha sido programado en la comunidad.");
+        });
+        modal.showAndWait();
     }
 
     // =========================================================================
@@ -304,7 +340,7 @@ public final class CommunityDetailController {
 
                     boolean isAdmin = "ADMIN".equals(community.role());
                     var headerView = ViewLoader.<CommunityMembersHeaderController>load("CommunityMembersHeader.fxml");
-                    headerView.controller().set(members.size(), isAdmin, this::generateInviteCode);
+                    headerView.controller().set(members.size(), community.maxMembers(), isAdmin, this::generateInviteCode);
                     tabContentPane.getChildren().add(headerView.root());
 
                     for (var m : members) {
@@ -372,7 +408,9 @@ public final class CommunityDetailController {
                 Platform.runLater(() -> {
                     composerTitleField.setDisable(false);
                     composerBodyArea.setDisable(false);
-                    composerStatus.setText("Error al publicar en el servidor.");
+                    String msg = ex.getMessage() != null && !ex.getMessage().isBlank()
+                            ? ex.getMessage() : "Error al publicar en el servidor.";
+                    composerStatus.setText("No se pudo publicar: " + msg);
                 });
             }
         });

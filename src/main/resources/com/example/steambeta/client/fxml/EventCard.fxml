@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="6.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.EventCardController">
+<VBox onMouseClicked="#onCardClicked" spacing="6.0" style="-fx-cursor: hand;" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.EventCardController">
     <HBox alignment="CENTER_LEFT" spacing="10.0">
         <Label fx:id="typeBadge" styleClass="badge-role" text="EVENTO" />
         <Label fx:id="commBadge" styleClass="tag-pill" text="Comunidad" />

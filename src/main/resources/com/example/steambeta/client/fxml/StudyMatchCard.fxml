@@ -7,10 +7,19 @@
     <HBox alignment="CENTER_LEFT" spacing="10.0">
         <Label fx:id="aliasLabel" styleClass="card-title" text="Alias del estudiante" />
         <Label fx:id="careerBadge" styleClass="badge-role" text="Carrera" />
+        <Label fx:id="visibilityBadge" managed="false" styleClass="badge-resolved" text="Visible" visible="false" />
         <Region HBox.hgrow="ALWAYS" />
         <Label fx:id="availBadge" styleClass="tag-pill" text="Disponibilidad: Tardes" />
     </HBox>
 
-    <Label fx:id="subjectsLabel" styleClass="field-label" text="Materias: Álgebra, Cálculo" />
+    <Label fx:id="subjectsLabel" styleClass="field-label" text="Materias: Álgebra, Cálculo" wrapText="true" />
+    <Label fx:id="interestsLabel" managed="false" styleClass="muted" text="" visible="false" wrapText="true" />
     <Label fx:id="helpLabel" styleClass="muted" text="Ofrece apoyo en: Varios temas..." wrapText="true" />
+    <Label fx:id="needsHelpLabel" managed="false" styleClass="muted" text="" visible="false" wrapText="true" />
+
+    <HBox fx:id="actionsBox" alignment="CENTER_RIGHT" managed="false" spacing="8.0" visible="false">
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnViewProfile" onAction="#onViewProfile" styleClass="secondary" text="Ver ficha" />
+        <Button fx:id="btnContact" onAction="#onContact" styleClass="primary" text="Contactar" />
+    </HBox>
 </VBox>

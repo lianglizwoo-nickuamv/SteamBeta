@@ -18,6 +18,7 @@
             <Label fx:id="connectionBadge" styleClass="badge-resolved" text="● Conectado: steam_academico" />
             <Region HBox.hgrow="ALWAYS" />
             <TextField fx:id="searchField" onAction="#onSearchAction" prefWidth="300.0" promptText="Buscar en el campus (comunidades, dudas, apuntes)..." styleClass="input" />
+            <Button fx:id="helpBtn" onAction="#onHelpClicked" styleClass="secondary" text="Ayuda" />
             <Button fx:id="notifBtn" onAction="#onNotificationsClicked" styleClass="secondary" text="Avisos" />
             <Button fx:id="profileBtn" onAction="#onProfileClicked" styleClass="secondary" text="Mi Perfil" />
             <Button fx:id="logoutBtn" onAction="#onLogoutClicked" styleClass="secondary" text="Cerrar sesión" />
@@ -34,24 +35,23 @@
 
                 <!-- Categoría: Académico -->
                 <Label styleClass="nav-category-label" text="ACADÉMICO" />
-                <Button fx:id="navHome" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavHome" styleClass="nav-item" text="■  Inicio" />
-                <Button fx:id="navCommunities" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavCommunities" styleClass="nav-item" text="●  Comunidades" />
-                <Button fx:id="navQuestions" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavQuestions" styleClass="nav-item" text="?  Preguntas Académicas" />
-                <Button fx:id="navLibrary" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavLibrary" styleClass="nav-item" text="≡  Biblioteca Univ." />
-                <Button fx:id="navCalendar" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavCalendar" styleClass="nav-item" text="▲  Calendario" />
+                <Button fx:id="navHome" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavHome" styleClass="nav-item" text="  Inicio" />
+                <Button fx:id="navCommunities" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavCommunities" styleClass="nav-item" text="  Comunidades" />
+                <Button fx:id="navLibrary" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavLibrary" styleClass="nav-item" text="  Biblioteca Univ." />
+                <Button fx:id="navCalendar" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavCalendar" styleClass="nav-item" text="  Calendario" />
 
                 <!-- Categoría: Colaboración -->
                 <Label styleClass="nav-category-label" text="COLABORACIÓN" />
-                <Button fx:id="navTasks" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavTasks" styleClass="nav-item" text="✓  Mi Planificación" />
-                <Button fx:id="navStudyTeams" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavStudyTeams" styleClass="nav-item" text="◆  Equipos de Estudio" />
-                <Button fx:id="navExchange" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavExchange" styleClass="nav-item" text="↔  Intercambio" />
-                <Button fx:id="navOpportunities" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavOpportunities" styleClass="nav-item" text="★  Oportunidades" />
+                <Button fx:id="navTasks" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavTasks" styleClass="nav-item" text="  Mi Planificación" />
+                <Button fx:id="navStudyTeams" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavStudyTeams" styleClass="nav-item" text="  Equipos de Estudio" />
+                <Button fx:id="navExchange" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavExchange" styleClass="nav-item" text="  Intercambio" />
+                <Button fx:id="navOpportunities" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavOpportunities" styleClass="nav-item" text="  Oportunidades" />
 
-                <!-- Categoría: Cuenta y Sistema -->
-                <Label styleClass="nav-category-label" text="CUENTA Y SISTEMA" />
-                <Button fx:id="navNotifications" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavNotifications" styleClass="nav-item" text="●  Notificaciones" />
-                <Button fx:id="navProfile" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavProfile" styleClass="nav-item" text="◉  Mi Perfil" />
-                <Button fx:id="navSettings" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavSettings" styleClass="nav-item" text="⚙  Configuración" />
+                <!-- Categoría: Cuenta -->
+                <Label styleClass="nav-category-label" text="CUENTA" />
+                <Button fx:id="navNotifications" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavNotifications" styleClass="nav-item" text="  Notificaciones" />
+                <Button fx:id="navProfile" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavProfile" styleClass="nav-item" text="  Mi Perfil" />
+                <Button fx:id="navSettings" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavSettings" styleClass="nav-item" text="  Configuración" />
 
                 <!-- Categoría: Administración (Moderadores Globales) -->
                 <VBox fx:id="adminSection" managed="false" spacing="3.0" visible="false">

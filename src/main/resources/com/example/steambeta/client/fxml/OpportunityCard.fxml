@@ -5,16 +5,22 @@
 
 <VBox spacing="6.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.OpportunityCardController">
     <HBox alignment="CENTER_LEFT" spacing="8.0">
-        <Label fx:id="catBadge" styleClass="badge-role" text="SCHOLARSHIP" />
+        <Label fx:id="catBadge" styleClass="badge-role" text="Beca" />
         <Label fx:id="instBadge" styleClass="badge-admin" text="Universidad" />
         <Region HBox.hgrow="ALWAYS" />
-        <Label fx:id="dueLabel" styleClass="muted" text="Vence: 01/01" />
+        <Label fx:id="dueLabel" styleClass="muted" text="Cierra: 01/01" />
     </HBox>
 
     <Label fx:id="titleLabel" styleClass="card-title" text="Título de la convocatoria" />
     <Label fx:id="descLabel" styleClass="muted" text="Descripción de requisitos y beneficios..." wrapText="true" />
 
-    <HBox fx:id="linkRow" alignment="CENTER_LEFT" managed="false" visible="false">
-        <Button fx:id="copyBtn" onAction="#onCopyLink" style="-fx-font-size: 11px; -fx-padding: 3 8;" styleClass="secondary" text="📋 Copiar enlace" />
+    <HBox alignment="CENTER_LEFT" spacing="8.0">
+        <HBox fx:id="linkRow" alignment="CENTER_LEFT" managed="false" spacing="6.0" visible="false">
+            <Button fx:id="openBtn" onAction="#onOpenLink" style="-fx-font-size: 11px; -fx-padding: 3 8;" styleClass="primary" text="Abrir enlace oficial" />
+            <Button fx:id="copyBtn" onAction="#onCopyLink" style="-fx-font-size: 11px; -fx-padding: 3 8;" styleClass="secondary" text="📋 Copiar enlace" />
+        </HBox>
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnEdit" managed="false" onAction="#onEdit" style="-fx-font-size: 11px; -fx-padding: 3 8;" styleClass="secondary" text="Editar" visible="false" />
+        <Button fx:id="btnDelete" managed="false" onAction="#onDelete" style="-fx-font-size: 11px; -fx-padding: 3 8;" styleClass="danger-btn" text="Eliminar" visible="false" />
     </HBox>
 </VBox>

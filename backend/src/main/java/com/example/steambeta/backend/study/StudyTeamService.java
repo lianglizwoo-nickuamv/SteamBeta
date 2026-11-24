@@ -33,6 +33,21 @@ public class StudyTeamService {
             boolean visible
     ) {}
 
+    public record PublicStudyDetail(
+            UUID accountId,
+            String alias,
+            String declaredUniversity,
+            String declaredCareer,
+            List<String> subjects,
+            List<String> interests,
+            String canHelpWith,
+            String needsHelpWith,
+            String availability,
+            String bio,
+            boolean contactEmailEnabled,
+            String publicEmail
+    ) {}
+
     private final JdbcTemplate jdbc;
     private final AccountService accounts;
 
@@ -43,59 +58,103 @@ public class StudyTeamService {
 
     public StudyProfile myProfile() {
         UUID accountId = accounts.current().accountId();
-        try {
-            var rows = jdbc.query(
-                    "select p.account_id, a.alias, a.declared_university, a.declared_career, " +
-                    "p.subjects, p.interests, p.can_help_with, p.needs_help_with, p.availability, p.visible " +
-                    "from replica.study_profile p " +
-                    "join replica.account_profile a on a.account_id = p.account_id " +
-                    "where p.account_id = ?",
-                    (rs, row) -> mapProfile(rs), accountId);
-
-            if (!rows.isEmpty()) return rows.getFirst();
-        } catch (Exception ignored) {}
-
-        var currentAcc = accounts.fullProfile();
-        return new StudyProfile(accountId, currentAcc.alias(), currentAcc.declaredUniversity(),
-                currentAcc.declaredCareer(), List.of(), List.of(), null, null, null, true);
+        var rows = jdbc.query(
+                "select * from replica.read_study_profile_v15(?::uuid)",
+                (rs, row) -> mapProfile(rs),
+                accountId
+        );
+        if (rows.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el perfil de la cuenta.");
+        }
+        return rows.getFirst();
     }
 
     @Transactional
     public StudyProfile updateProfile(ProfileDraft draft) {
-        if (draft == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_draft");
+        if (draft == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Datos de ficha de estudio inválidos.");
+        }
         UUID accountId = accounts.current().accountId();
-
         String[] subjs = draft.subjects() == null ? new String[0] : draft.subjects().toArray(new String[0]);
         String[] ints = draft.interests() == null ? new String[0] : draft.interests().toArray(new String[0]);
 
-        try {
-            jdbc.update("insert into replica.study_profile(account_id, subjects, interests, can_help_with, needs_help_with, availability, visible, updated_at) " +
-                    "values (?, ?, ?, ?, ?, ?, ?, clock_timestamp()) " +
-                    "on conflict (account_id) do update set " +
-                    "subjects = excluded.subjects, interests = excluded.interests, " +
-                    "can_help_with = excluded.can_help_with, needs_help_with = excluded.needs_help_with, " +
-                    "availability = excluded.availability, visible = excluded.visible, updated_at = clock_timestamp()",
-                    accountId, subjs, ints, draft.canHelpWith(), draft.needsHelpWith(), draft.availability(), draft.visible());
-
-            return myProfile();
-        } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "could_not_save_study_profile");
-        }
+        return jdbc.query(con -> {
+            var ps = con.prepareStatement("select * from replica.upsert_study_profile_v15(?, ?, ?, ?, ?, ?, ?)");
+            ps.setObject(1, accountId);
+            ps.setArray(2, con.createArrayOf("text", subjs));
+            ps.setArray(3, con.createArrayOf("text", ints));
+            ps.setString(4, draft.canHelpWith());
+            ps.setString(5, draft.needsHelpWith());
+            ps.setString(6, draft.availability());
+            ps.setBoolean(7, draft.visible());
+            return ps;
+        }, (rs, row) -> mapProfile(rs)).stream().findFirst().orElseThrow();
     }
 
-    public List<StudyProfile> findMatches(String subjectFilter) {
+    public List<StudyProfile> findMatches(String query) {
         UUID currentId = accounts.current().accountId();
-        String sql = "select p.account_id, a.alias, a.declared_university, a.declared_career, " +
-                "p.subjects, p.interests, p.can_help_with, p.needs_help_with, p.availability, p.visible " +
-                "from replica.study_profile p " +
-                "join replica.account_profile a on a.account_id = p.account_id " +
-                "where p.account_id <> ? and p.visible " +
-                "order by p.updated_at desc limit 30";
-        try {
-            return jdbc.query(sql, (rs, row) -> mapProfile(rs), currentId);
-        } catch (Exception ex) {
-            return List.of();
+        String cleanQuery = query == null || query.isBlank() ? null : query.strip();
+        return jdbc.query(
+                "select * from replica.search_study_matches_v15(?::uuid, ?::text)",
+                (rs, row) -> mapProfile(rs),
+                currentId, cleanQuery
+        );
+    }
+
+    public PublicStudyDetail publicProfile(UUID targetAccountId) {
+        if (targetAccountId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Identificador de estudiante inválido.");
         }
+        UUID currentId = accounts.current().accountId();
+        if (currentId.equals(targetAccountId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes consultar tu propia ficha como compañero.");
+        }
+
+        // Verifica mediante la función autorizada V15 que el compañero existe, está activo y tiene su ficha visible.
+        StudyProfile match = jdbc.query(
+                "select * from replica.search_study_matches_v15(?::uuid, NULL::text)",
+                (rs, row) -> mapProfile(rs),
+                currentId
+        ).stream().filter(p -> targetAccountId.equals(p.accountId())).findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "La ficha de estudio no está disponible o es privada."));
+
+        // Consulta autorizada V13 para biografía y correo SOLO si email_public = true.
+        // Nunca se expone el correo cuando email_public es false.
+        String bio = null;
+        boolean emailEnabled = false;
+        String publicEmail = null;
+
+        var rows = jdbc.query(
+                "select bio, email_public, email from replica.read_full_account_profile(?::uuid)",
+                (rs, row) -> {
+                    boolean isPublic = rs.getBoolean("email_public");
+                    String email = rs.getString("email");
+                    boolean canContact = isPublic && email != null && !email.isBlank();
+                    return new Object[]{rs.getString("bio"), canContact, canContact ? email.strip() : null};
+                },
+                targetAccountId
+        );
+        if (!rows.isEmpty()) {
+            Object[] info = rows.getFirst();
+            bio = (String) info[0];
+            emailEnabled = (Boolean) info[1];
+            publicEmail = (String) info[2];
+        }
+
+        return new PublicStudyDetail(
+                match.accountId(),
+                match.alias(),
+                match.declaredUniversity(),
+                match.declaredCareer(),
+                match.subjects(),
+                match.interests(),
+                match.canHelpWith(),
+                match.needsHelpWith(),
+                match.availability(),
+                bio,
+                emailEnabled,
+                publicEmail
+        );
     }
 
     private static StudyProfile mapProfile(java.sql.ResultSet rs) throws java.sql.SQLException {

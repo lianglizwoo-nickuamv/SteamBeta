@@ -7,6 +7,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
@@ -19,6 +21,7 @@ public final class CreateCommunityDialogController {
     @FXML private TextField slugField;
     @FXML private ComboBox<String> categoryCombo;
     @FXML private ComboBox<String> visibilityCombo;
+    @FXML private Spinner<Integer> maxMembersSpinner;
     @FXML private TextArea descriptionArea;
     @FXML private TextArea rulesArea;
     @FXML private Label errorLabel;
@@ -32,14 +35,18 @@ public final class CreateCommunityDialogController {
     @FXML
     public void initialize() {
         categoryCombo.setItems(FXCollections.observableArrayList(
-                "ACADEMICA", "ESTUDIO", "PROYECTO", "CARRERA", "INTERES"
+                "Académica", "Estudio", "Proyecto", "Carrera", "Interés"
         ));
-        categoryCombo.setValue("ACADEMICA");
+        categoryCombo.setValue("Académica");
 
         visibilityCombo.setItems(FXCollections.observableArrayList(
-                "PUBLIC", "INVITE_ONLY", "PRIVATE"
+                "Pública", "Solo con invitación", "Privada"
         ));
-        visibilityCombo.setValue("PUBLIC");
+        visibilityCombo.setValue("Pública");
+
+        if (maxMembersSpinner != null) {
+            maxMembersSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(2, 50, 50));
+        }
 
         rulesArea.setText("Respeta a los miembros y colabora constructivamente.");
 
@@ -66,11 +73,25 @@ public final class CreateCommunityDialogController {
     }
 
     public String getCategory() {
-        return categoryCombo.getValue() != null ? categoryCombo.getValue() : "ACADEMICA";
+        String val = categoryCombo.getValue();
+        if (val == null) return "ACADEMICA";
+        return switch (val) {
+            case "Estudio", "ESTUDIO" -> "ESTUDIO";
+            case "Proyecto", "PROYECTO" -> "PROYECTO";
+            case "Carrera", "CARRERA" -> "CARRERA";
+            case "Interés", "INTERES" -> "INTERES";
+            default -> "ACADEMICA";
+        };
     }
 
     public String getVisibility() {
-        return visibilityCombo.getValue() != null ? visibilityCombo.getValue() : "PUBLIC";
+        String val = visibilityCombo.getValue();
+        if (val == null) return "PUBLIC";
+        return switch (val) {
+            case "Solo con invitación", "INVITE_ONLY" -> "INVITE_ONLY";
+            case "Privada", "PRIVATE" -> "PRIVATE";
+            default -> "PUBLIC";
+        };
     }
 
     public String getDescription() {
@@ -80,6 +101,19 @@ public final class CreateCommunityDialogController {
     public String getRules() {
         String r = rulesArea.getText() == null ? "" : rulesArea.getText().strip();
         return r.isBlank() ? "Respeta a los miembros y colabora constructivamente." : r;
+    }
+
+    public int getMaxMembers() {
+        if (maxMembersSpinner == null) return 50;
+        try {
+            String raw = maxMembersSpinner.getEditor().getText();
+            if (raw != null && !raw.isBlank()) {
+                return Integer.parseInt(raw.strip());
+            }
+        } catch (NumberFormatException ignored) {
+            return -1;
+        }
+        return maxMembersSpinner.getValue() != null ? maxMembersSpinner.getValue() : 50;
     }
 
     public boolean validate() {
@@ -93,7 +127,13 @@ public final class CreateCommunityDialogController {
             showError("El slug identificador debe tener entre 3 y 80 caracteres en minúsculas y guiones (ej. club-de-ia).");
             return false;
         }
+        int maxM = getMaxMembers();
+        if (maxM < 2 || maxM > 50) {
+            showError("La capacidad máxima de integrantes debe ser un número entero entre 2 y 50.");
+            return false;
+        }
         errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
         return true;
     }
 
@@ -104,8 +144,10 @@ public final class CreateCommunityDialogController {
 
         btnSubmit.setDisable(true);
         btnCancel.setDisable(true);
-        showError("Creando comunidad universitaria en PostgreSQL...");
-        errorLabel.setStyle("-fx-text-fill: #38bdf8;");
+        errorLabel.setText("Creando comunidad universitaria en PostgreSQL...");
+        errorLabel.getStyleClass().setAll("muted");
+        errorLabel.setVisible(true);
+        errorLabel.setManaged(true);
 
         String name = getName();
         String slug = getSlug();
@@ -113,10 +155,11 @@ public final class CreateCommunityDialogController {
         String visibility = getVisibility();
         String description = getDescription();
         String rules = getRules();
+        int maxMembers = getMaxMembers();
 
         workers.submit(() -> {
             try {
-                var item = api.createCommunity(slug, name, description, rules, category, visibility);
+                var item = api.createCommunity(slug, name, description, rules, category, visibility, maxMembers);
                 Platform.runLater(() -> {
                     if (onSuccess != null) onSuccess.accept(item);
                     close();

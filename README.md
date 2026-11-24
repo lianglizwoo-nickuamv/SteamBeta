@@ -1,155 +1,252 @@
-# SteamBeta · Comunidad universitaria
+# SteamBeta Campus
 
-La prioridad es una comunidad universitaria independiente de registros académicos.
-Esta rama incluye registro JavaFX, comunidades, publicaciones, comentarios,
-reportes y moderación. Sigue [la guía del piloto](backend/PILOT-QUICKSTART.md)
-para ejecutar y comprobar el recorrido con cuentas de prueba. La biblioteca
-académica se conserva como módulo opcional.
+**SteamBeta Campus** es un ecosistema digital universitario de escritorio desarrollado con **Java 21**, **JavaFX**, **FXML**, **CSS**, **Spring Boot** y **PostgreSQL 18**. Está diseñado para que los estudiantes organicen su vida académica, colaboren en comunidades universitarias, encuentren compañeros de estudio, intercambien materiales sin fines monetarios y consulten oportunidades académicas desde una aplicación nativa de escritorio respaldada por políticas de seguridad a nivel de fila (RLS) en PostgreSQL.
 
-Para ejecutar la entrega actual por primera vez, sigue la
-[guía local paso a paso](backend/LOCAL-QUICKSTART.md). Incluye un comprobador
-de registro, acceso, perfil y salida que gestiona cookies y CSRF automáticamente.
+---
 
-Plataforma académica con cliente JavaFX modular y backend Spring Boot independiente.
-El recorrido implementado es acceso por sesión, biblioteca personal, actividades,
-progreso y salida. Perfil completo, tienda, recuperación de acceso y LMS real
-quedan fuera del alcance actual.
+## 1. Funcionalidades disponibles
 
-## Requisitos
+- **Registro e inicio de sesión:** creación de cuentas estudiantiles, inicio de sesión mediante identificador o correo electrónico, protección CSRF y cookies `HttpOnly`.
+- **Perfil académico:** visualización y edición de alias, universidad declarada, carrera, semestre, intereses académicos, biografía y control explícito de visibilidad del correo electrónico (privado por defecto).
+- **Comunidades universitarias y catálogo global:** separación entre *Mis Comunidades* y *Explorar Comunidades*, búsqueda por categoría, niveles de privacidad (`PUBLIC`, `INVITE_ONLY`, `PRIVATE`), códigos de invitación y capacidad máxima configurable (2 a 50 integrantes).
+- **Conversaciones y preguntas (Q&A) dentro de comunidades:** publicaciones, respuestas, marcado de soluciones y recursos compartidos por comunidad.
+- **Calendario y fechas académicas:** vistas mensual, semanal y agenda combinando eventos comunitarios con tareas personales con vencimiento.
+- **Planificación personal de tareas (Kanban):** tablero privado por estudiante (*Pendiente*, *En proceso*, *En revisión*, *Completada*) con prioridades, fechas de entrega y asociación opcional a materias registradas.
+- **Equipos de Estudio:** ficha personal de estudio, búsqueda parcial insensible a mayúsculas por nombre, alias, materias, temas o apoyo, consulta de fichas públicas y contacto autorizado mediante correo electrónico público (`mailto:` y copiado al portapapeles). *(SteamBeta no incluye mensajería privada 1-a-1).*
+- **Intercambio universitario de materiales y archivos:** publicación sin pagos de libros, apuntes y herramientas con hasta 5 archivos adjuntos (máx. 25 MB cada uno) almacenados en disco fuera del repositorio, validación de contenido y eliminación transaccional `afterCommit`.
+- **Oportunidades universitarias:** cartelera de becas, pasantías, concursos y eventos con enlace oficial, fecha de cierre y administración por propietario.
+- **Notificaciones:** bandeja de avisos con contador de no leídas.
+- **Biblioteca Universitaria y registro manual de materias:** consulta de materias institucionales (cuando exista vinculación oficial) junto con el registro manual privado de materias por estudiante (año académico, período/semestre, código, grupo, docente, créditos, horario y notas), con distinción clara entre origen *Institucional* y *Registrada manualmente*.
+- **Centro de Ayuda contextual:** guía en español adaptada automáticamente al módulo activo.
+- **Configuración y diagnóstico de conexión:** estado de conectividad en tiempo real contra el backend local.
 
-- JDK 21, con JAVA_HOME configurado y su carpeta bin en PATH.
-- PostgreSQL 18 y una base propia llamada steam_academico.
-- Acceso a Maven Central para la primera descarga. Se incluye Maven Wrapper 3.8.5;
-  no hace falta instalar Maven ni descargar un JDK dentro del repositorio.
-- PowerShell para los scripts Windows. Docker para Testcontainers, o los binarios
-  PostgreSQL locales para el script de pruebas desechables.
+---
 
-Clonar la URL que suministre el responsable del repositorio y entrar en la raíz:
+## 2. Tecnologías y requisitos
 
+Versiones verificadas en [pom.xml](pom.xml) y [backend/pom.xml](backend/pom.xml):
+
+| Componente | Versión verificada |
+| :--- | :--- |
+| **Java (JDK)** | Java 21 LTS (`<release>21</release>`) |
+| **JavaFX** | 21.0.6 (`javafx-controls`, `javafx-fxml`) |
+| **JavaFX Maven Plugin** | 0.0.8 |
+| **Spring Boot** | 4.1.2 (`spring-boot-starter-parent`) |
+| **PostgreSQL** | 18 (probado con PostgreSQL 18.4) |
+| **Flyway** | Gestionado por `spring-boot-starter-flyway` (`flyway-database-postgresql`) |
+| **Gson** | 2.13.2 |
+| **JUnit Jupiter** | 5.12.1 |
+| **Maven Wrapper** | Incluido (`mvnw.cmd` / `mvnw`) |
+| **IDE recomendado** | IntelliJ IDEA |
+
+### Requisitos mínimos en Windows
+- Windows 10 u 11 (x64) con PowerShell 5.1 o superior.
+- **JDK 21** instalado y disponible en `JAVA_HOME`.
+- **PostgreSQL 18** instalado y en ejecución local en el puerto `5432`.
+- **Git** para clonar el repositorio.
+
+---
+
+## 3. Estructura del proyecto
+
+```text
+SteamBeta/
+├── pom.xml                                       # Proyecto Maven del cliente JavaFX
+├── mvnw.cmd / mvnw / .mvn/                       # Maven Wrapper (no requiere Maven global)
+├── README.md                                     # Guía de instalación y ejecución
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   ├── module-info.java                  # Módulo Java 21 (JavaFX + Gson + java.net.http)
+│   │   │   └── com/example/steambeta/
+│   │   │       ├── HelloApplication.java         # Punto de entrada JavaFX
+│   │   │       └── client/
+│   │   │           ├── AcademicWindow.java       # Ventana principal y carga de estilos
+│   │   │           ├── ApiClient.java            # Cliente HTTP con cookies y CSRF
+│   │   │           ├── EnvironmentConfig.java    # Configuración de entorno (por defecto http://127.0.0.1:8080)
+│   │   │           └── ui/                       # Controladores FXML
+│   │   └── resources/com/example/steambeta/client/
+│   │       ├── academic.css                      # Hoja de estilos mínima sobre JavaFX Modena
+│   │       └── fxml/                             # 57 vistas y diálogos FXML
+│   └── test/java/com/example/steambeta/client/   # Pruebas unitarias y verificación agrupada FXML
+└── backend/
+    ├── pom.xml                                   # Proyecto Maven del backend Spring Boot 4.1.2
+    ├── scripts/
+    │   ├── setup-local-credentials.ps1           # Asistente DPAPI para contraseñas locales
+    │   ├── start-local.ps1                       # Arranque del backend (-Mode Normal / Migration / Demo)
+    │   ├── start-client.ps1                      # Arranque del cliente JavaFX vía Maven Wrapper
+    │   ├── verify-postgres.ps1                   # Comprobación de PostgreSQL
+    │   └── check-local-api.ps1                   # Comprobación rápida de endpoints locales
+    └── src/
+        ├── main/
+        │   ├── java/com/example/steambeta/backend/
+        │   │   ├── auth/                         # Autenticación, cuentas y perfil
+        │   │   ├── community/                    # Comunidades, Q&A, recursos, eventos y errores
+        │   │   ├── exchange/                     # Intercambio y ExchangeStorageService
+        │   │   ├── library/                      # Biblioteca institucional y materias manuales (V16)
+        │   │   ├── opportunity/                  # Oportunidades universitarias
+        │   │   ├── study/                        # Equipos de Estudio y contacto autorizado
+        │   │   └── task/                         # Mi Planificación (tareas privadas)
+        │   └── resources/
+        │       ├── application.properties
+        │       ├── application-local.properties
+        │       ├── application-migration.properties
+        │       └── db/migration/                 # Migraciones Flyway V1 a V17
+        └── test/java/com/example/steambeta/backend/
+```
+
+---
+
+## 4. Instalación desde cero en Windows
+
+### Paso 1. Instalar Java 21 y PostgreSQL 18
+1. Instala **JDK 21 LTS** (por ejemplo, Eclipse Temurin 21) y verifica en PowerShell:
+   ```powershell
+   java -version
+   ```
+2. Instala **PostgreSQL 18** y comprueba que el servicio esté activo en `127.0.0.1:5432`.
+
+### Paso 2. Clonar el repositorio
 ```powershell
-git clone <URL-del-repositorio> SteamBeta
+git clone https://github.com/lianglizwoo-nickuamv/SteamBeta.git
 cd SteamBeta
-java -version
-.\mvnw.cmd -v
 ```
 
-En Linux/macOS usar `./mvnw` en lugar de `mvnw.cmd`; el cliente usa JavaFX y requiere
-un escritorio gráfico. Los scripts .ps1 de DPAPI y PostgreSQL nativo son específicos
-de Windows. Los comandos Maven y las variables de entorno no dependen de DPAPI.
+### Paso 3. Crear la base de datos y roles en PostgreSQL 18
+Conéctate como superusuario `postgres` (usando `psql` o pgAdmin) y crea los roles con privilegios mínimos (`replica_migrator` para migraciones y `replica_runtime` para la ejecución del backend sin `SUPERUSER` ni `BYPASSRLS`) y la base `steam_academico`:
 
-## Base de datos y credenciales propias
+```sql
+CREATE ROLE replica_migrator LOGIN PASSWORD 'TU_CONTRASENA_SEGURA_MIGRADOR' NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS;
+CREATE ROLE replica_runtime  LOGIN PASSWORD 'TU_CONTRASENA_SEGURA_RUNTIME'  NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS;
 
-Un administrador crea una base vacía y los cinco roles descritos en
-[backend/README.md](backend/README.md#configuración-y-otra-máquina). Runtime y
-migraciones usan identidades separadas. No conceder al runtime propiedad,
-SUPERUSER, BYPASSRLS ni membresía del migrador o del rol académico.
+CREATE DATABASE steam_academico OWNER replica_migrator ENCODING 'UTF8';
+GRANT CONNECT ON DATABASE steam_academico TO replica_runtime;
+```
 
-Definir las variables siguientes en una terminal local. Las contraseñas se
-introducen mediante un prompt oculto, sin escribirlas en el historial:
+> **Importante:** sustituye las contraseñas de ejemplo por contraseñas propias seguras. Nunca guardes contraseñas reales en archivos del repositorio.
+
+### Paso 4. Configurar credenciales locales cifradas con DPAPI
+SteamBeta guarda las contraseñas cifradas por usuario de Windows mediante DPAPI en `%LOCALAPPDATA%\ReplicaSteam\persistence\credentials.dpapi.json` (fuera del repositorio). Ejecuta una sola vez:
 
 ```powershell
-function Set-LocalSecret([string]$Name) {
-    $secret = Read-Host $Name -AsSecureString
-    try {
-        [Environment]::SetEnvironmentVariable($Name,
-            [Net.NetworkCredential]::new('', $secret).Password, 'Process')
-    } finally { $secret.Dispose() }
-}
-$env:REPLICA_DB_URL='jdbc:postgresql://localhost:5432/steam_academico'
-$env:REPLICA_DB_USER='replica_runtime'
-Set-LocalSecret REPLICA_DB_PASSWORD
-$env:REPLICA_MIGRATION_USER='replica_migrator'
-Set-LocalSecret REPLICA_MIGRATION_PASSWORD
+powershell -ExecutionPolicy Bypass -File .\backend\scripts\setup-local-credentials.ps1
 ```
 
-Ejecutar primero [preflight.sql](backend/scripts/preflight.sql) con una conexión
-administrativa propia. Si hay un esquema previo sin historial Flyway o conflictos,
-preservar los datos y detenerse. No usar clean, drop ni baseline automático.
+El asistente solicitará de forma segura la contraseña de `replica_runtime` y la de `replica_migrator`.
+
+### Paso 5. Comprobar conectividad con PostgreSQL (opcional)
+```powershell
+powershell -ExecutionPolicy Bypass -File .\backend\scripts\verify-postgres.ps1
+```
+
+### Paso 6. Aplicar las migraciones iniciales de Flyway (solo base nueva o actualización)
+Para inicializar una base de datos `steam_academico` recién creada y aplicar las migraciones **V1–V17**, ejecuta:
 
 ```powershell
-.\mvnw.cmd -f backend/pom.xml spring-boot:run '-Dspring-boot.run.profiles=migration'
+.\backend\scripts\start-local.ps1 -Mode Migration
 ```
 
-Migration es opt-in y termina tras aplicar V1/V2. El historial queda en replica_meta.
-V1 es inmutable; V2 concede la función de acceso únicamente a REPLICA_DB_USER.
-El nombre del login debe ser un identificador PostgreSQL simple en minúsculas.
+#### Diferencia entre `-Mode Migration` y `-Mode Normal` en `start-local.ps1`
+- **`-Mode Migration`**: ejecuta Spring Boot en el perfil `migration` (`spring.main.web-application-type=none`, `spring.flyway.enabled=true`) usando el rol `replica_migrator` para validar y aplicar migraciones pendientes de Flyway en `replica_meta.flyway_schema_history`, y termina automáticamente al finalizar. **Úsalo únicamente al inicializar una base nueva o cuando exista una nueva migración autorizada.** No es necesario ni recomendable ejecutarlo en cada arranque diario.
+- **`-Mode Normal`** *(valor predeterminado)*: inicia el servidor web Spring Boot en el perfil `local` (`spring.flyway.enabled=false`) usando exclusivamente el rol restringido `replica_runtime` en `http://127.0.0.1:8080`. **Úsalo para el arranque cotidiano del proyecto.**
 
-## Demostración opcional
+### Paso 7. Arrancar el backend Spring Boot
+```powershell
+.\backend\scripts\start-local.ps1 -Mode Normal
+```
 
-Los datos demo no están en las migraciones. Usan dos universidades ficticias y
-tres cuentas: demo.alba, demo.bruno y demo.celia. La carga explícita es repetible,
-compara los datos existentes y revierte todo ante un conflicto.
-
-En Windows, con las variables de BD anteriores todavía presentes:
+Comprueba que el servidor responde en `http://127.0.0.1:8080`:
 
 ```powershell
-.\backend\scripts\demo-credentials.ps1 -Prepare
-.\backend\scripts\start-local.ps1 -Mode Demo
+Invoke-WebRequest -Uri "http://127.0.0.1:8080/api/auth/csrf" -UseBasicParsing
 ```
 
-El archivo generado queda cifrado con DPAPI en el perfil del usuario, fuera del
-repositorio. Para pegar la contraseña en JavaFX sin imprimirla:
+Para detener el backend correctamente, pulsa `Ctrl + C` en la consola donde está ejecutándose (o detén la configuración de ejecución desde IntelliJ IDEA).
+
+### Paso 8. Ejecutar el cliente JavaFX
+
+#### Opción A: desde IntelliJ IDEA (recomendado)
+1. Abre la carpeta raíz `SteamBeta` como proyecto Maven en **IntelliJ IDEA**.
+2. Verifica que el SDK del proyecto sea **Java 21**.
+3. Ejecuta la configuración **SteamBeta Client (JavaFX)** (clase principal `com.example.steambeta.HelloApplication`) o la tarea Maven `javafx:run`.
+
+#### Opción B: desde PowerShell con Maven Wrapper
+Con el backend ya activo en `http://127.0.0.1:8080`:
 
 ```powershell
-.\backend\scripts\demo-credentials.ps1 -CopyPasswordFor demo.alba
-# Pegar en el campo Contraseña y después limpiar el portapapeles:
-Set-Clipboard -Value ''
+.\mvnw.cmd -B javafx:run
 ```
 
-Alternativa sin DPAPI: configurar las variables REPLICA_DEMO_ALBA_PASSWORD,
-REPLICA_DEMO_BRUNO_PASSWORD y REPLICA_DEMO_CELIA_PASSWORD con contraseñas propias
-de al menos 12 caracteres, y ejecutar Maven con `-Dspring-boot.run.profiles=demo`.
-Conservar esas mismas contraseñas para repetir la carga; no compartirlas por Git.
+También existe el script auxiliar `.\backend\scripts\start-client.ps1` (que configura JDK 21 y ejecuta `.\mvnw.cmd -B javafx:run`).
 
-## Ejecutar servidor y cliente
+---
 
-Retirar las variables administrativas de la terminal que atenderá HTTP:
+## 5. Almacenamiento de archivos (Intercambio Universitario)
 
-```powershell
-Remove-Item Env:REPLICA_MIGRATION_USER,Env:REPLICA_MIGRATION_PASSWORD -ErrorAction SilentlyContinue
-# El script Demo limpia los secretos al terminar; reintroducir solo el de runtime.
-Set-LocalSecret REPLICA_DB_PASSWORD
-.\mvnw.cmd -f backend/pom.xml spring-boot:run '-Dspring-boot.run.profiles=local'
+Los adjuntos publicados en **Intercambio Universitario** son gestionados por `ExchangeStorageService` fuera del repositorio y de PostgreSQL:
+
+- **Directorio por defecto:** `${user.home}/.steambeta/exchange-storage` (en Windows: `C:\Users\<usuario>\.steambeta\exchange-storage`).
+- **Variable de entorno opcional para cambiar la ruta:** `STEAMBETA_EXCHANGE_STORAGE_DIR`.
+- **Límites vigentes:**
+  - Máximo **25 MB** por archivo (`spring.servlet.multipart.max-file-size=25MB`, solicitud máx. `30MB`).
+  - Máximo **5 archivos** por publicación.
+- **Formatos admitidos:**
+  - Documentos y presentaciones: `pdf`, `doc`, `docx`, `ppt`, `pptx` (con validación real de firmas/encabezados y revisión en memoria de contenedores OOXML bloqueando macros `vbaProject.bin` y ZIP bombs).
+  - Imágenes: `jpg`, `jpeg`, `png`, `gif`, `webp`, `bmp`, `tif`, `tiff`.
+- **Respaldo independiente:** los archivos binarios residen en el sistema de archivos local, mientras que PostgreSQL almacena únicamente sus metadatos y claves seguras. Al respaldar el sistema, respalda tanto `steam_academico` como la carpeta configurada de `exchange-storage`.
+
+---
+
+## 6. Estado actual de Flyway (V1–V17)
+
+El esquema de base de datos se encuentra en la **versión V17** y todas las migraciones se versionan en:
+
+```text
+backend/src/main/resources/db/migration/
 ```
 
-En otra terminal con JDK 21, desde la raíz:
+- `V1`–`V13`: esquema base académico, cuentas independientes, comunidades piloto, Q&A, recursos, calendario, notificaciones, moderación global, perfil extendido y autenticación por correo.
+- `V14`: acceso global a comunidades y capacidad máxima configurable.
+- `V15`: persistencia RLS de Mi Planificación, Equipos de Estudio, Intercambio con adjuntos y Oportunidades.
+- `V16`: registro manual privado de materias por estudiante en Biblioteca Universitaria (`replica.student_manual_subject` con RLS forzada).
+- `V17`: corrección de `replica.update_account_profile_v2` en el guardado de Mi Perfil.
 
-```powershell
-.\mvnw.cmd javafx:run
-```
+---
 
-El servidor local escucha 127.0.0.1:8080 y permanece activo. El cliente usa
-http://localhost:8080; REPLICA_API_URL permite cambiar su URL. No necesita JDBC.
-El perfil local desactiva Secure únicamente para HTTP local; fuera de él se
-requiere HTTPS. Las sesiones/cookies del cliente no se guardan en disco.
+## 7. Pruebas automatizadas
 
-En IntelliJ importar pom.xml y backend/pom.xml como proyectos Maven separados y
-seleccionar el JDK 21 propio para el proyecto y Maven Runner. Crear configuraciones
-locales con Store as project file desmarcado; las configuraciones personales no
-se distribuyen. Los scripts start-local.ps1 y start-client.ps1 son alternativas
-Windows; detalles, variables y contratos REST en [backend/README.md](backend/README.md).
+- **Pruebas del cliente JavaFX (incluye verificación agrupada de los 57 FXML):**
+  ```powershell
+  .\mvnw.cmd -B test
+  ```
+- **Pruebas unitarias del backend:**
+  ```powershell
+  .\mvnw.cmd -B -f .\backend\pom.xml test
+  ```
 
-## Pruebas y estado de aceptación
+---
 
-```powershell
-.\mvnw.cmd test
-# Con Docker, PostgreSQL desechable mediante Testcontainers:
-.\mvnw.cmd -f backend/pom.xml verify
-# Alternativa Windows sin Docker, ajustando el directorio propio:
-.\backend\scripts\verify-postgres.ps1 -PostgresBin 'C:\Program Files\PostgreSQL\18\bin'
-```
+## 8. Solución de problemas (PowerShell)
 
-Las pruebas de integración exigen una base vacía replica_test_* en un clúster
-desechable; nunca usar datos reales como fixtures. La entrega vigente aprobó
-3 pruebas del cliente, 3 unitarias backend y 17 IT PostgreSQL. Las pantallas
-nuevas deben revisarse visualmente con los pasos de
-[PILOT-QUICKSTART](backend/PILOT-QUICKSTART.md); los resultados HTTP no se
-presentan como aceptación visual. Ver [REPLICA-STATE](backend/REPLICA-STATE.md).
-
-## Antes de publicar
-
-Revisar [SHARING-REVIEW.md](SHARING-REVIEW.md) y el listado completo de archivos.
-No hay licencia propia seleccionada para el proyecto; el responsable debe decidir
-los términos de uso antes de una publicación pública. Se mantienen los avisos
-Apache del Maven Wrapper. No se incluyen credenciales, configuraciones IDE,
-JDKs, bases temporales, logs ni binarios de compilación.
+- **Puerto 8080 ocupado:**
+  ```powershell
+  Get-NetTCPConnection -LocalPort 8080 -State Listen | Select-Object LocalAddress, LocalPort, OwningProcess
+  ```
+  Identifica el proceso con `Get-Process -Id <PID>` y detén la instancia anterior de SteamBeta si corresponde (`Stop-Process -Id <PID>`).
+- **PostgreSQL detenido:**
+  ```powershell
+  Get-Service postgresql*
+  ```
+  Si aparece `Stopped`, inícialo desde *Servicios* de Windows o con `Start-Service postgresql-x64-18` (en PowerShell como administrador).
+- **Credenciales locales no configuradas:**
+  Ejecuta `powershell -ExecutionPolicy Bypass -File .\backend\scripts\setup-local-credentials.ps1` y verifica que exista `%LOCALAPPDATA%\ReplicaSteam\persistence\credentials.dpapi.json`.
+- **Error de conexión / el cliente no encuentra el backend:**
+  Comprueba que el backend esté activo en `http://127.0.0.1:8080` (`Invoke-WebRequest -Uri "http://127.0.0.1:8080/api/auth/csrf" -UseBasicParsing`). Si definiste `STEAMBETA_API_URL`, verifica que apunte a `http://127.0.0.1:8080`.
+- **Error de carga FXML o `Unresolved compilation problems` en IntelliJ IDEA:**
+  Ejecuta una compilación limpia con `.\mvnw.cmd -B clean test` y en IntelliJ usa **Build → Rebuild Project** para descartar archivos `.class` antiguos.
+- **Java incorrecto:**
+  Verifica `java -version` y `$env:JAVA_HOME`. El proyecto requiere **JDK 21**.
+- **Maven no disponible en el sistema:**
+  No es necesario instalar Maven globalmente; utiliza siempre `.\mvnw.cmd` desde la raíz del repositorio.
+- **Problemas con almacenamiento de archivos en Intercambio:**
+  Verifica permisos de escritura en `%USERPROFILE%\.steambeta\exchange-storage` (o en la ruta definida por `STEAMBETA_EXCHANGE_STORAGE_DIR`) y que el archivo no supere 25 MB ni contenga macros.

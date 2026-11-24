@@ -33,7 +33,7 @@ public final class MainLayoutController {
     @FXML private VBox sidebar;
     @FXML private Button navHome;
     @FXML private Button navCommunities;
-    @FXML private Button navQuestions;
+    // navQuestions removed from sidebar – Q&A lives inside each community
     @FXML private Button navLibrary;
     @FXML private Button navCalendar;
 
@@ -55,13 +55,14 @@ public final class MainLayoutController {
     private SessionScope scope;
     private ExecutorService workers;
     private Runnable onLogout;
+    private String currentViewId = "HOME";
     private final Map<String, Button> navMap = new HashMap<>();
 
     @FXML
     public void initialize() {
         navMap.put("HOME", navHome);
         navMap.put("COMMUNITIES", navCommunities);
-        navMap.put("QUESTIONS", navQuestions);
+        // QUESTIONS route kept for internal use but not in sidebar
         navMap.put("LIBRARY", navLibrary);
         navMap.put("CALENDAR", navCalendar);
         navMap.put("TASKS", navTasks);
@@ -123,6 +124,7 @@ public final class MainLayoutController {
     }
 
     public void navigateTo(String viewId) {
+        this.currentViewId = viewId != null ? viewId : "HOME";
         // Actualizar estilos activos de los botones
         for (var entry : navMap.entrySet()) {
             if (entry.getValue() != null) {
@@ -139,67 +141,67 @@ public final class MainLayoutController {
 
         switch (viewId) {
             case "HOME" -> {
-                var view = ViewLoader.<HomeController>load("Home.fxml");
+                ViewLoader.ViewResult<HomeController> view = ViewLoader.load("Home.fxml");
                 view.controller().init(api, scope, workers, this);
                 contentArea.setCenter(view.root());
             }
             case "COMMUNITIES" -> {
-                var view = ViewLoader.<CommunitiesController>load("Communities.fxml");
+                ViewLoader.ViewResult<CommunitiesController> view = ViewLoader.load("Communities.fxml");
                 view.controller().init(api, scope, workers, this);
                 contentArea.setCenter(view.root());
             }
             case "QUESTIONS" -> {
-                var view = ViewLoader.<AcademicQuestionsController>load("AcademicQuestions.fxml");
+                ViewLoader.ViewResult<AcademicQuestionsController> view = ViewLoader.load("AcademicQuestions.fxml");
                 view.controller().init(api, scope, workers, this);
                 contentArea.setCenter(view.root());
             }
             case "LIBRARY" -> {
-                var view = ViewLoader.<AcademicLibraryController>load("AcademicLibrary.fxml");
+                ViewLoader.ViewResult<AcademicLibraryController> view = ViewLoader.load("AcademicLibrary.fxml");
                 view.controller().init(api, scope, workers);
                 contentArea.setCenter(view.root());
             }
             case "CALENDAR" -> {
-                var view = ViewLoader.<CalendarController>load("Calendar.fxml");
+                ViewLoader.ViewResult<CalendarController> view = ViewLoader.load("Calendar.fxml");
                 view.controller().init(api, scope, workers);
                 contentArea.setCenter(view.root());
             }
             case "TASKS" -> {
-                var view = ViewLoader.<AcademicPlannerController>load("AcademicPlanner.fxml");
+                ViewLoader.ViewResult<AcademicPlannerController> view = ViewLoader.load("AcademicPlanner.fxml");
                 view.controller().init(api, scope, workers);
                 contentArea.setCenter(view.root());
             }
             case "STUDY_TEAMS" -> {
-                var view = ViewLoader.<StudyTeamsController>load("StudyTeams.fxml");
+                ViewLoader.ViewResult<StudyTeamsController> view = ViewLoader.load("StudyTeams.fxml");
                 view.controller().init(api, scope, workers);
                 contentArea.setCenter(view.root());
             }
             case "EXCHANGE" -> {
-                var view = ViewLoader.<ExchangeController>load("Exchange.fxml");
+                ViewLoader.ViewResult<ExchangeController> view = ViewLoader.load("Exchange.fxml");
                 view.controller().init(api, scope, workers);
                 contentArea.setCenter(view.root());
             }
             case "OPPORTUNITIES" -> {
-                var view = ViewLoader.<OpportunitiesController>load("Opportunities.fxml");
+                ViewLoader.ViewResult<OpportunitiesController> view = ViewLoader.load("Opportunities.fxml");
                 view.controller().init(api, scope, workers);
                 contentArea.setCenter(view.root());
             }
             case "NOTIFICATIONS" -> {
-                var view = ViewLoader.<NotificationCenterController>load("Notifications.fxml");
+                ViewLoader.ViewResult<NotificationCenterController> view = ViewLoader.load("Notifications.fxml");
                 view.controller().init(api, scope, workers);
                 contentArea.setCenter(view.root());
             }
             case "PROFILE" -> {
-                var view = ViewLoader.<ProfileController>load("Profile.fxml");
+                ViewLoader.ViewResult<ProfileController> view = ViewLoader.load("Profile.fxml");
                 view.controller().init(api, scope, workers, this);
                 contentArea.setCenter(view.root());
             }
             case "SETTINGS" -> {
-                var view = ViewLoader.<SettingsController>load("Settings.fxml");
+                ViewLoader.ViewResult<SettingsController> view = ViewLoader.load("Settings.fxml");
                 view.controller().init(api, scope, workers);
                 contentArea.setCenter(view.root());
             }
             case "CONTROL_CENTER" -> {
-                var view = ViewLoader.<ControlCenterController>load("ControlCenter.fxml");
+                ViewLoader.ViewResult<ControlCenterController> view = ViewLoader.load("ControlCenter.fxml");
                 view.controller().init(api, scope, workers);
                 contentArea.setCenter(view.root());
             }
@@ -238,6 +240,15 @@ public final class MainLayoutController {
     @FXML private void onNavProfile() { navigateTo("PROFILE"); }
     @FXML private void onNavSettings() { navigateTo("SETTINGS"); }
     @FXML private void onNavControlCenter() { navigateTo("CONTROL_CENTER"); }
+
+    @FXML
+    private void onHelpClicked() {
+        var loader = ViewLoader.<HelpCenterDialogController>load("HelpCenterDialog.fxml");
+        loader.controller().selectModule(currentViewId);
+        javafx.stage.Stage owner = rootPane.getScene() != null ? (javafx.stage.Stage) rootPane.getScene().getWindow() : null;
+        var modal = UiHelper.createModalStage(loader.root(), "Centro de Ayuda · SteamBeta Campus", owner);
+        modal.showAndWait();
+    }
 
     @FXML private void onSearchAction() { navigateTo("COMMUNITIES"); }
     @FXML private void onNotificationsClicked() { navigateTo("NOTIFICATIONS"); }

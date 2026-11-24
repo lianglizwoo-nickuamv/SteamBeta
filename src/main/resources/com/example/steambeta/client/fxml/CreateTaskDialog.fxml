@@ -32,10 +32,11 @@
             <TextArea fx:id="descriptionArea" prefRowCount="2" promptText="Detalles sobre entregables, rúbricas o notas..." styleClass="text-area" wrapText="true" />
         </VBox>
 
-        <!-- Proyecto y Fecha de Entrega -->
+        <!-- Proyecto / Materia y Fecha de Entrega -->
         <HBox spacing="14.0">
             <VBox spacing="4.0" HBox.hgrow="ALWAYS">
                 <Label styleClass="field-label" text="ASIGNATURA / PROYECTO (Opcional):" />
+                <ComboBox fx:id="subjectCombo" maxWidth="Infinity" promptText="Elegir de tus materias registradas (opcional)..." styleClass="combo-box" />
                 <TextField fx:id="projectField" promptText="Ej. Física II, Proyecto Integrador" styleClass="input" />
             </VBox>
             <VBox maxWidth="180.0" prefWidth="170.0" spacing="4.0">

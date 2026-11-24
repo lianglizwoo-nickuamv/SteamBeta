@@ -28,10 +28,14 @@ public class CommunityService {
         return sb.toString();
     }
 
-    // Entidades base existentes
-    public record Community(UUID id, String slug, String name, String description, String rules, String role, String initialInvitationCode) {
+    // Entidades base existentes (ampliadas con ocupación y capacidad V14)
+    public record Community(UUID id, String slug, String name, String description, String rules, String role,
+                            String initialInvitationCode, long memberCount, int maxMembers, int availableSlots) {
         public Community(UUID id, String slug, String name, String description, String rules, String role) {
-            this(id, slug, name, description, rules, role, null);
+            this(id, slug, name, description, rules, role, null, 0, 50, 50);
+        }
+        public Community(UUID id, String slug, String name, String description, String rules, String role, String initialInvitationCode) {
+            this(id, slug, name, description, rules, role, initialInvitationCode, 0, 50, 50);
         }
     }
     public record Post(UUID id, UUID communityId, UUID authorAccountId, String authorAlias, String title,
@@ -48,14 +52,24 @@ public class CommunityService {
     public record Resolution(String decision, String note) {}
     public record Moderation(String targetType, UUID targetId, String reason) {}
 
-    // FASE 2: Gestión de Comunidades, Invitaciones y Miembros
-    public record CommunityCreate(String slug, String name, String description, String rules, String category, String visibility) {}
+    // FASE 2: Gestión de Comunidades, Invitaciones y Miembros (ampliado V14 con capacidad máxima)
+    public record CommunityCreate(String slug, String name, String description, String rules, String category,
+                                  String visibility, Integer maxMembers) {
+        public CommunityCreate(String slug, String name, String description, String rules, String category, String visibility) {
+            this(slug, name, description, rules, category, visibility, 50);
+        }
+    }
     public record CommunityOverview(UUID id, String slug, String name, String description, String category,
-                                     String visibility, long memberCount, boolean isMember, String userRole) {}
+                                     String visibility, long memberCount, int maxMembers, int availableSlots,
+                                     boolean isMember, String userRole) {}
     public record InvitationDraft(String code, Integer maxUses, Instant expiresAt) {}
     public record Invitation(UUID id, UUID communityId, String code, Integer maxUses, int usedCount,
                              Instant expiresAt, Instant createdAt) {}
-    public record JoinDraft(String code) {}
+    public record JoinDraft(String code, UUID communityId) {
+        public JoinDraft(String code) {
+            this(code, null);
+        }
+    }
     public record Member(UUID accountId, String alias, String role, String declaredUniversity,
                          String declaredCareer, String avatarUrl, Instant joinedAt) {}
     public record RoleUpdate(String role) {}
@@ -76,7 +90,11 @@ public class CommunityService {
                                String subjectName, Instant createdAt) {}
 
     // FASE 5: Calendario y Actividades
-    public record EventDraft(String title, String description, String eventType, Instant eventDate) {}
+    public record EventDraft(String title, String description, String eventType, Instant eventDate, String eventDateIso) {
+        public EventDraft(String title, String description, String eventType, Instant eventDate) {
+            this(title, description, eventType, eventDate, null);
+        }
+    }
     public record EventItem(UUID id, UUID communityId, UUID creatorAccountId, String creatorAlias,
                             String title, String description, String eventType, Instant eventDate,
                             String status, Instant createdAt) {}
@@ -103,9 +121,19 @@ public class CommunityService {
 
     @Transactional
     public List<Community> mine() {
-        return jdbc.query("select * from replica.my_communities(?)", (rs, row) ->
-                new Community(rs.getObject("id", UUID.class), rs.getString("slug"), rs.getString("name"),
-                        rs.getString("description"), rs.getString("rules"), rs.getString("role")), accounts.current().accountId());
+        return jdbc.query("select * from replica.my_communities_v14(?::uuid)", (rs, row) ->
+                new Community(
+                        rs.getObject("id", UUID.class),
+                        rs.getString("slug"),
+                        rs.getString("name"),
+                        rs.getString("description"),
+                        rs.getString("rules"),
+                        rs.getString("role"),
+                        null,
+                        rs.getLong("member_count"),
+                        rs.getInt("max_members"),
+                        rs.getInt("available_slots")
+                ), accounts.current().accountId());
     }
 
     @Transactional
@@ -140,7 +168,8 @@ public class CommunityService {
 
     @Transactional
     public void deletePost(UUID community, UUID id) {
-        jdbc.queryForObject("select replica.delete_community_post(?, ?, ?)", Object.class, accounts.current().accountId(), community, id);
+        UUID actor = accounts.current().accountId();
+        jdbc.query("select replica.delete_community_post(?, ?, ?)", rs -> null, actor, community, id);
     }
 
     @Transactional
@@ -163,7 +192,8 @@ public class CommunityService {
 
     @Transactional
     public void deleteComment(UUID community, UUID id) {
-        jdbc.queryForObject("select replica.delete_community_comment(?, ?, ?)", Object.class, accounts.current().accountId(), community, id);
+        UUID actor = accounts.current().accountId();
+        jdbc.query("select replica.delete_community_comment(?, ?, ?)", rs -> null, actor, community, id);
     }
 
     @Transactional
@@ -223,9 +253,14 @@ public class CommunityService {
                 ? "Respeta a los miembros y colabora constructivamente." : request.rules().strip();
         String category = request.category() == null ? "ACADEMICA" : request.category().strip().toUpperCase(Locale.ROOT);
         String visibility = request.visibility() == null ? "PUBLIC" : request.visibility().strip().toUpperCase(Locale.ROOT);
+        int maxMembers = request.maxMembers() == null ? 50 : request.maxMembers();
+        if (maxMembers < 2 || maxMembers > 50) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "La capacidad máxima de integrantes debe estar entre 2 y 50.");
+        }
 
         Community created = jdbc.queryForObject(
-                "select * from replica.create_community(?::uuid, ?::text, ?::text, ?::text, ?::text, ?::text, ?::text)",
+                "select * from replica.create_community_v14(?::uuid, ?::text, ?::text, ?::text, ?::text, ?::text, ?::text, ?::integer)",
                 (rs, row) -> new Community(
                         rs.getObject("id", UUID.class),
                         rs.getString("slug"),
@@ -233,8 +268,11 @@ public class CommunityService {
                         rs.getString("description"),
                         rs.getString("rules"),
                         rs.getString("role"),
-                        null
-                ), accounts.current().accountId(), slug, name, description, rules, category, visibility);
+                        null,
+                        rs.getLong("member_count"),
+                        rs.getInt("max_members"),
+                        rs.getInt("available_slots")
+                ), accounts.current().accountId(), slug, name, description, rules, category, visibility, maxMembers);
 
         String initialCode = null;
         if ("INVITE_ONLY".equals(visibility) || "PRIVATE".equals(visibility)) {
@@ -246,12 +284,21 @@ public class CommunityService {
                     accounts.current().accountId(), created.id(), initialCode, 50, expires);
         }
 
-        return new Community(created.id(), created.slug(), created.name(), created.description(), created.rules(), created.role(), initialCode);
+        return new Community(created.id(), created.slug(), created.name(), created.description(), created.rules(),
+                created.role(), initialCode, created.memberCount(), created.maxMembers(), created.availableSlots());
     }
 
     @Transactional
     public List<CommunityOverview> exploreCommunities() {
-        return jdbc.query("select * from replica.explore_communities(?::uuid)", (rs, row) ->
+        return exploreCommunities(null, null);
+    }
+
+    @Transactional
+    public List<CommunityOverview> exploreCommunities(String query, String category) {
+        String cleanQuery = query == null ? "" : query.strip().toLowerCase(Locale.ROOT);
+        String cleanCategory = category == null ? "" : category.strip().toUpperCase(Locale.ROOT);
+
+        var all = jdbc.query("select * from replica.explore_communities_v14(?::uuid)", (rs, row) ->
                 new CommunityOverview(
                         rs.getObject("id", UUID.class),
                         rs.getString("slug"),
@@ -260,9 +307,21 @@ public class CommunityService {
                         rs.getString("category"),
                         rs.getString("visibility"),
                         rs.getLong("member_count"),
+                        rs.getInt("max_members"),
+                        rs.getInt("available_slots"),
                         rs.getBoolean("is_member"),
                         rs.getString("user_role")
                 ), accounts.current().accountId());
+
+        return all.stream()
+                .filter(c -> "PUBLIC".equalsIgnoreCase(c.visibility()) || "INVITE_ONLY".equalsIgnoreCase(c.visibility()))
+                .filter(c -> cleanCategory.isBlank() || cleanCategory.equalsIgnoreCase(c.category()))
+                .filter(c -> cleanQuery.isBlank()
+                        || (c.name() != null && c.name().toLowerCase(Locale.ROOT).contains(cleanQuery))
+                        || (c.description() != null && c.description().toLowerCase(Locale.ROOT).contains(cleanQuery))
+                        || (c.slug() != null && c.slug().toLowerCase(Locale.ROOT).contains(cleanQuery))
+                        || (c.category() != null && c.category().toLowerCase(Locale.ROOT).contains(cleanQuery)))
+                .toList();
     }
 
     @Transactional
@@ -299,18 +358,39 @@ public class CommunityService {
 
     @Transactional
     public Community joinByCode(JoinDraft draft) {
-        if (draft == null || draft.code() == null) throw bad();
+        if (draft == null || draft.code() == null || draft.code().isBlank()) throw bad();
         String code = draft.code().strip().toUpperCase(Locale.ROOT);
-        return jdbc.queryForObject("select * from replica.join_community_by_code(?::uuid, ?::text)",
+        return jdbc.queryForObject("select * from replica.join_community_by_code_v14(?::uuid, ?::text, ?::uuid)",
                 (rs, row) -> new Community(
-                        rs.getObject("community_id", UUID.class),
+                        rs.getObject("id", UUID.class),
                         rs.getString("slug"),
                         rs.getString("name"),
                         rs.getString("description"),
-                        "",
+                        rs.getString("rules"),
                         rs.getString("role"),
-                        null
-                ), accounts.current().accountId(), code);
+                        null,
+                        rs.getLong("member_count"),
+                        rs.getInt("max_members"),
+                        rs.getInt("available_slots")
+                ), accounts.current().accountId(), code, draft.communityId());
+    }
+
+    @Transactional
+    public Community joinPublicCommunity(UUID communityId) {
+        if (communityId == null) throw bad();
+        return jdbc.queryForObject("select * from replica.join_public_community_v14(?::uuid, ?::uuid)",
+                (rs, row) -> new Community(
+                        rs.getObject("id", UUID.class),
+                        rs.getString("slug"),
+                        rs.getString("name"),
+                        rs.getString("description"),
+                        rs.getString("rules"),
+                        rs.getString("role"),
+                        null,
+                        rs.getLong("member_count"),
+                        rs.getInt("max_members"),
+                        rs.getInt("available_slots")
+                ), accounts.current().accountId(), communityId);
     }
 
     @Transactional
@@ -460,11 +540,19 @@ public class CommunityService {
 
     @Transactional
     public EventItem createEvent(UUID communityId, EventDraft draft) {
-        if (draft == null || draft.eventDate() == null) throw bad();
+        if (draft == null) throw bad();
+        Instant date = draft.eventDate();
+        if (date == null && draft.eventDateIso() != null && !draft.eventDateIso().isBlank()) {
+            try {
+                date = Instant.parse(draft.eventDateIso());
+            } catch (Exception ignored) {}
+        }
+        if (date == null) throw bad();
+
         String title = text(draft.title(), 3, 160);
         String desc = draft.description() == null ? null : draft.description().strip();
         String type = text(draft.eventType(), 3, 30).toUpperCase(Locale.ROOT);
-        Timestamp eventTimestamp = Timestamp.from(draft.eventDate());
+        Timestamp eventTimestamp = Timestamp.from(date);
 
         return jdbc.queryForObject("select * from replica.create_community_event(?, ?, ?, ?, ?, ?)",
                 (rs, row) -> new EventItem(

@@ -41,7 +41,11 @@ nbdist/
 application-secrets.*
 *.dpapi
 *.dpapi.*
+credentials.dpapi.json
 *.credentials.*
+steambeta.properties
+cookies.txt
+*.cookie
 *.jks
 *.keystore
 *.p12
@@ -53,8 +57,13 @@ pgpass.conf
 .pg_service.conf
 settings-security.xml
 
-# Downloaded JDKs, disposable PostgreSQL, diagnostic logs and private QA history
+# Downloaded JDKs, disposable PostgreSQL, backups, exchange storage, logs and private QA history
 .replica-work/
+.steambeta/
+exchange-storage/
+backups/
+steam_academico_pre_*.sql
+*.sql.bak
 .jdks/
 jdk*/
 pgdata/
@@ -64,6 +73,8 @@ postgres-data/
 *.pid
 *.dump
 *.backup
+*.tmp
+*.temp
 *.sqlite
 *.sqlite3
 *.db

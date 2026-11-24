@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefWidth="600.0" spacing="12.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.RegisterSubjectDialogController">
+    <padding>
+        <Insets bottom="20.0" left="22.0" right="22.0" top="20.0" />
+    </padding>
+
+    <VBox spacing="4.0">
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label fx:id="dialogTitleLabel" styleClass="title" text="Registrar Materia Manualmente" />
+            <Label styleClass="badge-role" text="REGISTRO PERSONAL" />
+        </HBox>
+        <Label styleClass="muted" text="Esta materia se guarda únicamente en tu cuenta personal y no sustituye una matrícula institucional oficial." wrapText="true" />
+        <Separator />
+    </VBox>
+
+    <VBox spacing="10.0" styleClass="card">
+        <HBox spacing="12.0">
+            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                <Label styleClass="field-label" text="NOMBRE DE LA MATERIA * (2–120 caracteres):" />
+                <TextField fx:id="nameField" promptText="Ej. Cálculo Diferencial, Estructuras de Datos" styleClass="input" />
+            </VBox>
+            <VBox prefWidth="150.0" spacing="4.0">
+                <Label styleClass="field-label" text="CÓDIGO (Opcional):" />
+                <TextField fx:id="codeField" promptText="Ej. MAT-101" styleClass="input" />
+            </VBox>
+        </HBox>
+
+        <HBox spacing="12.0">
+            <VBox prefWidth="150.0" spacing="4.0">
+                <Label styleClass="field-label" text="AÑO ACADÉMICO *:" />
+                <Spinner fx:id="yearSpinner" editable="true" maxWidth="Infinity" />
+            </VBox>
+            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                <Label styleClass="field-label" text="PERÍODO ACADÉMICO O SEMESTRE *:" />
+                <TextField fx:id="termField" promptText="Ej. 2026-1, Semestre I, Cuatrimestre 2" styleClass="input" />
+            </VBox>
+            <VBox prefWidth="130.0" spacing="4.0">
+                <Label styleClass="field-label" text="GRUPO / SECCIÓN:" />
+                <TextField fx:id="groupField" promptText="Ej. 01, A" styleClass="input" />
+            </VBox>
+        </HBox>
+
+        <HBox spacing="12.0">
+            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                <Label styleClass="field-label" text="NOMBRE DEL DOCENTE (Opcional):" />
+                <TextField fx:id="teacherField" promptText="Ej. Dra. Laura Méndez" styleClass="input" />
+            </VBox>
+            <VBox prefWidth="120.0" spacing="4.0">
+                <Label styleClass="field-label" text="CRÉDITOS:" />
+                <TextField fx:id="creditsField" promptText="0–40" styleClass="input" />
+            </VBox>
+        </HBox>
+
+        <VBox spacing="4.0">
+            <Label styleClass="field-label" text="HORARIO (Opcional):" />
+            <TextField fx:id="scheduleField" promptText="Ej. Lunes y Miércoles 08:00–10:00 · Aula B-204" styleClass="input" />
+        </VBox>
+
+        <VBox spacing="4.0">
+            <Label styleClass="field-label" text="DESCRIPCIÓN O NOTAS PERSONALES (Opcional, hasta 1500 caracteres):" />
+            <TextArea fx:id="notesArea" prefRowCount="3" promptText="Bibliografía, criterios de evaluación, enlaces o apuntes personales..." styleClass="text-area" wrapText="true" />
+        </VBox>
+
+        <Label fx:id="errorLabel" managed="false" styleClass="status-error" text="" visible="false" wrapText="true" />
+    </VBox>
+
+    <HBox alignment="CENTER_RIGHT" spacing="10.0">
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnCancel" onAction="#onCancel" styleClass="secondary" text="Cancelar" />
+        <Button fx:id="btnSubmit" onAction="#onSubmit" styleClass="primary" text="Guardar Materia" />
+    </HBox>
+</VBox>

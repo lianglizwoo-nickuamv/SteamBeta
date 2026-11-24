@@ -11,8 +11,8 @@ import java.util.concurrent.ExecutorService;
 
 /**
  * Controlador de Equipos de Estudio (FXML) — SteamBeta Campus:
- * Conecta estudiantes según materias de apoyo mutuo y compatibilidad horaria.
- * Construcción 100% basada en FXML (Sin TextInputDialog ni Alert nativos).
+ * Permite buscar compañeros por nombre, alias, materias, temas o apoyo,
+ * consultar sus fichas públicas y contactarlos únicamente por los medios habilitados.
  */
 public final class StudyTeamsController {
 
@@ -36,7 +36,7 @@ public final class StudyTeamsController {
     private void loadProfileAndMatches() {
         long epoch = scope.generation();
 
-        // Cargar ficha propia
+        // Cargar ficha propia del estudiante autenticado
         workers.submit(() -> {
             try {
                 var p = api.studyProfile();
@@ -45,45 +45,92 @@ public final class StudyTeamsController {
                     this.currentProfile = p;
                     myProfileCard.getChildren().clear();
 
-                    var card = ViewLoader.<StudyMatchCardController>load("StudyMatchCard.fxml");
-                    card.controller().set(p);
+                    ViewLoader.ViewResult<StudyMatchCardController> card = ViewLoader.load("StudyMatchCard.fxml");
+                    card.controller().setOwnProfile(p);
                     myProfileCard.getChildren().add(card.root());
                 });
-            } catch (Exception ignored) {}
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    if (!scope.current(epoch)) return;
+                    myProfileCard.getChildren().clear();
+                    ViewLoader.ViewResult<EmptyStateController> empty = ViewLoader.load("EmptyState.fxml");
+                    String msg = ex.getMessage() != null && !ex.getMessage().isBlank()
+                            ? ex.getMessage() : "Error al consultar tu ficha de estudio.";
+                    empty.controller().set("✕", "No se pudo cargar tu ficha de estudio", msg, null, null);
+                    myProfileCard.getChildren().add(empty.root());
+                });
+            }
         });
 
-        searchMatches("");
+        String currentQuery = subjectSearchField != null && subjectSearchField.getText() != null
+                ? subjectSearchField.getText().strip() : "";
+        searchMatches(currentQuery);
     }
 
     private void searchMatches(String query) {
         long epoch = scope.generation();
+        String cleanQuery = query == null ? "" : query.strip();
+
         workers.submit(() -> {
             try {
-                var matches = api.findStudyMatches(query);
+                var matches = api.findStudyMatches(cleanQuery);
                 Platform.runLater(() -> {
                     if (!scope.current(epoch)) return;
                     matchesListBox.getChildren().clear();
 
                     if (matches.isEmpty()) {
-                        var empty = ViewLoader.<EmptyStateController>load("EmptyState.fxml");
-                        empty.controller().set("◆", "No se encontraron compañeros para esta materia",
-                                "Prueba con otra materia o comparte tu ficha para que otros te contacten.", null, null);
+                        ViewLoader.ViewResult<EmptyStateController> empty = ViewLoader.load("EmptyState.fxml");
+                        if (!cleanQuery.isBlank()) {
+                            empty.controller().set("◆", "Sin coincidencias para «" + cleanQuery + "»",
+                                    "No se encontraron compañeros visibles que coincidan con ese nombre, alias, materia o tema.",
+                                    "Limpiar búsqueda", this::onClearSearch);
+                        } else {
+                            empty.controller().set("◆", "Aún no hay compañeros visibles disponibles",
+                                    "Comparte tu ficha de estudio como visible para que otros estudiantes puedan encontrarte.",
+                                    null, null);
+                        }
                         matchesListBox.getChildren().add(empty.root());
                     } else {
                         for (var m : matches) {
-                            var card = ViewLoader.<StudyMatchCardController>load("StudyMatchCard.fxml");
-                            card.controller().set(m);
+                            ViewLoader.ViewResult<StudyMatchCardController> card = ViewLoader.load("StudyMatchCard.fxml");
+                            card.controller().setMatch(m,
+                                    () -> openStudyProfileDetail(m, false),
+                                    () -> openStudyProfileDetail(m, true));
                             matchesListBox.getChildren().add(card.root());
                         }
                     }
                 });
-            } catch (Exception ignored) {}
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    if (!scope.current(epoch)) return;
+                    matchesListBox.getChildren().clear();
+                    ViewLoader.ViewResult<EmptyStateController> empty = ViewLoader.load("EmptyState.fxml");
+                    String msg = ex.getMessage() != null ? ex.getMessage() : "Error al conectar con el servidor.";
+                    empty.controller().set("✕", "No se pudieron consultar los compañeros", msg, null, null);
+                    matchesListBox.getChildren().add(empty.root());
+                });
+            }
         });
+    }
+
+    private void openStudyProfileDetail(ApiClient.StudyProfile match, boolean focusContact) {
+        ViewLoader.ViewResult<StudyProfileDetailDialogController> dialog = ViewLoader.load("StudyProfileDetailDialog.fxml");
+        dialog.controller().load(api, workers, match, focusContact);
+        Stage owner = myProfileCard.getScene() != null ? (Stage) myProfileCard.getScene().getWindow() : null;
+        String title = focusContact ? "Contactar a " + match.alias() : "Ficha de Estudio · " + match.alias();
+        UiHelper.createModalStage(dialog.root(), title, owner).showAndWait();
     }
 
     @FXML
     private void onSearch() {
-        searchMatches(subjectSearchField.getText().strip());
+        String q = subjectSearchField.getText() == null ? "" : subjectSearchField.getText().strip();
+        searchMatches(q);
+    }
+
+    @FXML
+    private void onClearSearch() {
+        subjectSearchField.clear();
+        searchMatches("");
     }
 
     @FXML
@@ -93,7 +140,7 @@ public final class StudyTeamsController {
 
     @FXML
     private void onEditProfile() {
-        var dialogLoader = ViewLoader.<EditStudyProfileDialogController>load("EditStudyProfileDialog.fxml");
+        ViewLoader.ViewResult<EditStudyProfileDialogController> dialogLoader = ViewLoader.load("EditStudyProfileDialog.fxml");
         if (currentProfile != null) {
             dialogLoader.controller().setProfile(currentProfile);
         }

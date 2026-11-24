@@ -178,7 +178,12 @@ public final class HomeController {
 
     @FXML
     private void onOpenQuestions() {
-        if (navigator != null) navigator.navigateTo("QUESTIONS");
+        if (navigator != null) navigator.navigateTo("COMMUNITIES");
+    }
+
+    @FXML
+    private void onOpenNotifications() {
+        if (navigator != null) navigator.navigateTo("NOTIFICATIONS");
     }
 
     @FXML

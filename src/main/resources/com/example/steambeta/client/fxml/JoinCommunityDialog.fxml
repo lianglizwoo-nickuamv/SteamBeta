@@ -14,7 +14,7 @@
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <Label styleClass="title" text="Unirse con Código" />
         </HBox>
-        <Label styleClass="muted" text="Introduce el código alfanumérico emitido por el administrador de la comunidad." />
+        <Label fx:id="subtitleLabel" styleClass="muted" text="Introduce el código alfanumérico emitido por el administrador de la comunidad." wrapText="true" />
         <Separator />
     </VBox>
 

@@ -1,6 +1,7 @@
 package com.example.steambeta.backend.study;
 
 import java.util.List;
+import java.util.UUID;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,7 +24,15 @@ public class StudyTeamController {
     }
 
     @GetMapping("/matches")
-    public List<StudyTeamService.StudyProfile> findMatches(@RequestParam(required = false) String subject) {
-        return studyTeamService.findMatches(subject);
+    public List<StudyTeamService.StudyProfile> findMatches(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String subject) {
+        String effective = (q != null && !q.isBlank()) ? q : subject;
+        return studyTeamService.findMatches(effective);
+    }
+
+    @GetMapping("/matches/{accountId}")
+    public StudyTeamService.PublicStudyDetail publicProfile(@PathVariable UUID accountId) {
+        return studyTeamService.publicProfile(accountId);
     }
 }

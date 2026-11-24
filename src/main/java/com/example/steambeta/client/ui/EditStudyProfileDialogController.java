@@ -89,10 +89,10 @@ public final class EditStudyProfileDialogController {
                 .toList();
 
         String canHelp = canHelpField.getText() != null && !canHelpField.getText().isBlank()
-                ? canHelpField.getText().strip() : "Apoyo general";
+                ? canHelpField.getText().strip() : null;
         String needsHelp = needsHelpField.getText() != null && !needsHelpField.getText().isBlank()
-                ? needsHelpField.getText().strip() : "Resolución de ejercicios";
-        String avail = availabilityCombo.getValue() != null ? availabilityCombo.getValue() : "Tardes";
+                ? needsHelpField.getText().strip() : null;
+        String avail = availabilityCombo.getValue();
         boolean visible = visibleCheck.isSelected();
 
         if (api == null || workers == null) return;

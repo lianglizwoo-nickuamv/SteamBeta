@@ -55,7 +55,7 @@ public final class CalendarDayCellController {
                 String badgeStyle = "badge-academic";
                 if ("EXAM".equalsIgnoreCase(ev.eventType())) {
                     badgeStyle = "badge-pending";
-                } else if ("SUBMISSION".equalsIgnoreCase(ev.eventType())) {
+                } else if ("DELIVERY".equalsIgnoreCase(ev.eventType())) {
                     badgeStyle = "badge-resolved";
                 }
                 String shortTitle = ev.title() != null && ev.title().length() > 9

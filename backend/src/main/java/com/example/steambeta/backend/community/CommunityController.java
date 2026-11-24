@@ -116,8 +116,15 @@ public class CommunityController {
     }
 
     @GetMapping("/api/communities/explore")
-    public List<CommunityService.CommunityOverview> exploreCommunities() {
-        return community.exploreCommunities();
+    public List<CommunityService.CommunityOverview> exploreCommunities(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) String category) {
+        return community.exploreCommunities(query, category);
+    }
+
+    @PostMapping("/api/communities/{communityId}/join-public")
+    public CommunityService.Community joinPublicCommunity(@PathVariable UUID communityId) {
+        return community.joinPublicCommunity(communityId);
     }
 
     @PostMapping("/api/communities/{communityId}/invitations")

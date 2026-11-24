@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<ScrollPane fitToHeight="true" fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.AuthController">
+<ScrollPane fitToHeight="true" fitToWidth="true" styleClass="app-background" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.AuthController">
     <StackPane alignment="CENTER">
         <padding>
             <Insets bottom="40.0" left="24.0" right="24.0" top="40.0" />
@@ -17,13 +17,8 @@
                     <Label styleClass="brand" text="SteamBeta" />
                     <Label styleClass="brand-badge" text="CAMPUS" />
                 </HBox>
-                <Label styleClass="display" text="Tu red universitaria&#10;y académica" />
-                <Label styleClass="muted" text="Conecta con comunidades de estudiantes, organiza tus tareas, resuelve dudas y colabora en proyectos académicos." wrapText="true" />
-                <VBox spacing="8.0">
-                    <Label styleClass="muted" text="• Persistencia centralizada en PostgreSQL (steam_academico)" wrapText="true" />
-                    <Label styleClass="muted" text="• Acceso seguro mediante identificador o correo registrado" wrapText="true" />
-                    <Label styleClass="muted" text="• Espacio colaborativo libre de barreras administrativas" wrapText="true" />
-                </VBox>
+                <Label styleClass="display" text="Tu espacio universitario,&#10;conectado." />
+                <Label styleClass="muted" text="Organiza tus tareas, conecta con comunidades estudiantiles y colabora en proyectos académicos." wrapText="true" />
             </VBox>
 
             <!-- Columna Derecha: Tarjeta de Formulario Unificada -->

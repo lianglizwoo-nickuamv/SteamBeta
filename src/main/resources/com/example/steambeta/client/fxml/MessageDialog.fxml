@@ -9,7 +9,7 @@
         <Insets bottom="20.0" left="22.0" right="22.0" top="20.0" />
     </padding>
     <HBox alignment="CENTER_LEFT" spacing="12.0">
-        <Label fx:id="iconLabel" style="-fx-font-size: 20px; -fx-text-fill: #55C6A0;" text="[i]" />
+        <Label fx:id="iconLabel" styleClass="dialog-icon" text="[i]" />
         <VBox spacing="2.0">
             <Label fx:id="titleLabel" styleClass="title" text="Notificación de SteamBeta" />
             <Label styleClass="muted" text="Campus Universitario" />

@@ -55,7 +55,9 @@ public final class AcademicPlannerController {
 
                     for (var t : tasks) {
                         var card = ViewLoader.<TaskCardController>load("TaskCard.fxml");
-                        card.controller().set(t, status -> updateStatus(t.id(), status), () -> deleteTask(t.id()));
+                        card.controller().set(t, status -> updateStatus(t.id(), status),
+                                () -> onEditTask(t),
+                                () -> deleteTask(t.id()));
                         switch (t.status()) {
                             case "IN_PROGRESS" -> progressCol.getChildren().add(card.root());
                             case "IN_REVIEW"   -> reviewCol.getChildren().add(card.root());
@@ -64,7 +66,16 @@ public final class AcademicPlannerController {
                         }
                     }
                 });
-            } catch (Exception ignored) {}
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    if (!scope.current(epoch)) return;
+                    pendingCol.getChildren().clear();
+                    var empty = ViewLoader.<EmptyStateController>load("EmptyState.fxml");
+                    String msg = ex.getMessage() != null ? ex.getMessage() : "Error al conectar con el servidor.";
+                    empty.controller().set("✕", "No se pudieron cargar las tareas", msg, "Reintentar", this::loadTasks);
+                    pendingCol.getChildren().add(empty.root());
+                });
+            }
         });
     }
 
@@ -73,7 +84,12 @@ public final class AcademicPlannerController {
             try {
                 api.updateTask(taskId, status, null, null);
                 Platform.runLater(this::loadTasks);
-            } catch (Exception ignored) {}
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    Stage owner = pendingCol.getScene() != null ? (Stage) pendingCol.getScene().getWindow() : null;
+                    UiHelper.showError(owner, "Error al actualizar tarea", ex.getMessage() != null ? ex.getMessage() : "No se pudo actualizar el estado de la tarea.");
+                });
+            }
         });
     }
 
@@ -82,7 +98,12 @@ public final class AcademicPlannerController {
             try {
                 api.deleteTask(taskId);
                 Platform.runLater(this::loadTasks);
-            } catch (Exception ignored) {}
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    Stage owner = pendingCol.getScene() != null ? (Stage) pendingCol.getScene().getWindow() : null;
+                    UiHelper.showError(owner, "Error al eliminar tarea", ex.getMessage() != null ? ex.getMessage() : "No se pudo eliminar la tarea.");
+                });
+            }
         });
     }
 
@@ -101,6 +122,20 @@ public final class AcademicPlannerController {
             loadTasks();
             UiHelper.showSuccess(owner, "Tarea Registrada",
                     "'" + task.title() + "' ha sido añadida a tu tablero en estado Pendiente.");
+        });
+
+        modal.showAndWait();
+    }
+
+    private void onEditTask(ApiClient.TaskItem existing) {
+        var loader = ViewLoader.<CreateTaskDialogController>load("CreateTaskDialog.fxml");
+        Stage owner = pendingCol.getScene() != null ? (Stage) pendingCol.getScene().getWindow() : null;
+        var modal = UiHelper.createModalStage(loader.root(), "Editar Tarea Académica", owner);
+
+        loader.controller().initForEdit(api, workers, existing, task -> {
+            loadTasks();
+            UiHelper.showSuccess(owner, "Tarea Actualizada",
+                    "Los cambios en '" + (task != null ? task.title() : existing.title()) + "' fueron guardados.");
         });
 
         modal.showAndWait();

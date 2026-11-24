@@ -15,8 +15,10 @@ public class AcademicTaskController {
     }
 
     @GetMapping
-    public List<AcademicTaskService.TaskItem> myTasks(@RequestParam(required = false) String status) {
-        return taskService.myTasks(status);
+    public List<AcademicTaskService.TaskItem> myTasks(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String priority) {
+        return taskService.myTasks(status, priority);
     }
 
     @PostMapping
@@ -26,9 +28,9 @@ public class AcademicTaskController {
     }
 
     @PatchMapping("/{taskId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateTask(@PathVariable UUID taskId, @RequestBody AcademicTaskService.TaskUpdate update) {
-        taskService.updateTask(taskId, update);
+    public AcademicTaskService.TaskItem updateTask(@PathVariable UUID taskId,
+                                                   @RequestBody AcademicTaskService.TaskUpdate update) {
+        return taskService.updateTask(taskId, update);
     }
 
     @DeleteMapping("/{taskId}")

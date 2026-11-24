@@ -10,7 +10,7 @@ import java.util.Properties;
  */
 public final class EnvironmentConfig {
     public enum Environment {
-        LOCAL("Desarrollo Local", "http://localhost:8080"),
+        LOCAL("Desarrollo Local", "http://127.0.0.1:8080"),
         STAGING("Demostración / Staging", "https://staging.steambeta.campus"),
         PRODUCTION("Servidor Central Campus", "https://api.steambeta.campus");
 

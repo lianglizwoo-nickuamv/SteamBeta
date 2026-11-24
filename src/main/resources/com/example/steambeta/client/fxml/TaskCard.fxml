@@ -5,7 +5,7 @@
 
 <VBox spacing="6.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.TaskCardController">
     <HBox alignment="CENTER_LEFT" spacing="6.0">
-        <Label fx:id="priorityBadge" styleClass="badge-role" text="MEDIUM" />
+        <Label fx:id="priorityBadge" styleClass="badge-role" text="Media" />
         <Region HBox.hgrow="ALWAYS" />
         <Label fx:id="dueLabel" styleClass="muted" text="Vence: 01/01" />
     </HBox>
@@ -16,8 +16,10 @@
 
     <HBox alignment="CENTER_LEFT" spacing="6.0">
         <Button fx:id="btnProg" onAction="#onProgress" style="-fx-font-size: 10px; -fx-padding: 3 6;" styleClass="secondary" text="En proceso" />
+        <Button fx:id="btnRev" onAction="#onReview" style="-fx-font-size: 10px; -fx-padding: 3 6;" styleClass="secondary" text="En revisión" />
         <Button fx:id="btnComp" onAction="#onComplete" style="-fx-font-size: 10px; -fx-padding: 3 6;" styleClass="primary" text="✓ Completar" />
         <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnEdit" onAction="#onEdit" style="-fx-font-size: 10px; -fx-padding: 3 6;" styleClass="secondary" text="Editar" />
         <Button fx:id="btnDel" onAction="#onDelete" style="-fx-font-size: 10px; -fx-padding: 3 6;" styleClass="danger-btn" text="✕" />
     </HBox>
 </VBox>

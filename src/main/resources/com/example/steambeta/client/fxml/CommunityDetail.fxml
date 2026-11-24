@@ -32,6 +32,9 @@
                     <Button fx:id="btnCalendar" onAction="#onTabCalendar" styleClass="tab-btn" text="Calendario" />
                     <Button fx:id="btnMembers" onAction="#onTabMembers" styleClass="tab-btn" text="Integrantes" />
                     <Button fx:id="btnModeration" managed="false" onAction="#onOpenModeration" styleClass="secondary" text="Panel de Moderación" visible="false" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button fx:id="btnNewResource" managed="false" onAction="#onNewCommunityResource" styleClass="primary" text="+ Publicar Recurso" visible="false" />
+                    <Button fx:id="btnNewCalendarEvent" managed="false" onAction="#onNewCommunityEvent" styleClass="primary" text="+ Nuevo Evento" visible="false" />
                 </HBox>
                 <Separator />
 

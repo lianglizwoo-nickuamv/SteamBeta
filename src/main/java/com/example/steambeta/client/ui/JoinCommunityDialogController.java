@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 
 public final class JoinCommunityDialogController {
 
+    @FXML private Label subtitleLabel;
     @FXML private TextField codeField;
     @FXML private Label statusLabel;
     @FXML private Button btnCancel;
@@ -21,6 +22,7 @@ public final class JoinCommunityDialogController {
     private ApiClient api;
     private ExecutorService workers;
     private Consumer<ApiClient.Community> onJoined;
+    private String expectedCommunityId;
 
     @FXML
     public void initialize() {
@@ -35,9 +37,19 @@ public final class JoinCommunityDialogController {
     }
 
     public void init(ApiClient api, ExecutorService workers, Consumer<ApiClient.Community> onJoined) {
+        initForCommunity(api, workers, null, null, onJoined);
+    }
+
+    public void initForCommunity(ApiClient api, ExecutorService workers,
+                                 String communityId, String communityName,
+                                 Consumer<ApiClient.Community> onJoined) {
         this.api = api;
         this.workers = workers;
+        this.expectedCommunityId = communityId;
         this.onJoined = onJoined;
+        if (subtitleLabel != null && communityName != null && !communityName.isBlank()) {
+            subtitleLabel.setText("Introduce el código de invitación válido para ingresar a: " + communityName);
+        }
     }
 
     public String getCode() {
@@ -56,11 +68,11 @@ public final class JoinCommunityDialogController {
 
         btnJoin.setDisable(true);
         btnCancel.setDisable(true);
-        setStatus("Verificando código de acceso en el campus...", false);
+        setStatus("Verificando código de acceso en el servidor...", false);
 
         workers.submit(() -> {
             try {
-                var comm = api.joinCommunity(code);
+                var comm = api.joinCommunity(code, expectedCommunityId);
                 Platform.runLater(() -> {
                     setStatus("¡Te has unido exitosamente a " + comm.name() + "!", false);
                     if (onJoined != null) onJoined.accept(comm);
@@ -70,7 +82,10 @@ public final class JoinCommunityDialogController {
                 Platform.runLater(() -> {
                     btnJoin.setDisable(false);
                     btnCancel.setDisable(false);
-                    setStatus(ex.getMessage(), true);
+                    String msg = ex.getMessage() != null && !ex.getMessage().isBlank()
+                            ? ex.getMessage()
+                            : "El código no permite acceder a la comunidad.";
+                    setStatus(msg, true);
                 });
             }
         });
@@ -83,11 +98,9 @@ public final class JoinCommunityDialogController {
 
     private void setStatus(String message, boolean isError) {
         statusLabel.setText(message);
-        if (isError) {
-            statusLabel.setStyle("-fx-text-fill: #f87171; -fx-font-weight: bold;");
-        } else {
-            statusLabel.setStyle("-fx-text-fill: #34d399; -fx-font-weight: bold;");
-        }
+        statusLabel.getStyleClass().setAll(isError ? "status-error" : "status-ok");
+        statusLabel.setVisible(true);
+        statusLabel.setManaged(true);
     }
 
     private void close() {

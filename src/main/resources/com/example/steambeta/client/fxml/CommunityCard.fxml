@@ -7,8 +7,15 @@
     <HBox alignment="CENTER_LEFT" spacing="10.0">
         <Label fx:id="nameLabel" styleClass="card-title" text="Nombre de la comunidad" />
         <Label fx:id="roleBadge" styleClass="badge-role" text="MEMBER" />
+        <Label fx:id="fullBadge" managed="false" styleClass="badge-pending" text="Comunidad llena" visible="false" />
         <Region HBox.hgrow="ALWAYS" />
         <Button fx:id="enterBtn" onAction="#onEnter" styleClass="primary" text="Entrar a la comunidad" />
     </HBox>
     <Label fx:id="descLabel" styleClass="muted" text="Descripción de la comunidad..." wrapText="true" />
+    <HBox alignment="CENTER_LEFT" spacing="12.0">
+        <Label fx:id="capacityLabel" styleClass="muted" text="1 / 50 integrantes" />
+        <Label fx:id="slotsLabel" styleClass="muted" text="49 espacios disponibles" />
+        <Region HBox.hgrow="ALWAYS" />
+        <ProgressBar fx:id="capacityBar" prefHeight="8.0" prefWidth="140.0" progress="0.02" />
+    </HBox>
 </VBox>

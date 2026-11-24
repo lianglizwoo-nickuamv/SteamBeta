@@ -6,8 +6,13 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import java.net.ConnectException;
+import java.net.UnknownHostException;
+import java.net.http.HttpConnectTimeoutException;
+import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Controlador de Autenticación (FXML) — SteamBeta Campus:
@@ -50,6 +55,7 @@ public final class AuthController {
     private SessionScope scope;
     private ExecutorService workers;
     private AuthListener listener;
+    private final AtomicBoolean authInFlight = new AtomicBoolean(false);
 
     @FXML
     public void initialize() {
@@ -128,10 +134,14 @@ public final class AuthController {
 
     @FXML
     private void onLoginSubmit() {
+        if (!authInFlight.compareAndSet(false, true)) {
+            return;
+        }
         String identifier = loginIdentifierField.getText().strip();
         String secret = loginPasswordField.getText();
 
         if (identifier.isBlank() || secret.isEmpty()) {
+            authInFlight.set(false);
             setStatus("Por favor escribe tu identificador/correo y tu contraseña.", "status-error");
             return;
         }
@@ -141,6 +151,7 @@ public final class AuthController {
         try {
             client = new ApiClient();
         } catch (Exception e) {
+            authInFlight.set(false);
             setStatus("Error en la configuración: URL de conexión inválida.", "status-error");
             return;
         }
@@ -152,35 +163,57 @@ public final class AuthController {
             try {
                 var identity = client.login(identifier, secret);
                 Platform.runLater(() -> {
+                    authInFlight.set(false);
                     if (!scope.current(epoch)) {
                         client.clear();
+                        setBusy(false);
                         return;
                     }
-                    listener.onLoginSuccess(client, identity);
+                    try {
+                        listener.onLoginSuccess(client, identity);
+                    } catch (Throwable uiErr) {
+                        client.clear();
+                        setBusy(false);
+                        setStatus("Error al abrir el panel principal: " + (uiErr.getMessage() != null ? uiErr.getMessage() : uiErr.getClass().getSimpleName()), "status-error");
+                    }
                 });
             } catch (Throwable err) {
                 Platform.runLater(() -> {
-                    if (!scope.current(epoch)) return;
+                    authInFlight.set(false);
+                    if (!scope.current(epoch)) {
+                        client.clear();
+                        setBusy(false);
+                        return;
+                    }
                     client.clear();
                     setBusy(false);
-
-                    if (err instanceof ApiClient.Failure f) {
-                        if (f.status() == 401) {
-                            setStatus("Identificador, correo o contraseña incorrectos.", "status-error");
-                        } else if (f.status() == 403) {
-                            setStatus("Acceso denegado: tu cuenta se encuentra suspendida o deshabilitada.", "status-error");
-                        } else if (f.status() == 500) {
-                            setStatus("Error interno en el servidor central. Intenta más tarde.", "status-error");
-                        } else {
-                            setStatus("Respuesta inesperada del servidor (HTTP " + f.status() + ").", "status-error");
-                        }
-                    } else {
-                        setStatus("No se pudo conectar con el servidor backend (puerto 8080).", "status-error");
-                    }
+                    setStatus(classifyAuthError(err), "status-error");
                     loginPasswordField.requestFocus();
                 });
             }
         });
+    }
+
+    private static String classifyAuthError(Throwable err) {
+        if (err instanceof ApiClient.Failure f) {
+            return switch (f.status()) {
+                case 401 -> "Credenciales incorrectas.";
+                case 403 -> "Acceso denegado: tu cuenta se encuentra suspendida o deshabilitada.";
+                case 500, 502, 503, 504 -> "No se pudo verificar la base de datos.";
+                default -> "Respuesta inesperada del servidor (HTTP " + f.status() + ").";
+            };
+        }
+        Throwable cause = err;
+        while (cause != null) {
+            if (cause instanceof HttpConnectTimeoutException || cause instanceof ConnectException || cause instanceof UnknownHostException) {
+                return "No se pudo conectar con el servidor.";
+            }
+            if (cause instanceof HttpTimeoutException) {
+                return "El servidor tardó demasiado en responder.";
+            }
+            cause = cause.getCause();
+        }
+        return "No se pudo conectar con el servidor.";
     }
 
     @FXML

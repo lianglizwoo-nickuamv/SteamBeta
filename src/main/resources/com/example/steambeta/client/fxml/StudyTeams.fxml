@@ -29,14 +29,16 @@
             <Separator />
         </VBox>
 
-        <!-- Barra de búsqueda por materia -->
-        <HBox alignment="CENTER_LEFT" spacing="12.0">
-            <Label styleClass="field-label" text="Buscar compañeros por materia:" />
-            <TextField fx:id="subjectSearchField" onAction="#onSearch" prefWidth="320.0" promptText="Ej. Álgebra, Programación, Cálculo..." styleClass="input" />
+        <!-- Barra de búsqueda por nombre, alias o materia -->
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label styleClass="field-label" text="Buscar compañeros por nombre, alias o materia:" />
+            <TextField fx:id="subjectSearchField" onAction="#onSearch" prefWidth="340.0" promptText="Ej. Jospeay, Álgebra Lineal, Programación..." styleClass="input" />
             <Button onAction="#onSearch" styleClass="secondary" text="Buscar" />
+            <Button onAction="#onClearSearch" styleClass="secondary" text="Limpiar" />
         </HBox>
 
-        <!-- Panel de Estado / Mi Perfil de Estudio -->
+        <!-- Panel de Mi Ficha de Estudio -->
+        <Label styleClass="section-title" text="Mi Ficha de Estudio" />
         <VBox fx:id="myProfileCard" spacing="8.0" styleClass="card" />
 
         <!-- Listado de Coincidencias de Estudio -->

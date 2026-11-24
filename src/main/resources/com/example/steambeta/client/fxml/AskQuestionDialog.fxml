@@ -4,34 +4,39 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<DialogPane prefWidth="520.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.AskQuestionDialogController">
-    <header>
+<VBox prefWidth="540.0" spacing="14.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.AskQuestionDialogController">
+    <padding>
+        <Insets bottom="20.0" left="22.0" right="22.0" top="20.0" />
+    </padding>
+
+    <VBox spacing="4.0">
+        <Label fx:id="headerTitle" styleClass="title" text="Formular Pregunta Académica" />
+        <Label fx:id="headerSubtitle" styleClass="muted" text="Publica tu duda para que otros compañeros o moderadores te ayuden." />
+        <Separator />
+    </VBox>
+
+    <VBox spacing="10.0" styleClass="card">
         <VBox spacing="4.0">
-            <padding>
-                <Insets bottom="10.0" left="16.0" right="16.0" top="16.0" />
-            </padding>
-            <Label fx:id="headerTitle" styleClass="title" text="Formular Pregunta Académica" />
-            <Label fx:id="headerSubtitle" styleClass="muted" text="Publica tu duda para que otros compañeros o moderadores te ayuden." />
-            <Separator />
+            <Label styleClass="field-label" text="TÍTULO DE LA DUDA (3–160 caracteres):" />
+            <TextField fx:id="titleField" promptText="Ej. ¿Cómo plantear la integral por partes en este problema?" styleClass="input" />
         </VBox>
-    </header>
-    <content>
-        <VBox spacing="10.0">
-            <padding>
-                <Insets bottom="12.0" left="16.0" right="16.0" top="10.0" />
-            </padding>
-            <Label styleClass="field-label" text="Título claro y conciso de la duda:" />
-            <TextField fx:id="titleField" promptText="Ej. ¿Cómo plantear la integral por partes en este problema?" />
 
-            <Label styleClass="field-label" text="Asignatura o materia relacionada:" />
-            <TextField fx:id="subjectField" promptText="Ej. Cálculo II, Física Mecánica, Algoritmos..." />
-
-            <Label styleClass="field-label" text="Descripción detallada:" />
-            <TextArea fx:id="bodyArea" prefRowCount="5" promptText="Explica qué ejercicio estás haciendo, qué dudas tienes y qué has intentado..." wrapText="true" />
+        <VBox spacing="4.0">
+            <Label styleClass="field-label" text="ASIGNATURA O MATERIA RELACIONADA:" />
+            <TextField fx:id="subjectField" promptText="Ej. Cálculo II, Física Mecánica, Algoritmos..." styleClass="input" />
         </VBox>
-    </content>
-    <buttonTypes>
-        <ButtonType fx:constant="OK" />
-        <ButtonType fx:constant="CANCEL" />
-    </buttonTypes>
-</DialogPane>
+
+        <VBox spacing="4.0">
+            <Label styleClass="field-label" text="DESCRIPCIÓN DETALLADA:" />
+            <TextArea fx:id="bodyArea" prefRowCount="5" promptText="Explica qué ejercicio estás haciendo, qué dudas tienes y qué has intentado..." styleClass="text-area" wrapText="true" />
+        </VBox>
+
+        <Label fx:id="errorLabel" managed="false" styleClass="status-error" text="" visible="false" wrapText="true" />
+    </VBox>
+
+    <HBox alignment="CENTER_RIGHT" spacing="12.0">
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnCancel" onAction="#onCancel" styleClass="secondary" text="Cancelar" />
+        <Button fx:id="btnSubmit" onAction="#onSubmit" styleClass="primary" text="Publicar Pregunta" />
+    </HBox>
+</VBox>

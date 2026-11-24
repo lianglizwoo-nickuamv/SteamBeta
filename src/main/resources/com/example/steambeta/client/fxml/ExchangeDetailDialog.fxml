@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefWidth="640.0" spacing="12.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ExchangeDetailDialogController">
+    <padding>
+        <Insets bottom="20.0" left="22.0" right="22.0" top="20.0" />
+    </padding>
+
+    <VBox spacing="4.0">
+        <HBox alignment="CENTER_LEFT" spacing="8.0">
+            <Label fx:id="typeBadge" styleClass="badge-resolved" text="Intercambio" />
+            <Label fx:id="catBadge" styleClass="badge-role" text="Libros" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="ownerLabel" styleClass="muted" text="Publicado por:" />
+        </HBox>
+        <Label fx:id="titleLabel" styleClass="title" text="Título del material" wrapText="true" />
+        <Separator />
+    </VBox>
+
+    <VBox spacing="8.0" styleClass="card">
+        <Label fx:id="descLabel" styleClass="post-body" text="Descripción..." wrapText="true" />
+        <Label fx:id="contactLabel" styleClass="field-label" text="Contacto:" />
+    </VBox>
+
+    <VBox spacing="8.0" styleClass="card">
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label styleClass="section-title" text="Archivos Adjuntos" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="btnDownload" disable="true" onAction="#onDownloadSelected" styleClass="primary" text="Descargar archivo" />
+            <Button fx:id="btnDeleteAtt" managed="false" onAction="#onDeleteSelected" styleClass="danger-btn" text="Eliminar adjunto" visible="false" />
+        </HBox>
+        <ListView fx:id="attachmentsList" prefHeight="110.0" styleClass="input" />
+        <VBox fx:id="previewBox" alignment="CENTER" managed="false" spacing="6.0" visible="false">
+            <Label styleClass="muted" text="Vista previa de imagen:" />
+            <ImageView fx:id="previewImage" fitHeight="180.0" fitWidth="460.0" preserveRatio="true" />
+        </VBox>
+        <Label fx:id="statusLabel" styleClass="muted" text="Consultando archivos adjuntos..." wrapText="true" />
+    </VBox>
+
+    <HBox alignment="CENTER_RIGHT" spacing="10.0">
+        <Region HBox.hgrow="ALWAYS" />
+        <Button onAction="#onClose" styleClass="secondary" text="Cerrar" />
+    </HBox>
+</VBox>

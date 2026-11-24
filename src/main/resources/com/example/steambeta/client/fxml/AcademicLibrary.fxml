@@ -11,55 +11,88 @@
 
     <!-- Cabecera de Módulo -->
     <VBox spacing="10.0">
-        <HBox alignment="CENTER_LEFT" spacing="16.0">
+        <HBox alignment="CENTER_LEFT" spacing="12.0">
             <VBox spacing="4.0">
                 <HBox alignment="CENTER_LEFT" spacing="12.0">
                     <Label styleClass="title" text="Biblioteca Universitaria" />
-                    <Label styleClass="badge-admin" text="SISTEMA ACADÉMICO" />
+                    <Label styleClass="badge-admin" text="MATERIAS Y SEGUIMIENTO" />
                 </HBox>
-                <Label styleClass="muted" text="Materias matriculadas, actividades obligatorias y seguimiento académico." />
+                <Label styleClass="muted" text="Consulta materias institucionales vinculadas y administra tus materias registradas manualmente." />
             </VBox>
             <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="addSubjectBtn" onAction="#onAddManualSubject" styleClass="primary" text="+ Agregar materia" />
             <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar Biblioteca" />
         </HBox>
         <Separator />
     </VBox>
 
-    <!-- Contenido en 2 Paneles: Asignaturas y Detalle de Progreso -->
-    <HBox spacing="16.0" VBox.vgrow="ALWAYS">
-        <!-- Panel Izquierdo: Lista de Materias -->
-        <VBox prefWidth="320.0" spacing="10.0">
-            <Label styleClass="section-title" text="Materias Matriculadas" />
-            <ListView fx:id="subjectsList" VBox.vgrow="ALWAYS" />
-            <Label fx:id="libraryStatus" styleClass="muted" text="Consultando matrícula institucional…" />
+    <!-- Estado vacío compacto y centrado (cuando no hay materias registradas) -->
+    <VBox fx:id="emptyContainer" alignment="CENTER" managed="false" spacing="12.0" visible="false" VBox.vgrow="ALWAYS" />
+
+    <!-- Contenido en 2 Paneles: visible cuando existen materias institucionales o manuales -->
+    <HBox fx:id="librarySplitBox" spacing="16.0" VBox.vgrow="ALWAYS">
+        <!-- Panel Izquierdo: Lista de Materias y Filtros por Período -->
+        <VBox fx:id="subjectsPanel" prefWidth="340.0" spacing="10.0">
+            <Label styleClass="section-title" text="Mis Materias" />
+            <HBox spacing="8.0">
+                <ComboBox fx:id="yearFilterCombo" maxWidth="Infinity" promptText="Año" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+                <ComboBox fx:id="termFilterCombo" maxWidth="Infinity" promptText="Período" styleClass="combo-box" HBox.hgrow="ALWAYS" />
+            </HBox>
+            <ListView fx:id="subjectsList" styleClass="card" VBox.vgrow="ALWAYS">
+                <placeholder>
+                    <Label styleClass="muted" text="No hay materias para el filtro seleccionado." wrapText="true" />
+                </placeholder>
+            </ListView>
+            <Label fx:id="libraryStatus" styleClass="muted" text="Consultando materias…" wrapText="true" />
         </VBox>
 
-        <!-- Panel Derecho: Detalle de Actividades -->
+        <!-- Panel Derecho: Detalle de Materia -->
         <ScrollPane fitToWidth="true" HBox.hgrow="ALWAYS">
             <VBox fx:id="detailPane" spacing="14.0">
                 <padding>
                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                 </padding>
 
-                <!-- Estado o detalle vacío -->
-                <Label fx:id="detailStatusLabel" styleClass="muted" text="Selecciona una asignatura de la lista para ver sus actividades." />
+                <Label fx:id="detailStatusLabel" styleClass="muted" text="Selecciona una materia de la lista para ver su detalle." />
 
-                <!-- Contenedor del contenido cargado -->
                 <VBox fx:id="detailContentBox" managed="false" spacing="12.0" visible="false">
-                    <Label fx:id="subjectCodeLabel" styleClass="subject-code" text="INF-101" />
-                    <Label fx:id="subjectNameLabel" styleClass="title" text="Nombre de la Asignatura" />
-                    <Label fx:id="subjectMetaLabel" styleClass="muted" text="Período: 2026-1 · Sección: 01" />
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label fx:id="subjectCodeLabel" styleClass="subject-code" text="INF-101" />
+                        <Label fx:id="subjectSourceBadge" styleClass="badge-admin" text="Institucional" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button fx:id="btnEditManual" managed="false" onAction="#onEditManualSubject" styleClass="secondary" text="Editar" visible="false" />
+                        <Button fx:id="btnDeleteManual" managed="false" onAction="#onDeleteManualSubject" styleClass="danger-btn" text="Eliminar" visible="false" />
+                    </HBox>
+                    <Label fx:id="subjectNameLabel" styleClass="title" text="Nombre de la Asignatura" wrapText="true" />
+                    <Label fx:id="subjectMetaLabel" styleClass="muted" text="Período: 2026-1 · Sección: 01" wrapText="true" />
 
-                    <!-- Tarjeta de Progreso -->
-                    <VBox spacing="8.0" styleClass="card">
-                        <Label styleClass="section-title" text="Progreso de Actividades Obligatorias" />
-                        <Label fx:id="progressPercentLabel" styleClass="progress-number" text="0%" />
-                        <ProgressBar fx:id="progressBar" maxWidth="Infinity" progress="0.0" />
-                        <Label fx:id="progressCountsLabel" styleClass="muted" text="0 de 0 completadas" />
+                    <!-- Detalle Institucional (Actividades Obligatorias) -->
+                    <VBox fx:id="institutionalDetailBox" managed="false" spacing="12.0" visible="false">
+                        <VBox spacing="8.0" styleClass="card">
+                            <Label styleClass="section-title" text="Progreso de Actividades Obligatorias" />
+                            <Label fx:id="progressPercentLabel" styleClass="progress-number" text="0%" />
+                            <ProgressBar fx:id="progressBar" maxWidth="Infinity" progress="0.0" />
+                            <Label fx:id="progressCountsLabel" styleClass="muted" text="0 de 0 completadas" />
+                        </VBox>
+
+                        <Label styleClass="section-title" text="Listado de Actividades y Tareas" />
+                        <VBox fx:id="activitiesListBox" spacing="8.0" />
                     </VBox>
 
-                    <Label styleClass="section-title" text="Listado de Actividades y Tareas" />
-                    <VBox fx:id="activitiesListBox" spacing="8.0" />
+                    <!-- Detalle Manual (Registro Declarado por el Estudiante) -->
+                    <VBox fx:id="manualDetailBox" managed="false" spacing="10.0" styleClass="card" visible="false">
+                        <Label styleClass="section-title" text="Información del Registro Manual" />
+                        <Label fx:id="manualPeriodLabel" styleClass="post-body" text="Año y período:" wrapText="true" />
+                        <Label fx:id="manualGroupLabel" styleClass="post-body" text="Grupo / Sección:" wrapText="true" />
+                        <Label fx:id="manualTeacherLabel" styleClass="post-body" text="Docente:" wrapText="true" />
+                        <Label fx:id="manualCreditsLabel" styleClass="post-body" text="Créditos:" wrapText="true" />
+                        <Label fx:id="manualScheduleLabel" styleClass="post-body" text="Horario:" wrapText="true" />
+                        <Separator />
+                        <Label styleClass="field-label" text="DESCRIPCIÓN O NOTAS PERSONALES" />
+                        <Label fx:id="manualNotesLabel" styleClass="post-body" text="Sin notas registradas." wrapText="true" />
+                        <Separator />
+                        <Label styleClass="muted" text="Origen: materia declarada manualmente por el estudiante en SteamBeta. No corresponde a una matrícula verificada por la universidad." wrapText="true" />
+                    </VBox>
                 </VBox>
             </VBox>
         </ScrollPane>

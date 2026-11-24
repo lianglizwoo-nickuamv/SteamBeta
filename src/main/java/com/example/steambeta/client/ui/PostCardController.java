@@ -50,9 +50,8 @@ public final class PostCardController {
 
         var profile = api.getCachedProfile();
         boolean isAuthor = profile != null && profile.accountId() != null && profile.accountId().equals(post.authorAccountId());
-        boolean isMod = profile != null && profile.isGlobalModerator();
 
-        if (isAuthor || isMod) {
+        if (isAuthor) {
             deleteBtn.setVisible(true);
             deleteBtn.setManaged(true);
         }
@@ -90,7 +89,17 @@ public final class PostCardController {
                     }
                     toggleCommentsBtn.setText("💬 Comentarios (" + comments.size() + ")");
                 });
-            } catch (Exception ignored) {}
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    if (!scope.current(epoch)) return;
+                    commentsListBox.getChildren().clear();
+                    var empty = ViewLoader.<EmptyStateController>load("EmptyState.fxml");
+                    String msg = ex.getMessage() != null && !ex.getMessage().isBlank()
+                            ? ex.getMessage() : "Error al consultar comentarios en el servidor.";
+                    empty.controller().set("✕", "No se pudieron cargar los comentarios", msg, "Reintentar", this::loadComments);
+                    commentsListBox.getChildren().add(empty.root());
+                });
+            }
         });
     }
 
@@ -111,7 +120,9 @@ public final class PostCardController {
             } catch (Exception ex) {
                 Platform.runLater(() -> {
                     commentInputField.setDisable(false);
-                    UiHelper.alert("Error", "No se pudo enviar el comentario.", Alert.AlertType.ERROR);
+                    String msg = ex.getMessage() != null && !ex.getMessage().isBlank()
+                            ? ex.getMessage() : "Error al comunicarse con el servidor.";
+                    UiHelper.alert("Error", "No se pudo enviar el comentario: " + msg, Alert.AlertType.ERROR);
                 });
             }
         });
@@ -128,7 +139,12 @@ public final class PostCardController {
                     if (onPostDeleted != null) onPostDeleted.run();
                 });
             } catch (Exception ex) {
-                Platform.runLater(() -> UiHelper.alert("Error", "No se pudo eliminar la publicación.", Alert.AlertType.ERROR));
+                Platform.runLater(() -> {
+                    String msg = ex.getMessage() != null && !ex.getMessage().isBlank()
+                            ? ex.getMessage()
+                            : "Error de permisos o falla en el servidor.";
+                    UiHelper.alert("Error al eliminar", "No se pudo eliminar la publicación: " + msg, Alert.AlertType.ERROR);
+                });
             }
         });
     }

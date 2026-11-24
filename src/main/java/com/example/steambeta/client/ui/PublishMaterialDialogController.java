@@ -5,22 +5,55 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 /**
- * Controlador del diálogo de publicación de material de intercambio — SteamBeta Campus.
- * Sustituye el TextInputDialog nativo. Categorías y tipos compatibles con V11 PostgreSQL.
- * Categorías: BOOK, CALCULATOR, LAB_EQUIPMENT, NOTES, TOOL, OTHER
- * Tipos: EXCHANGE, GIFT, LOAN
+ * Controlador del diálogo de publicación/edición de material de intercambio con adjuntos (FXML).
+ * Etiquetas en español mapeadas a enums persistentes V11/V15.
  */
 public final class PublishMaterialDialogController {
 
+    private static final long MAX_FILE_BYTES = 26_214_400L; // 25 MB
+    private static final int MAX_FILES = 5;
+    private static final Set<String> ALLOWED_EXTS = Set.of(
+            "pdf", "doc", "docx", "ppt", "pptx",
+            "jpg", "jpeg", "png", "gif", "webp", "bmp", "tif", "tiff"
+    );
+
+    private static final Map<String, String> CAT_TO_ENUM = Map.of(
+            "Libros", "BOOK",
+            "Calculadoras", "CALCULATOR",
+            "Equipo de laboratorio", "LAB_EQUIPMENT",
+            "Apuntes", "NOTES",
+            "Herramientas", "TOOL",
+            "Otros materiales", "OTHER"
+    );
+
+    private static final Map<String, String> TYPE_TO_ENUM = Map.of(
+            "Intercambio", "EXCHANGE",
+            "Donación", "GIFT",
+            "Préstamo", "LOAN"
+    );
+
+    @FXML private Label headerTitle;
     @FXML private TextField titleField;
     @FXML private TextArea descriptionArea;
     @FXML private ComboBox<String> categoryCombo;
     @FXML private ComboBox<String> typeCombo;
     @FXML private TextField contactField;
+    @FXML private ListView<String> attachmentsList;
+    @FXML private Button btnAttach;
+    @FXML private Button btnRemoveFile;
     @FXML private Label errorLabel;
     @FXML private Button btnCancel;
     @FXML private Button btnSubmit;
@@ -28,26 +61,117 @@ public final class PublishMaterialDialogController {
     private ApiClient api;
     private ExecutorService workers;
     private Runnable onSuccess;
+    private ApiClient.ExchangeItem editingItem;
+    private final List<Path> selectedFiles = new ArrayList<>();
 
     @FXML
     public void initialize() {
-        // Categorías exactas del CHECK constraint V11
         categoryCombo.setItems(FXCollections.observableArrayList(
-                "BOOK", "CALCULATOR", "LAB_EQUIPMENT", "NOTES", "TOOL", "OTHER"
+                "Libros", "Apuntes", "Herramientas", "Calculadoras", "Equipo de laboratorio", "Otros materiales"
         ));
-        categoryCombo.setValue("BOOK");
+        categoryCombo.setValue("Libros");
 
-        // Tipos exactos del CHECK constraint V11
         typeCombo.setItems(FXCollections.observableArrayList(
-                "EXCHANGE", "GIFT", "LOAN"
+                "Intercambio", "Donación", "Préstamo"
         ));
-        typeCombo.setValue("EXCHANGE");
+        typeCombo.setValue("Intercambio");
     }
 
     public void init(ApiClient api, ExecutorService workers, Runnable onSuccess) {
         this.api = api;
         this.workers = workers;
         this.onSuccess = onSuccess;
+        this.editingItem = null;
+    }
+
+    public void initForEdit(ApiClient api, ExecutorService workers, ApiClient.ExchangeItem item, Runnable onSuccess) {
+        this.api = api;
+        this.workers = workers;
+        this.onSuccess = onSuccess;
+        this.editingItem = item;
+        if (item != null) {
+            if (headerTitle != null) headerTitle.setText("Editar Material de Intercambio");
+            titleField.setText(item.title() != null ? item.title() : "");
+            descriptionArea.setText(item.description() != null ? item.description() : "");
+            contactField.setText(item.contactInfo() != null ? item.contactInfo() : "");
+            categoryCombo.setValue(categoryLabel(item.category()));
+            typeCombo.setValue(typeLabel(item.exchangeType()));
+            btnSubmit.setText("Guardar Cambios");
+        }
+    }
+
+    public static String categoryLabel(String code) {
+        if (code == null) return "Otros materiales";
+        return switch (code.toUpperCase(Locale.ROOT)) {
+            case "BOOK" -> "Libros";
+            case "CALCULATOR" -> "Calculadoras";
+            case "LAB_EQUIPMENT" -> "Equipo de laboratorio";
+            case "NOTES" -> "Apuntes";
+            case "TOOL" -> "Herramientas";
+            default -> "Otros materiales";
+        };
+    }
+
+    public static String typeLabel(String code) {
+        if (code == null) return "Intercambio";
+        return switch (code.toUpperCase(Locale.ROOT)) {
+            case "GIFT" -> "Donación";
+            case "LOAN" -> "Préstamo";
+            default -> "Intercambio";
+        };
+    }
+
+    @FXML
+    private void onAttachFiles() {
+        Stage owner = titleField.getScene() != null ? (Stage) titleField.getScene().getWindow() : null;
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Seleccionar archivos adjuntos (máx. 25 MB)");
+        chooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Documentos, presentaciones e imágenes",
+                        "*.pdf", "*.doc", "*.docx", "*.ppt", "*.pptx",
+                        "*.jpg", "*.jpeg", "*.png", "*.gif", "*.webp", "*.bmp", "*.tif", "*.tiff"),
+                new FileChooser.ExtensionFilter("Documentos (PDF, DOC, DOCX)", "*.pdf", "*.doc", "*.docx"),
+                new FileChooser.ExtensionFilter("Presentaciones (PPT, PPTX)", "*.ppt", "*.pptx"),
+                new FileChooser.ExtensionFilter("Imágenes", "*.jpg", "*.jpeg", "*.png", "*.gif", "*.webp", "*.bmp", "*.tif", "*.tiff")
+        );
+        List<File> chosen = chooser.showOpenMultipleDialog(owner);
+        if (chosen == null || chosen.isEmpty()) return;
+
+        for (File f : chosen) {
+            if (selectedFiles.size() >= MAX_FILES) {
+                showError("Solo puedes adjuntar hasta " + MAX_FILES + " archivos por publicación.");
+                break;
+            }
+            Path p = f.toPath();
+            String name = p.getFileName().toString();
+            int dot = name.lastIndexOf('.');
+            String ext = dot > 0 ? name.substring(dot + 1).toLowerCase(Locale.ROOT) : "";
+            if (!ALLOWED_EXTS.contains(ext)) {
+                showError("Formato no admitido: " + name);
+                continue;
+            }
+            try {
+                long size = Files.size(p);
+                if (size <= 0 || size > MAX_FILE_BYTES) {
+                    showError("El archivo '" + name + "' supera el límite de 25 MB o está vacío.");
+                    continue;
+                }
+                selectedFiles.add(p);
+                attachmentsList.getItems().add(name + " (." + ext.toUpperCase(Locale.ROOT) + " · " + formatSize(size) + ")");
+                showInfo("Archivo adjuntado: " + name);
+            } catch (Exception ex) {
+                showError("No se pudo leer el archivo '" + name + "'.");
+            }
+        }
+    }
+
+    @FXML
+    private void onRemoveSelectedFile() {
+        int idx = attachmentsList.getSelectionModel().getSelectedIndex();
+        if (idx >= 0 && idx < selectedFiles.size()) {
+            selectedFiles.remove(idx);
+            attachmentsList.getItems().remove(idx);
+        }
     }
 
     @FXML
@@ -59,49 +183,61 @@ public final class PublishMaterialDialogController {
         }
 
         String description = descriptionArea.getText() == null ? "" : descriptionArea.getText().strip();
-        if (description.length() < 5) {
-            showError("La descripción debe tener al menos 5 caracteres.");
-            return;
-        }
-        if (description.length() > 3000) {
-            showError("La descripción no puede superar 3000 caracteres.");
+        if (description.length() < 5 || description.length() > 3000) {
+            showError("La descripción debe tener entre 5 y 3000 caracteres.");
             return;
         }
 
-        String category = categoryCombo.getValue() != null ? categoryCombo.getValue() : "BOOK";
-        String type = typeCombo.getValue() != null ? typeCombo.getValue() : "EXCHANGE";
+        String category = CAT_TO_ENUM.getOrDefault(categoryCombo.getValue(), "BOOK");
+        String type = TYPE_TO_ENUM.getOrDefault(typeCombo.getValue(), "EXCHANGE");
 
         String contact = contactField.getText() == null ? "" : contactField.getText().strip();
-        if (contact.isBlank()) {
-            showError("Indica cómo contactarte para coordinar el intercambio.");
+        if (contact.length() < 3 || contact.length() > 300) {
+            showError("Indica cómo contactarte (entre 3 y 300 caracteres).");
             return;
         }
 
-        btnSubmit.setDisable(true);
-        btnCancel.setDisable(true);
-        showInfo("Publicando material en PostgreSQL…");
+        setBusy(true);
+        showInfo(editingItem != null ? "Guardando cambios…" : "Publicando material y subiendo adjuntos…");
 
-        final String finalTitle = title;
-        final String finalDesc = description;
-        final String finalCategory = category;
-        final String finalType = type;
-        final String finalContact = contact;
+        final List<Path> filesToUpload = List.copyOf(selectedFiles);
 
         workers.submit(() -> {
             try {
-                api.createExchangeItem(finalTitle, finalDesc, finalCategory, finalType, finalContact);
+                ApiClient.ExchangeItem saved;
+                if (editingItem != null) {
+                    saved = api.updateExchangeItem(editingItem.id(), title, description, category, type, null, contact);
+                } else {
+                    saved = api.createExchangeItem(title, description, category, type, contact);
+                }
+
+                for (int i = 0; i < filesToUpload.size(); i++) {
+                    final int step = i + 1;
+                    final Path file = filesToUpload.get(i);
+                    Platform.runLater(() -> showInfo("Subiendo archivo " + step + " de " + filesToUpload.size() + ": " + file.getFileName()));
+                    api.uploadExchangeAttachment(saved.id(), file);
+                }
+
                 Platform.runLater(() -> {
                     if (onSuccess != null) onSuccess.run();
                     close();
                 });
             } catch (Exception ex) {
                 Platform.runLater(() -> {
-                    btnSubmit.setDisable(false);
-                    btnCancel.setDisable(false);
-                    showError(ex.getMessage() != null ? ex.getMessage() : "No se pudo publicar el material.");
+                    setBusy(false);
+                    String msg = ex.getMessage() != null && !ex.getMessage().isBlank()
+                            ? ex.getMessage() : "No se pudo guardar el material.";
+                    showError(msg);
                 });
             }
         });
+    }
+
+    private void setBusy(boolean busy) {
+        btnSubmit.setDisable(busy);
+        btnCancel.setDisable(busy);
+        if (btnAttach != null) btnAttach.setDisable(busy);
+        if (btnRemoveFile != null) btnRemoveFile.setDisable(busy);
     }
 
     @FXML
@@ -111,19 +247,27 @@ public final class PublishMaterialDialogController {
 
     private void showError(String msg) {
         errorLabel.setText(msg);
-        errorLabel.setStyle("-fx-text-fill: #f87171; -fx-font-weight: bold;");
+        errorLabel.getStyleClass().setAll("status-error");
         errorLabel.setVisible(true);
+        errorLabel.setManaged(true);
     }
 
     private void showInfo(String msg) {
         errorLabel.setText(msg);
-        errorLabel.setStyle("-fx-text-fill: #38bdf8;");
+        errorLabel.getStyleClass().setAll("muted");
         errorLabel.setVisible(true);
+        errorLabel.setManaged(true);
     }
 
     private void close() {
         if (titleField.getScene() != null && titleField.getScene().getWindow() instanceof Stage s) {
             s.close();
         }
+    }
+
+    public static String formatSize(long bytes) {
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return String.format(Locale.ROOT, "%.1f KB", bytes / 1024.0);
+        return String.format(Locale.ROOT, "%.2f MB", bytes / (1024.0 * 1024.0));
     }
 }

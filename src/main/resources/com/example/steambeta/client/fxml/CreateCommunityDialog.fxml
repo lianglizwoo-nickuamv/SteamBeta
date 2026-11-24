@@ -31,7 +31,7 @@
             <TextField fx:id="slugField" promptText="ej. semillero-de-ia" styleClass="input" />
         </VBox>
 
-        <!-- Categoría y Visibilidad -->
+        <!-- Categoría, Visibilidad y Capacidad Máxima -->
         <HBox spacing="14.0">
             <VBox spacing="4.0" HBox.hgrow="ALWAYS">
                 <Label styleClass="field-label" text="CATEGORÍA TEMÁTICA:" />
@@ -41,7 +41,12 @@
                 <Label styleClass="field-label" text="VISIBILIDAD DE ACCESO:" />
                 <ComboBox fx:id="visibilityCombo" maxWidth="Infinity" styleClass="combo-box" />
             </VBox>
+            <VBox prefWidth="165.0" spacing="4.0">
+                <Label styleClass="field-label" text="CAPACIDAD MÁXIMA:" />
+                <Spinner fx:id="maxMembersSpinner" editable="true" maxWidth="Infinity" />
+            </VBox>
         </HBox>
+        <Label styleClass="muted" text="Establece cuántos estudiantes podrán formar parte de tu comunidad (2 a 50). El creador también cuenta como integrante y no se admitirán más miembros al alcanzar el límite." wrapText="true" />
 
         <!-- Descripción y Normas -->
         <VBox spacing="4.0">

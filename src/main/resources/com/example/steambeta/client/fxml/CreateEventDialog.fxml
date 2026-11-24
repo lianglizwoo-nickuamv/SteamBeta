@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefWidth="560.0" spacing="14.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.CreateEventDialogController">
+    <padding>
+        <Insets bottom="20.0" left="22.0" right="22.0" top="20.0" />
+    </padding>
+
+    <!-- Encabezado -->
+    <VBox spacing="4.0">
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label styleClass="title" text="Nuevo Evento / Hito Académico" />
+        </HBox>
+        <Label styleClass="muted" text="Programa un examen, entrega o reunión en el calendario de tu comunidad." />
+        <Separator />
+    </VBox>
+
+    <!-- Formulario -->
+    <VBox spacing="10.0" styleClass="card">
+        <!-- Comunidad asociada -->
+        <VBox spacing="4.0">
+            <Label styleClass="field-label" text="COMUNIDAD ASOCIADA:" />
+            <ComboBox fx:id="communityCombo" maxWidth="Infinity" promptText="Selecciona la comunidad..." styleClass="combo-box" />
+            <Label fx:id="communityFixedLabel" managed="false" styleClass="badge-admin" text="" visible="false" />
+        </VBox>
+
+        <!-- Título -->
+        <VBox spacing="4.0">
+            <Label styleClass="field-label" text="TÍTULO DEL EVENTO (3–160 caracteres):" />
+            <TextField fx:id="titleField" promptText="Ej. Examen Parcial II — Cálculo Integral" styleClass="input" />
+        </VBox>
+
+        <!-- Descripción -->
+        <VBox spacing="4.0">
+            <Label styleClass="field-label" text="DESCRIPCIÓN / LUGAR (Opcional, hasta 2000 caracteres):" />
+            <TextArea fx:id="descriptionArea" prefRowCount="2" promptText="Aula, temas a evaluar, enlace de reunión o instrucciones..." styleClass="text-area" wrapText="true" />
+        </VBox>
+
+        <!-- Tipo de Evento, Fecha y Hora -->
+        <HBox spacing="12.0">
+            <VBox maxWidth="180.0" prefWidth="160.0" spacing="4.0">
+                <Label styleClass="field-label" text="TIPO DE EVENTO:" />
+                <ComboBox fx:id="eventTypeCombo" maxWidth="Infinity" styleClass="combo-box" />
+            </VBox>
+            <VBox HBox.hgrow="ALWAYS" spacing="4.0">
+                <Label styleClass="field-label" text="FECHA:" />
+                <DatePicker fx:id="eventDatePicker" maxWidth="Infinity" promptText="dd/mm/aaaa" />
+            </VBox>
+            <VBox maxWidth="130.0" prefWidth="120.0" spacing="4.0">
+                <Label styleClass="field-label" text="HORA:" />
+                <ComboBox fx:id="timeCombo" maxWidth="Infinity" styleClass="combo-box" />
+            </VBox>
+        </HBox>
+
+        <Label fx:id="errorLabel" managed="false" styleClass="status-error" text="" visible="false" wrapText="true" />
+    </VBox>
+
+    <!-- Botones de Acción -->
+    <HBox alignment="CENTER_RIGHT" spacing="12.0">
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnCancel" onAction="#onCancel" styleClass="secondary" text="Cancelar" />
+        <Button fx:id="btnSubmit" onAction="#onSubmit" styleClass="primary" text="+ Crear Evento" />
+    </HBox>
+</VBox>

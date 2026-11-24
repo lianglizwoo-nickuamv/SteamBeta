@@ -6,6 +6,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.Stage;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 
@@ -169,39 +170,13 @@ public final class AcademicQuestionsController {
             return;
         }
 
+        Stage owner = questionsListBox.getScene() != null ? (Stage) questionsListBox.getScene().getWindow() : null;
         var dialogLoader = ViewLoader.<AskQuestionDialogController>load("AskQuestionDialog.fxml");
-        var dialogPane = (DialogPane) dialogLoader.root();
-        var controller = dialogLoader.controller();
-        controller.setCommunity(selectedCommunity.name());
-
-        var dialog = new Dialog<Boolean>();
-        dialog.setTitle("Formular Pregunta Académica");
-        dialog.setDialogPane(dialogPane);
-
-        dialog.setResultConverter(btn -> {
-            if (btn == ButtonType.OK) {
-                String t = controller.getTitle();
-                String b = controller.getBody();
-                String s = controller.getSubject();
-
-                if (t.length() < 5 || b.length() < 10) {
-                    UiHelper.alert("Validación", "Título (mínimo 5 caracteres) y descripción (mínimo 10).", Alert.AlertType.WARNING);
-                    return false;
-                }
-
-                workers.submit(() -> {
-                    try {
-                        api.createQuestion(selectedCommunity.id(), UUID.randomUUID(), t, b, s, List.of());
-                        Platform.runLater(this::loadQuestions);
-                    } catch (Exception ex) {
-                        Platform.runLater(() -> UiHelper.alert("Error", "No se pudo publicar la pregunta.", Alert.AlertType.ERROR));
-                    }
-                });
-                return true;
-            }
-            return false;
+        var modal = UiHelper.createModalStage(dialogLoader.root(), "Formular Pregunta Académica", owner);
+        dialogLoader.controller().init(api, workers, selectedCommunity, created -> {
+            loadQuestions();
+            UiHelper.showSuccess(owner, "Pregunta Publicada", "'" + created.title() + "' fue publicada en " + selectedCommunity.name() + ".");
         });
-
-        dialog.showAndWait();
+        modal.showAndWait();
     }
 }

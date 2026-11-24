@@ -4,10 +4,12 @@ import com.example.steambeta.client.ApiClient;
 import com.example.steambeta.client.SessionScope;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -75,20 +77,60 @@ public final class CalendarController {
 
         workers.submit(() -> {
             try {
-                var events = api.upcomingEvents();
+                List<ApiClient.UpcomingEvent> aggregated = new ArrayList<>();
+                var comms = api.communities();
+                if (comms != null) {
+                    for (var c : comms) {
+                        var commEvents = api.events(c.id(), null, null);
+                        if (commEvents != null) {
+                            for (var ev : commEvents) {
+                                aggregated.add(new ApiClient.UpcomingEvent(
+                                        ev.id(), ev.communityId(), c.name(),
+                                        ev.title(), ev.description(), ev.eventType(),
+                                        ev.eventDate(), ev.status()
+                                ));
+                            }
+                        }
+                    }
+                }
+                // Combinar tareas personales privadas con fecha de vencimiento (sin convertirlas en eventos comunitarios)
+                try {
+                    var myTasks = api.myTasks(null);
+                    if (myTasks != null) {
+                        for (var t : myTasks) {
+                            if (t.dueDate() != null && !t.dueDate().isBlank()) {
+                                String desc = (t.projectName() != null && !t.projectName().isBlank() ? "[" + t.projectName() + "] " : "")
+                                        + (t.description() != null ? t.description() : "");
+                                aggregated.add(new ApiClient.UpcomingEvent(
+                                        t.id(), null, "Tarea personal (privada)",
+                                        t.title(), desc.strip(), "TASK",
+                                        t.dueDate(), t.status()
+                                ));
+                            }
+                        }
+                    }
+                } catch (Exception ignored) {
+                    // Si V15 aún no se ha aplicado, los eventos comunitarios siguen mostrándose sin fallar
+                }
+                aggregated.sort((a, b) -> {
+                    String da = a.eventDate() != null ? a.eventDate() : "";
+                    String db = b.eventDate() != null ? b.eventDate() : "";
+                    return da.compareTo(db);
+                });
                 Platform.runLater(() -> {
                     if (!scope.current(epoch)) return;
                     allEvents.clear();
-                    if (events != null) allEvents.addAll(events);
+                    allEvents.addAll(aggregated);
                     indexEvents();
                     renderView();
                     updateSelectedDayDetail();
-                    statusLabel.setText("Agenda sincronizada (" + allEvents.size() + " evento(s) cargado(s)).");
+                    statusLabel.setText("Agenda sincronizada (" + allEvents.size() + " evento(s) en tus comunidades).");
                 });
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     if (!scope.current(epoch)) return;
-                    statusLabel.setText("No se pudieron cargar los eventos del calendario.");
+                    String msg = e.getMessage() != null && !e.getMessage().isBlank() ? ": " + e.getMessage() : "";
+                    statusLabel.setText("No se pudieron cargar los eventos del calendario" + msg);
                 });
             }
         });
@@ -114,7 +156,7 @@ public final class CalendarController {
                 return LocalDate.parse(dateStr);
             }
             Instant instant = Instant.parse(dateStr);
-            return instant.atZone(ZoneId.systemDefault()).toLocalDate();
+            return instant.atZone(ZoneId.of("America/Managua")).toLocalDate();
         } catch (Exception e) {
             try {
                 return LocalDate.parse(dateStr.substring(0, 10));
@@ -326,7 +368,7 @@ public final class CalendarController {
 
     @FXML
     private void onFilterSubs() {
-        filterType = "SUBMISSION";
+        filterType = "DELIVERY";
         updateButtons(filterSubsBtn, filterAllBtn, filterExamsBtn, filterMeetingsBtn);
         indexEvents();
         renderView();
@@ -354,5 +396,33 @@ public final class CalendarController {
     @FXML
     private void onRefresh() {
         loadEvents();
+    }
+
+    @FXML
+    private void onCreateEvent() {
+        workers.submit(() -> {
+            try {
+                var comms = api.communities();
+                Platform.runLater(() -> {
+                    Stage owner = calendarGrid.getScene() != null ? (Stage) calendarGrid.getScene().getWindow() : null;
+                    if (comms.isEmpty()) {
+                        UiHelper.alert("Sin comunidades", "Debes ser miembro de al menos una comunidad universitaria para programar eventos en el calendario.", Alert.AlertType.INFORMATION);
+                        return;
+                    }
+                    var loader = ViewLoader.<CreateEventDialogController>load("CreateEventDialog.fxml");
+                    var modal = UiHelper.createModalStage(loader.root(), "Programar Nuevo Evento / Hito", owner);
+                    loader.controller().init(api, workers, comms, null, event -> {
+                        loadEvents();
+                        UiHelper.showSuccess(owner, "Evento Programado", "'" + event.title() + "' ha sido registrado exitosamente.");
+                    });
+                    modal.showAndWait();
+                });
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    Stage owner = calendarGrid.getScene() != null ? (Stage) calendarGrid.getScene().getWindow() : null;
+                    UiHelper.showError(owner, "Error", "No se pudieron obtener tus comunidades: " + ex.getMessage());
+                });
+            }
+        });
     }
 }

@@ -20,10 +20,10 @@
             <Separator />
         </VBox>
 
-        <!-- Métricas Rápidas en 4 Tarjetas Elevadas -->
+        <!-- Métricas Rápidas en 4 Tarjetas Elevadas (Clickeables) -->
         <HBox spacing="14.0">
             <!-- Métrica 1: Tareas Pendientes -->
-            <VBox spacing="6.0" styleClass="card-elevated" HBox.hgrow="ALWAYS">
+            <VBox onMouseClicked="#onOpenTasks" spacing="6.0" styleClass="card-elevated, card-clickable" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <Label styleClass="field-label" text="TAREAS PENDIENTES" />
                     <Region HBox.hgrow="ALWAYS" />
@@ -34,7 +34,7 @@
             </VBox>
 
             <!-- Métrica 2: Comunidades Activas -->
-            <VBox spacing="6.0" styleClass="card-elevated" HBox.hgrow="ALWAYS">
+            <VBox onMouseClicked="#onOpenCommunities" spacing="6.0" styleClass="card-elevated, card-clickable" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <Label styleClass="field-label" text="MIS COMUNIDADES" />
                     <Region HBox.hgrow="ALWAYS" />
@@ -45,7 +45,7 @@
             </VBox>
 
             <!-- Métrica 3: Próximos Eventos -->
-            <VBox spacing="6.0" styleClass="card-elevated" HBox.hgrow="ALWAYS">
+            <VBox onMouseClicked="#onOpenCalendar" spacing="6.0" styleClass="card-elevated, card-clickable" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <Label styleClass="field-label" text="FECHAS CLAVE" />
                     <Region HBox.hgrow="ALWAYS" />
@@ -56,7 +56,7 @@
             </VBox>
 
             <!-- Métrica 4: Avisos sin leer -->
-            <VBox spacing="6.0" styleClass="card-elevated" HBox.hgrow="ALWAYS">
+            <VBox onMouseClicked="#onOpenNotifications" spacing="6.0" styleClass="card-elevated, card-clickable" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <Label styleClass="field-label" text="AVISOS PENDIENTES" />
                     <Region HBox.hgrow="ALWAYS" />

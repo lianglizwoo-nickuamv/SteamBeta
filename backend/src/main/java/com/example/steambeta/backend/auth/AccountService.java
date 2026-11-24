@@ -201,22 +201,12 @@ public class AccountService {
         String interests = update.academicInterests() == null || update.academicInterests().isBlank() ? null : text(update.academicInterests(), 1, 300);
         boolean emailPublic = Boolean.TRUE.equals(update.emailPublic());
 
-        // Actualización autorizada mediante funciones SECURITY DEFINER con id autenticado (compatible con RLS)
-        try {
-            jdbc.query(
-                    "select * from replica.update_account_profile_v2(?::uuid, ?::text, ?::text, ?::text, ?::integer, ?::text, ?::text, ?::text, ?::boolean)",
-                    (rs, row) -> null,
-                    id, alias, university, career, semester, bio, avatar, interests, emailPublic);
-        } catch (Exception ex) {
-            try {
-                jdbc.query(
-                        "select * from replica.update_account_profile(?::uuid, ?::text, ?::text, ?::text, ?::text, ?::text, ?::text)",
-                        (rs, row) -> null,
-                        id, alias, university, career, bio, avatar, interests);
-            } catch (Exception fallback) {
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "profile_update_failed: " + (ex.getMessage() != null ? ex.getMessage() : fallback.getMessage()), ex);
-            }
-        }
+        // Actualización autorizada exclusivamente mediante función SECURITY DEFINER V12
+        // usando el identificador autenticado del contexto de seguridad (respeta RLS).
+        jdbc.query(
+                "select * from replica.update_account_profile_v2(?::uuid, ?::text, ?::text, ?::text, ?::integer, ?::text, ?::text, ?::text, ?::boolean)",
+                (rs, row) -> null,
+                id, alias, university, career, semester, bio, avatar, interests, emailPublic);
         return fullProfile();
     }
 

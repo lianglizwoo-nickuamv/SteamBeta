@@ -26,6 +26,7 @@
                     <Button fx:id="viewMonthBtn" onAction="#onViewMonthly" styleClass="tab-btn-active" text="Vista Mensual" />
                     <Button fx:id="viewWeekBtn" onAction="#onViewWeekly" styleClass="tab-btn" text="Vista Semanal" />
                     <Button fx:id="viewAgendaBtn" onAction="#onViewAgenda" styleClass="tab-btn" text="Agenda" />
+                    <Button onAction="#onCreateEvent" styleClass="primary" text="+ Crear Evento" />
                     <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar" />
                 </HBox>
             </HBox>
@@ -80,6 +81,23 @@
                   <RowConstraints />
                </rowConstraints>
                 </GridPane>
+
+                <!-- Leyenda de Tipos de Eventos -->
+                <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="card">
+                    <Label styleClass="field-label" text="LEYENDA:" />
+                    <HBox alignment="CENTER_LEFT" spacing="6.0">
+                        <Region prefHeight="10.0" prefWidth="10.0" styleClass="calendar-event-dot-exam" />
+                        <Label styleClass="muted" text="Exámenes" />
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="6.0">
+                        <Region prefHeight="10.0" prefWidth="10.0" styleClass="calendar-event-dot-sub" />
+                        <Label styleClass="muted" text="Entregas" />
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="6.0">
+                        <Region prefHeight="10.0" prefWidth="10.0" styleClass="calendar-event-dot-meet" />
+                        <Label styleClass="muted" text="Reuniones" />
+                    </HBox>
+                </HBox>
 
                 <!-- Cuadrícula Dinámica para las Celdas FXML -->
                 <GridPane fx:id="calendarGrid" hgap="4.0" styleClass="calendar-grid" vgap="4.0">

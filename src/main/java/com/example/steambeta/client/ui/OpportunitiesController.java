@@ -21,7 +21,7 @@ public final class OpportunitiesController {
     @FXML private Button filterInternshipsBtn;
     @FXML private Button filterContestsBtn;
     @FXML private Button filterEventsBtn;
-    @FXML private VBox oppListBox;
+    @FXML private VBox opportunitiesListBox;
 
     private ApiClient api;
     private SessionScope scope;
@@ -38,27 +38,52 @@ public final class OpportunitiesController {
 
     private void loadOpportunities() {
         long epoch = scope.generation();
+        // Show loading placeholder
+        Platform.runLater(() -> {
+            opportunitiesListBox.getChildren().clear();
+            var empty = ViewLoader.<EmptyStateController>load("EmptyState.fxml");
+            empty.controller().set("⌛", "Cargando convocatorias...", "Consultando el directorio de oportunidades universitarias.", null, null);
+            opportunitiesListBox.getChildren().add(empty.root());
+        });
         workers.submit(() -> {
             try {
                 var items = api.opportunities(categoryFilter);
+                var profile = api.getCachedProfile();
+                String myId = profile != null ? profile.accountId() : null;
+                boolean isGlobalMod = profile != null && profile.isGlobalModerator();
+
                 Platform.runLater(() -> {
                     if (!scope.current(epoch)) return;
-                    oppListBox.getChildren().clear();
-
+                    opportunitiesListBox.getChildren().clear();
                     if (items.isEmpty()) {
                         var empty = ViewLoader.<EmptyStateController>load("EmptyState.fxml");
-                        empty.controller().set("🚀", "No hay convocatorias activas en esta categoría",
-                                "Sé el primero en compartir una beca o pasantía de interés universitario.", null, null);
-                        oppListBox.getChildren().add(empty.root());
+                        empty.controller().set("★", "Sin convocatorias activas",
+                                "No hay oportunidades en esta categoría. Puedes publicar una beca o pasantía de interés.",
+                                "+ Publicar Oportunidad", this::onNewOpportunity);
+                        opportunitiesListBox.getChildren().add(empty.root());
                     } else {
                         for (var item : items) {
+                            boolean canManage = isGlobalMod
+                                    || (myId != null && item.ownerAccountId() != null && myId.equalsIgnoreCase(item.ownerAccountId()));
                             var card = ViewLoader.<OpportunityCardController>load("OpportunityCard.fxml");
-                            card.controller().set(item);
-                            oppListBox.getChildren().add(card.root());
+                            card.controller().set(item, canManage,
+                                    () -> onEditOpportunity(item),
+                                    () -> onDeleteOpportunity(item));
+                            opportunitiesListBox.getChildren().add(card.root());
                         }
                     }
                 });
-            } catch (Exception ignored) {}
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    if (!scope.current(epoch)) return;
+                    opportunitiesListBox.getChildren().clear();
+                    var empty = ViewLoader.<EmptyStateController>load("EmptyState.fxml");
+                    String msg = ex.getMessage() != null ? ex.getMessage() : "Error de conexión con el servidor.";
+                    empty.controller().set("✕", "No se pudieron cargar las oportunidades",
+                            msg, "Reintentar", this::loadOpportunities);
+                    opportunitiesListBox.getChildren().add(empty.root());
+                });
+            }
         });
     }
 
@@ -114,7 +139,7 @@ public final class OpportunitiesController {
     @FXML
     private void onNewOpportunity() {
         var loader = ViewLoader.<PublishOpportunityDialogController>load("PublishOpportunityDialog.fxml");
-        Stage owner = oppListBox.getScene() != null ? (Stage) oppListBox.getScene().getWindow() : null;
+        Stage owner = opportunitiesListBox.getScene() != null ? (Stage) opportunitiesListBox.getScene().getWindow() : null;
         var modal = UiHelper.createModalStage(loader.root(), "Publicar Convocatoria Campus", owner);
 
         loader.controller().init(api, workers, () -> {
@@ -124,5 +149,35 @@ public final class OpportunitiesController {
         });
 
         modal.showAndWait();
+    }
+
+    private void onEditOpportunity(ApiClient.OpportunityItem item) {
+        var loader = ViewLoader.<PublishOpportunityDialogController>load("PublishOpportunityDialog.fxml");
+        Stage owner = opportunitiesListBox.getScene() != null ? (Stage) opportunitiesListBox.getScene().getWindow() : null;
+        var modal = UiHelper.createModalStage(loader.root(), "Editar Convocatoria", owner);
+        loader.controller().initForEdit(api, workers, item, () -> {
+            loadOpportunities();
+            UiHelper.showSuccess(owner, "Convocatoria Actualizada", "Los cambios fueron guardados correctamente.");
+        });
+        modal.showAndWait();
+    }
+
+    private void onDeleteOpportunity(ApiClient.OpportunityItem item) {
+        Stage owner = opportunitiesListBox.getScene() != null ? (Stage) opportunitiesListBox.getScene().getWindow() : null;
+        if (!UiHelper.showConfirm(owner, "Eliminar convocatoria", "¿Deseas eliminar '" + item.title() + "'?")) {
+            return;
+        }
+        workers.submit(() -> {
+            try {
+                api.deleteOpportunity(item.id());
+                Platform.runLater(() -> {
+                    loadOpportunities();
+                    UiHelper.showSuccess(owner, "Convocatoria Eliminada", "'" + item.title() + "' fue eliminada.");
+                });
+            } catch (Exception ex) {
+                Platform.runLater(() -> UiHelper.showError(owner, "Error al eliminar",
+                        ex.getMessage() != null ? ex.getMessage() : "No se pudo eliminar la convocatoria."));
+            }
+        });
     }
 }

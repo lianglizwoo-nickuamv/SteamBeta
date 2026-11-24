@@ -6,19 +6,26 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
 /**
  * Controlador del diálogo de creación de tareas académicas — SteamBeta Campus.
  * Sustituye el TextInputDialog nativo. 100% FXML + CSS.
+ * Prioridades en español mapeadas internamente a enums estándar.
+ * Fechas calculadas en la zona horaria institucional America/Managua.
  */
 public final class CreateTaskDialogController {
 
     @FXML private TextField titleField;
     @FXML private TextArea descriptionArea;
     @FXML private ComboBox<String> priorityCombo;
-    @FXML private TextField dueDateField;
+    @FXML private ComboBox<String> subjectCombo;
+    @FXML private DatePicker dueDatePicker;
     @FXML private TextField projectField;
     @FXML private Label errorLabel;
     @FXML private Button btnCancel;
@@ -27,17 +34,63 @@ public final class CreateTaskDialogController {
     private ApiClient api;
     private ExecutorService workers;
     private Consumer<ApiClient.TaskItem> onSuccess;
+    private ApiClient.TaskItem editingTask;
+
+    private static final Map<String, String> PRIORITY_LABELS_TO_ENUM = Map.of(
+            "Baja", "LOW",
+            "Media", "MEDIUM",
+            "Alta", "HIGH",
+            "Urgente", "URGENT"
+    );
 
     @FXML
     public void initialize() {
-        priorityCombo.setItems(FXCollections.observableArrayList("MEDIUM", "LOW", "HIGH", "URGENT"));
-        priorityCombo.setValue("MEDIUM");
+        priorityCombo.setItems(FXCollections.observableArrayList("Baja", "Media", "Alta", "Urgente"));
+        priorityCombo.setValue("Media");
+        if (subjectCombo != null) {
+            subjectCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null && !newVal.isBlank()) {
+                    projectField.setText(newVal);
+                }
+            });
+        }
     }
 
     public void init(ApiClient api, ExecutorService workers, Consumer<ApiClient.TaskItem> onSuccess) {
         this.api = api;
         this.workers = workers;
         this.onSuccess = onSuccess;
+        this.editingTask = null;
+        loadRegisteredSubjects();
+    }
+
+    public void initForEdit(ApiClient api, ExecutorService workers, ApiClient.TaskItem existing,
+                            Consumer<ApiClient.TaskItem> onSuccess) {
+        this.api = api;
+        this.workers = workers;
+        this.onSuccess = onSuccess;
+        this.editingTask = existing;
+        loadRegisteredSubjects();
+        if (existing != null) {
+            titleField.setText(existing.title() != null ? existing.title() : "");
+            descriptionArea.setText(existing.description() != null ? existing.description() : "");
+            projectField.setText(existing.projectName() != null ? existing.projectName() : "");
+            String label = switch (existing.priority() != null ? existing.priority().toUpperCase() : "MEDIUM") {
+                case "LOW" -> "Baja";
+                case "HIGH" -> "Alta";
+                case "URGENT" -> "Urgente";
+                default -> "Media";
+            };
+            priorityCombo.setValue(label);
+            if (existing.dueDate() != null && !existing.dueDate().isBlank()) {
+                try {
+                    LocalDate ld = java.time.Instant.parse(existing.dueDate())
+                            .atZone(ZoneId.of("America/Managua")).toLocalDate();
+                    dueDatePicker.setValue(ld);
+                } catch (Exception ignored) {}
+            }
+            btnSubmit.setText("Guardar Cambios");
+        }
     }
 
     @FXML
@@ -54,16 +107,19 @@ public final class CreateTaskDialogController {
             return;
         }
 
-        String priority = priorityCombo.getValue() != null ? priorityCombo.getValue() : "MEDIUM";
+        String selectedPriorityLabel = priorityCombo.getValue() != null ? priorityCombo.getValue() : "Media";
+        String priorityEnum = PRIORITY_LABELS_TO_ENUM.getOrDefault(selectedPriorityLabel, "MEDIUM");
 
-        String dueDateRaw = dueDateField.getText() == null ? "" : dueDateField.getText().strip();
-        String dueDate = null;
-        if (!dueDateRaw.isBlank()) {
-            if (!dueDateRaw.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                showError("La fecha límite debe estar en formato AAAA-MM-DD (ej. 2026-12-31).");
+        String dueDateIso = null;
+        if (dueDatePicker.getValue() != null) {
+            LocalDate date = dueDatePicker.getValue();
+            try {
+                ZonedDateTime zdt = date.atTime(23, 59, 59).atZone(ZoneId.of("America/Managua"));
+                dueDateIso = zdt.toInstant().toString();
+            } catch (Exception ex) {
+                showError("Fecha no válida.");
                 return;
             }
-            dueDate = dueDateRaw + "T23:59:59Z";
         }
 
         String project = projectField.getText() == null ? "General" : projectField.getText().strip();
@@ -79,22 +135,31 @@ public final class CreateTaskDialogController {
 
         final String finalTitle = title;
         final String finalDesc = description;
-        final String finalPriority = priority;
-        final String finalDue = dueDate;
+        final String finalPriority = priorityEnum;
+        final String finalDue = dueDateIso;
         final String finalProject = project;
 
         workers.submit(() -> {
             try {
-                var task = api.createTask(finalTitle, finalDesc, finalPriority, finalDue, finalProject);
+                final ApiClient.TaskItem saved;
+                if (editingTask != null) {
+                    saved = api.updateTaskFull(editingTask.id(), finalTitle, finalDesc, null,
+                            finalPriority, finalDue, finalProject, finalDue == null);
+                } else {
+                    saved = api.createTask(finalTitle, finalDesc, finalPriority, finalDue, finalProject);
+                }
                 Platform.runLater(() -> {
-                    if (onSuccess != null) onSuccess.accept(task);
+                    if (onSuccess != null) onSuccess.accept(saved);
                     close();
                 });
             } catch (Exception ex) {
                 Platform.runLater(() -> {
                     btnSubmit.setDisable(false);
                     btnCancel.setDisable(false);
-                    showError(ex.getMessage() != null ? ex.getMessage() : "No se pudo registrar la tarea.");
+                    String cause = ex.getMessage() != null && !ex.getMessage().isBlank()
+                            ? ex.getMessage()
+                            : "Error de conexión o fallo interno del servidor al crear la tarea.";
+                    showError("No se pudo registrar la tarea: " + cause);
                 });
             }
         });
@@ -107,14 +172,43 @@ public final class CreateTaskDialogController {
 
     private void showError(String msg) {
         errorLabel.setText(msg);
-        errorLabel.setStyle("-fx-text-fill: #f87171; -fx-font-weight: bold;");
+        errorLabel.getStyleClass().setAll("status-error");
         errorLabel.setVisible(true);
+        errorLabel.setManaged(true);
     }
 
     private void showInfo(String msg) {
         errorLabel.setText(msg);
-        errorLabel.setStyle("-fx-text-fill: #38bdf8;");
+        errorLabel.getStyleClass().setAll("muted");
         errorLabel.setVisible(true);
+        errorLabel.setManaged(true);
+    }
+
+    private void loadRegisteredSubjects() {
+        if (subjectCombo == null || api == null || workers == null) return;
+        workers.submit(() -> {
+            java.util.LinkedHashSet<String> names = new java.util.LinkedHashSet<>();
+            try {
+                for (var s : api.library()) {
+                    if (s.name() != null && !s.name().isBlank()) names.add(s.name().strip());
+                }
+            } catch (Exception ignored) {}
+            try {
+                for (var m : api.manualSubjects(null, null)) {
+                    if (m.name() != null && !m.name().isBlank()) names.add(m.name().strip());
+                }
+            } catch (Exception ignored) {}
+            Platform.runLater(() -> {
+                if (names.isEmpty()) {
+                    subjectCombo.setVisible(false);
+                    subjectCombo.setManaged(false);
+                } else {
+                    subjectCombo.setItems(FXCollections.observableArrayList(names));
+                    subjectCombo.setVisible(true);
+                    subjectCombo.setManaged(true);
+                }
+            });
+        });
     }
 
     private void close() {
