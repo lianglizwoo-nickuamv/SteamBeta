@@ -1,0 +1,629 @@
+
+
+.root {
+    -sb-bg: #121212;
+    -sb-surface: #1E1E1E;
+    -sb-surface-subtle: #181818;
+    -sb-border: #2E2E2E;
+    -sb-border-subtle: #262626;
+    -sb-text: #E0E0E0;
+    -sb-muted: #9E9E9E;
+    -sb-amber: #FFB300;
+    -sb-cyan: #26C6DA;
+    -sb-red: #D32F2F;
+
+    /* Propiedades internas de JavaFX Modena para controles nativos oscuros */
+    -fx-base: #1E1E1E;
+    -fx-background: #121212;
+    -fx-control-inner-background: #1A1A1A;
+    -fx-control-inner-background-alt: #222222;
+    -fx-text-base-color: #E0E0E0;
+    -fx-text-background-color: #E0E0E0;
+    -fx-accent: #FFB300;
+    -fx-focus-color: #26C6DA;
+    -fx-faint-focus-color: rgba(38, 198, 218, 0.18);
+}
+
+/* Legibilidad de placeholders en controles de texto nativos Modena */
+.text-input {
+    -fx-prompt-text-fill: #8A8A8A;
+}
+
+/* =========================================================================
+   Superficies de Ventana, Sidebar, Topbar y Diálogos (JabRef)
+   ========================================================================= */
+.app-background,
+.scroll-pane.app-background,
+.scroll-pane.app-background > .viewport {
+    -fx-background-color: -sb-bg;
+}
+
+.scroll-pane.app-background {
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.sidebar-surface,
+.sidebar,
+.scroll-pane.sidebar-surface > .viewport {
+    -fx-background-color: -sb-surface;
+}
+
+.sidebar-surface,
+.sidebar {
+    -fx-border-color: transparent -sb-border transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.topbar-surface,
+.topbar {
+    -fx-background-color: -sb-surface;
+    -fx-border-color: transparent transparent -sb-border transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.bottom-bar {
+    -fx-background-color: -sb-surface;
+    -fx-border-color: -sb-border transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+
+.modal-container {
+    -fx-background-color: -sb-bg;
+}
+
+.toolbar-strip {
+    -fx-background-color: -sb-surface;
+    -fx-border-color: -sb-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 8 12;
+}
+
+/* =========================================================================
+   Tarjetas, Paneles y Contenedores de Módulos
+   ========================================================================= */
+.card,
+.activity,
+.card-elevated,
+.empty-state,
+.auth-card,
+.post-card,
+.question-card,
+.file-card,
+.match-card,
+.opportunity-card,
+.task-card,
+.profile-hero {
+    -fx-background-color: -sb-surface;
+    -fx-border-color: -sb-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 14;
+}
+
+.profile-hero {
+    -fx-border-color: -sb-amber -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+    -fx-padding: 16 18;
+}
+
+.community-hero {
+    -fx-background-color: -sb-surface;
+    -fx-border-color: -sb-border -sb-border -sb-border -sb-amber;
+    -fx-border-width: 1 1 1 3;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 14 16;
+}
+
+.panel-header {
+    -fx-background-color: -sb-surface-subtle;
+    -fx-border-color: transparent transparent -sb-border-subtle transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 12;
+}
+
+.auth-card {
+    -fx-padding: 24;
+}
+
+.auth-intro-card {
+    -fx-background-color: -sb-surface;
+    -fx-border-color: -sb-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 24;
+}
+
+/* KPI Cards con barra superior semántica (Moodle + Handshake) */
+.kpi-card {
+    -fx-background-color: -sb-surface;
+    -fx-border-color: -sb-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 12 14;
+}
+
+.kpi-accent-primary {
+    -fx-border-color: -sb-amber -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+}
+
+.kpi-accent-secondary {
+    -fx-border-color: -sb-cyan -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+}
+
+.kpi-accent-warn {
+    -fx-border-color: -sb-amber -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+}
+
+.kpi-accent-danger {
+    -fx-border-color: -sb-red -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+}
+
+/* Comentarios estilo hilo (Mattermost + Discourse) */
+.comment-card {
+    -fx-background-color: -sb-surface-subtle;
+    -fx-border-color: -sb-border-subtle -sb-border-subtle -sb-border-subtle -sb-cyan;
+    -fx-border-width: 1 1 1 3;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+    -fx-padding: 8 12;
+}
+
+.solution-card {
+    -fx-background-color: rgba(38, 198, 218, 0.10);
+    -fx-border-color: -sb-cyan;
+    -fx-border-width: 1 1 1 3;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 12;
+}
+
+/* Tablero Kanban (OpenProject) */
+.kanban-col {
+    -fx-background-color: -sb-surface-subtle;
+    -fx-border-color: -sb-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 10;
+}
+
+.kanban-col-pending {
+    -fx-border-color: -sb-red -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+}
+
+.kanban-col-progress {
+    -fx-border-color: -sb-amber -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+}
+
+.kanban-col-review {
+    -fx-border-color: -sb-cyan -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+}
+
+.kanban-col-done {
+    -fx-border-color: -sb-cyan -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+}
+
+.task-card {
+    -fx-padding: 10 12;
+}
+
+.card-clickable {
+    -fx-cursor: hand;
+}
+
+.card-clickable:hover {
+    -fx-border-color: -sb-amber;
+}
+
+.dialog-info-card {
+    -fx-background-color: -sb-surface-subtle;
+    -fx-border-color: -sb-border -sb-border -sb-border -sb-amber;
+    -fx-border-width: 1 1 1 3;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+    -fx-padding: 10 12;
+}
+
+/* =========================================================================
+   Tipografía Jerárquica Simple (fuente predeterminada de JavaFX Modena)
+   ========================================================================= */
+.brand {
+    -fx-font-size: 19px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sb-amber;
+}
+
+.brand-badge {
+    -fx-background-color: rgba(255, 179, 0, 0.14);
+    -fx-text-fill: -sb-amber;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 7;
+    -fx-border-color: -sb-amber;
+    -fx-border-width: 1;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+
+.display {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sb-text;
+}
+
+.title {
+    -fx-font-size: 19px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sb-text;
+}
+
+.section-title,
+.card-title,
+.kanban-col-header {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sb-text;
+}
+
+.muted,
+.hint-neutral,
+.status-pending {
+    -fx-text-fill: -sb-muted;
+    -fx-font-size: 12px;
+}
+
+.field-label,
+.nav-category-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sb-muted;
+}
+
+.nav-category-label {
+    -fx-padding: 10 8 4 8;
+}
+
+.identity,
+.subject-name {
+    -fx-font-weight: bold;
+    -fx-text-fill: -sb-text;
+}
+
+.subject-code {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sb-amber;
+}
+
+.post-body {
+    -fx-font-size: 13px;
+    -fx-text-fill: -sb-text;
+}
+
+.progress-number {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sb-amber;
+}
+
+.event-date-chip {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sb-amber;
+}
+
+.empty-state-icon,
+.dialog-icon {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sb-amber;
+}
+
+/* =========================================================================
+   Acciones Principales, Navegación y Votos (sin anular skins de Modena)
+   ========================================================================= */
+.button.primary {
+    -fx-base: #FFB300;
+    -fx-text-fill: #121212;
+}
+
+.button.danger-btn {
+    -fx-text-fill: -sb-red;
+    -fx-border-color: -sb-red;
+}
+
+.button.success-btn {
+    -fx-base: #26C6DA;
+    -fx-text-fill: #121212;
+}
+
+.button.btn-compact {
+    -fx-font-size: 11px;
+    -fx-padding: 3 8;
+}
+
+/* Indicadores de votación en comunidades (Cian positivo / Rojo negativo) */
+.vote-up-active,
+.upvote-active {
+    -fx-text-fill: -sb-cyan;
+    -fx-border-color: -sb-cyan;
+}
+
+.vote-down-active,
+.downvote-active {
+    -fx-text-fill: -sb-red;
+    -fx-border-color: -sb-red;
+}
+
+.nav-item,
+.tab-btn {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 0 3;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+    -fx-text-fill: -sb-text;
+    -fx-alignment: center-left;
+    -fx-padding: 6 10;
+}
+
+.nav-item:hover,
+.tab-btn:hover {
+    -fx-background-color: rgba(255, 179, 0, 0.10);
+}
+
+.nav-item-active,
+.tab-btn-active {
+    -fx-background-color: rgba(255, 179, 0, 0.16);
+    -fx-border-color: transparent transparent transparent -sb-amber;
+    -fx-border-width: 0 0 0 3;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+    -fx-text-fill: -sb-amber;
+    -fx-font-weight: bold;
+    -fx-alignment: center-left;
+    -fx-padding: 6 10;
+}
+
+.tab-btn,
+.tab-btn-active {
+    -fx-border-width: 0 0 2 0;
+    -fx-alignment: center;
+    -fx-padding: 5 12;
+}
+
+.tab-btn-active {
+    -fx-border-color: transparent transparent -sb-amber transparent;
+}
+
+/* =========================================================================
+   Etiquetas de Estado y Mensajes Semánticos
+   ========================================================================= */
+.module-badge,
+.badge-role,
+.tag-pill {
+    -fx-background-color: -sb-surface-subtle;
+    -fx-text-fill: -sb-muted;
+    -fx-font-size: 11px;
+    -fx-padding: 2 7;
+    -fx-border-color: -sb-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+
+.badge-admin,
+.badge-academic,
+.academic,
+.badge-pending,
+.warning,
+.badge-mod {
+    -fx-background-color: rgba(255, 179, 0, 0.12);
+    -fx-text-fill: -sb-amber;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 7;
+    -fx-border-color: -sb-amber;
+    -fx-border-width: 1;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+
+.badge-resolved,
+.success {
+    -fx-background-color: rgba(38, 198, 218, 0.12);
+    -fx-text-fill: -sb-cyan;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 7;
+    -fx-border-color: -sb-cyan;
+    -fx-border-width: 1;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+
+.badge-danger,
+.danger {
+    -fx-background-color: rgba(211, 47, 47, 0.14);
+    -fx-text-fill: -sb-red;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 7;
+    -fx-border-color: -sb-red;
+    -fx-border-width: 1;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+
+.error,
+.status-error,
+.hint-error {
+    -fx-text-fill: -sb-red;
+    -fx-font-size: 12px;
+}
+
+.success-label,
+.status-success,
+.hint-success {
+    -fx-text-fill: -sb-cyan;
+    -fx-font-size: 12px;
+}
+
+.text-field-error {
+    -fx-border-color: -sb-red;
+}
+
+/* =========================================================================
+   Calendario y Avatares (Nextcloud Calendar + Handshake)
+   ========================================================================= */
+.calendar-grid {
+    -fx-background-color: -sb-surface;
+    -fx-border-color: -sb-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 4;
+}
+
+.calendar-day-header {
+    -fx-background-color: -sb-surface-subtle;
+    -fx-border-color: -sb-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 6 4;
+    -fx-alignment: center;
+    -fx-font-size: 11px;
+    -fx-text-fill: -sb-muted;
+}
+
+.calendar-day-cell {
+    -fx-background-color: -sb-surface;
+    -fx-border-color: -sb-border-subtle;
+    -fx-border-width: 0.75;
+    -fx-padding: 5;
+}
+
+.calendar-day-cell-other {
+    -fx-background-color: -sb-bg;
+    -fx-opacity: 0.6;
+}
+
+.calendar-day-cell-today {
+    -fx-background-color: rgba(38, 198, 218, 0.12);
+    -fx-border-color: -sb-cyan;
+    -fx-border-width: 1.5;
+}
+
+.calendar-day-cell-selected {
+    -fx-background-color: rgba(255, 179, 0, 0.16);
+    -fx-border-color: -sb-amber;
+    -fx-border-width: 1.5;
+}
+
+.calendar-event-tag {
+    -fx-font-size: 10px;
+    -fx-padding: 1 5;
+    -fx-background-radius: 3;
+}
+
+.calendar-event-dot-exam { -fx-background-color: -sb-red; -fx-background-radius: 5; }
+.calendar-event-dot-sub  { -fx-background-color: -sb-cyan; -fx-background-radius: 5; }
+.calendar-event-dot-meet { -fx-background-color: -sb-amber; -fx-background-radius: 5; }
+
+.avatar-circle {
+    -fx-background-color: -sb-surface-subtle;
+    -fx-background-radius: 36;
+    -fx-border-color: -sb-amber;
+    -fx-border-radius: 36;
+    -fx-border-width: 1.5;
+}
+
+.avatar-initials {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sb-amber;
+}
+
+.notification-unread {
+    -fx-border-color: -sb-border -sb-border -sb-border -sb-amber;
+    -fx-border-width: 1 1 1 3;
+    -fx-background-color: rgba(255, 179, 0, 0.07);
+}
+
+.notification-section-header {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sb-muted;
+    -fx-padding: 6 0 2 0;
+}
+
+/* =========================================================================
+   Chat Comunitario Unificado (Conversación + Preguntas Académicas)
+   ========================================================================= */
+.chat-avatar-circle {
+    -fx-background-color: -sb-surface-subtle;
+    -fx-background-radius: 19;
+    -fx-border-color: -sb-amber;
+    -fx-border-radius: 19;
+    -fx-border-width: 1.2;
+}
+
+.chat-avatar-initials {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sb-amber;
+}
+
+.chat-bubble {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 11 14;
+}
+
+.chat-bubble-peer {
+    -fx-background-color: -sb-surface;
+    -fx-border-color: -sb-border;
+    -fx-border-width: 1;
+}
+
+.chat-bubble-own {
+    -fx-background-color: rgba(38, 198, 218, 0.09);
+    -fx-border-color: -sb-border -sb-border -sb-border -sb-cyan;
+    -fx-border-width: 1 1 1 3;
+}
+
+.chat-bubble-question {
+    -fx-background-color: rgba(255, 179, 0, 0.06);
+    -fx-border-color: -sb-border -sb-border -sb-border -sb-amber;
+    -fx-border-width: 1 1 1 3;
+}
+
+.chat-replies-box {
+    -fx-background-color: -sb-surface-subtle;
+    -fx-background-radius: 6;
+    -fx-border-color: -sb-border-subtle;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+}
+
+.comment-solution {
+    -fx-border-color: -sb-cyan;
+    -fx-border-width: 1.2;
+    -fx-background-color: rgba(38, 198, 218, 0.10);
+}

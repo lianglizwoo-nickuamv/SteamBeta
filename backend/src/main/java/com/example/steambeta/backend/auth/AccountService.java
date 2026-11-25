@@ -53,11 +53,14 @@ public class AccountService {
     private final JdbcTemplate jdbc;
     private final PasswordEncoder passwords;
     private final EmailVerificationService emailService;
+    private final AvatarStorageService avatarStorage;
 
-    public AccountService(JdbcTemplate jdbc, PasswordEncoder passwords, EmailVerificationService emailService) {
+    public AccountService(JdbcTemplate jdbc, PasswordEncoder passwords,
+                          EmailVerificationService emailService, AvatarStorageService avatarStorage) {
         this.jdbc = jdbc;
         this.passwords = passwords;
         this.emailService = emailService;
+        this.avatarStorage = avatarStorage;
     }
 
     public AccountPrincipal current() {
@@ -197,17 +200,100 @@ public class AccountService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_semester");
         }
         String bio = update.bio() == null || update.bio().isBlank() ? null : text(update.bio(), 1, 500);
-        String avatar = update.avatarUrl() == null || update.avatarUrl().isBlank() ? null : text(update.avatarUrl(), 1, 255);
+        // Preservar siempre la referencia administrada de avatar_url existente en servidor;
+        // los cambios de fotografía se gestionan exclusivamente vía /api/account/avatar.
+        FullProfile existing = fullProfile();
+        String avatar = existing.avatarUrl();
         String interests = update.academicInterests() == null || update.academicInterests().isBlank() ? null : text(update.academicInterests(), 1, 300);
         boolean emailPublic = Boolean.TRUE.equals(update.emailPublic());
 
-        // Actualización autorizada exclusivamente mediante función SECURITY DEFINER V12
+        // Actualización autorizada exclusivamente mediante función SECURITY DEFINER V17
         // usando el identificador autenticado del contexto de seguridad (respeta RLS).
         jdbc.query(
                 "select * from replica.update_account_profile_v2(?::uuid, ?::text, ?::text, ?::text, ?::integer, ?::text, ?::text, ?::text, ?::boolean)",
                 (rs, row) -> null,
                 id, alias, university, career, semester, bio, avatar, interests, emailPublic);
         return fullProfile();
+    }
+
+    @Transactional
+    public FullProfile uploadAvatar(org.springframework.web.multipart.MultipartFile file) {
+        UUID id = current().accountId();
+        FullProfile existing = fullProfile();
+        String previousAvatarUrl = existing.avatarUrl();
+
+        AvatarStorageService.StoredAvatar stored = avatarStorage.store(file);
+        try {
+            jdbc.query(
+                    "select * from replica.update_account_profile_v2(?::uuid, ?::text, ?::text, ?::text, ?::integer, ?::text, ?::text, ?::text, ?::boolean)",
+                    (rs, row) -> null,
+                    id,
+                    existing.alias(),
+                    existing.declaredUniversity(),
+                    existing.declaredCareer(),
+                    existing.declaredSemester(),
+                    existing.bio(),
+                    stored.avatarUrl(),
+                    existing.academicInterests(),
+                    existing.emailPublic()
+            );
+        } catch (RuntimeException ex) {
+            // Evitar archivos huérfanos si falla PostgreSQL
+            avatarStorage.deleteQuietly(stored.storageKey());
+            throw ex;
+        }
+
+        // Eliminar fotografía anterior de forma segura solo tras persistir la nueva
+        if (previousAvatarUrl != null && !previousAvatarUrl.equals(stored.avatarUrl())) {
+            avatarStorage.deleteByAvatarUrlQuietly(previousAvatarUrl);
+        }
+        return fullProfile();
+    }
+
+    @Transactional
+    public FullProfile deleteAvatar() {
+        UUID id = current().accountId();
+        FullProfile existing = fullProfile();
+        String previousAvatarUrl = existing.avatarUrl();
+
+        jdbc.query(
+                "select * from replica.update_account_profile_v2(?::uuid, ?::text, ?::text, ?::text, ?::integer, ?::text, ?::text, ?::text, ?::boolean)",
+                (rs, row) -> null,
+                id,
+                existing.alias(),
+                existing.declaredUniversity(),
+                existing.declaredCareer(),
+                existing.declaredSemester(),
+                existing.bio(),
+                null,
+                existing.academicInterests(),
+                existing.emailPublic()
+        );
+
+        if (previousAvatarUrl != null && !previousAvatarUrl.isBlank()) {
+            avatarStorage.deleteByAvatarUrlQuietly(previousAvatarUrl);
+        }
+        return fullProfile();
+    }
+
+    public record AvatarDownload(org.springframework.core.io.Resource resource, String mimeType) {}
+
+    public AvatarDownload readAvatarForAccount(UUID targetAccountId) {
+        // Requiere sesión autenticada
+        current();
+        if (targetAccountId == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Fotografía no disponible.");
+        }
+        var rows = jdbc.query(
+                "select avatar_url from replica.read_full_account_profile(?::uuid)",
+                (rs, row) -> rs.getString("avatar_url"),
+                targetAccountId
+        );
+        if (rows.isEmpty() || rows.getFirst() == null || rows.getFirst().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Fotografía no disponible.");
+        }
+        String avatarUrl = rows.getFirst();
+        return new AvatarDownload(avatarStorage.loadByAvatarUrl(avatarUrl), avatarStorage.mimeTypeForAvatarUrl(avatarUrl));
     }
 
     public List<Sanction> mySanctions() {

@@ -157,6 +157,12 @@ public class CommunityController {
         community.removeMember(communityId, targetId);
     }
 
+    @DeleteMapping("/api/communities/{communityId}/membership")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void leaveCommunity(@PathVariable UUID communityId) {
+        community.leaveCommunity(communityId);
+    }
+
     // =========================================================================
     // FASE 3: Q&A Académico
     // =========================================================================

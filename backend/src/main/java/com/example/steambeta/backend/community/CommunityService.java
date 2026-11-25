@@ -28,14 +28,19 @@ public class CommunityService {
         return sb.toString();
     }
 
-    // Entidades base existentes (ampliadas con ocupación y capacidad V14)
+    // Entidades base existentes (ampliadas con ocupación, capacidad, categoría y visibilidad V14)
     public record Community(UUID id, String slug, String name, String description, String rules, String role,
-                            String initialInvitationCode, long memberCount, int maxMembers, int availableSlots) {
+                            String initialInvitationCode, long memberCount, int maxMembers, int availableSlots,
+                            String category, String visibility) {
         public Community(UUID id, String slug, String name, String description, String rules, String role) {
-            this(id, slug, name, description, rules, role, null, 0, 50, 50);
+            this(id, slug, name, description, rules, role, null, 0, 50, 50, null, null);
         }
         public Community(UUID id, String slug, String name, String description, String rules, String role, String initialInvitationCode) {
-            this(id, slug, name, description, rules, role, initialInvitationCode, 0, 50, 50);
+            this(id, slug, name, description, rules, role, initialInvitationCode, 0, 50, 50, null, null);
+        }
+        public Community(UUID id, String slug, String name, String description, String rules, String role,
+                         String initialInvitationCode, long memberCount, int maxMembers, int availableSlots) {
+            this(id, slug, name, description, rules, role, initialInvitationCode, memberCount, maxMembers, availableSlots, null, null);
         }
     }
     public record Post(UUID id, UUID communityId, UUID authorAccountId, String authorAlias, String title,
@@ -132,7 +137,9 @@ public class CommunityService {
                         null,
                         rs.getLong("member_count"),
                         rs.getInt("max_members"),
-                        rs.getInt("available_slots")
+                        rs.getInt("available_slots"),
+                        rs.getString("category"),
+                        rs.getString("visibility")
                 ), accounts.current().accountId());
     }
 
@@ -271,7 +278,9 @@ public class CommunityService {
                         null,
                         rs.getLong("member_count"),
                         rs.getInt("max_members"),
-                        rs.getInt("available_slots")
+                        rs.getInt("available_slots"),
+                        rs.getString("category"),
+                        rs.getString("visibility")
                 ), accounts.current().accountId(), slug, name, description, rules, category, visibility, maxMembers);
 
         String initialCode = null;
@@ -285,7 +294,8 @@ public class CommunityService {
         }
 
         return new Community(created.id(), created.slug(), created.name(), created.description(), created.rules(),
-                created.role(), initialCode, created.memberCount(), created.maxMembers(), created.availableSlots());
+                created.role(), initialCode, created.memberCount(), created.maxMembers(), created.availableSlots(),
+                created.category(), created.visibility());
     }
 
     @Transactional
@@ -371,7 +381,9 @@ public class CommunityService {
                         null,
                         rs.getLong("member_count"),
                         rs.getInt("max_members"),
-                        rs.getInt("available_slots")
+                        rs.getInt("available_slots"),
+                        rs.getString("category"),
+                        rs.getString("visibility")
                 ), accounts.current().accountId(), code, draft.communityId());
     }
 
@@ -389,7 +401,9 @@ public class CommunityService {
                         null,
                         rs.getLong("member_count"),
                         rs.getInt("max_members"),
-                        rs.getInt("available_slots")
+                        rs.getInt("available_slots"),
+                        rs.getString("category"),
+                        rs.getString("visibility")
                 ), accounts.current().accountId(), communityId);
     }
 
@@ -418,6 +432,20 @@ public class CommunityService {
     public void removeMember(UUID communityId, UUID targetAccount) {
         jdbc.queryForObject("select replica.remove_community_member(?, ?, ?)", Object.class,
                 accounts.current().accountId(), communityId, targetAccount);
+    }
+
+    /**
+     * Permite que el estudiante autenticado abandone su propia membresía en la comunidad.
+     * La identidad del actor se obtiene exclusivamente de la sesión autenticada.
+     * Reutiliza replica.remove_community_member(p_actor, p_community, p_target_account),
+     * respetando la restricción del último administrador.
+     */
+    @Transactional
+    public void leaveCommunity(UUID communityId) {
+        if (communityId == null) throw bad();
+        UUID actor = accounts.current().accountId();
+        jdbc.queryForObject("select replica.remove_community_member(?, ?, ?)", Object.class,
+                actor, communityId, actor);
     }
 
     // =========================================================================

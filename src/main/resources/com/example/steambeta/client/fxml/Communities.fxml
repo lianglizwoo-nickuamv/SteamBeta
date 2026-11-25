@@ -5,12 +5,12 @@
 <?import javafx.scene.layout.*?>
 
 <ScrollPane fitToWidth="true" styleClass="app-background" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.CommunitiesController">
-    <VBox spacing="16.0">
+    <VBox spacing="14.0">
         <padding>
             <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
         </padding>
 
-        <!-- Cabecera de Módulo -->
+        <!-- Cabecera de Módulo (Mattermost + Element) -->
         <VBox spacing="10.0">
             <HBox alignment="CENTER_LEFT" spacing="16.0">
                 <VBox spacing="4.0">
@@ -21,7 +21,7 @@
                     <Label styleClass="muted" text="Descubre comunidades públicas del campus, administra tus grupos y colabora con otros estudiantes." />
                 </VBox>
                 <Region HBox.hgrow="ALWAYS" />
-                <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                <HBox alignment="CENTER_RIGHT" spacing="8.0">
                     <Button onAction="#onCreateCommunity" styleClass="primary" text="+ Crear Comunidad" />
                     <Button onAction="#onJoinWithCode" styleClass="secondary" text="Unirse con Código" />
                     <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar" />
@@ -29,7 +29,7 @@
             </HBox>
 
             <!-- Pestañas principales: Mis Comunidades vs Explorar Comunidades -->
-            <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
                 <Button fx:id="tabMyCommunitiesBtn" onAction="#onTabMyCommunities" styleClass="tab-btn-active" text="Mis Comunidades" />
                 <Button fx:id="tabExploreBtn" onAction="#onTabExplore" styleClass="tab-btn" text="Explorar Comunidades" />
             </HBox>
@@ -37,29 +37,47 @@
         </VBox>
 
         <!-- Barra de Búsqueda y Filtros de Categorías -->
-        <HBox alignment="CENTER_LEFT" spacing="12.0">
-            <TextField fx:id="searchField" onAction="#onSearch" prefWidth="300.0" promptText="Buscar por nombre, descripción o temática..." styleClass="input" />
-            <Button onAction="#onSearch" styleClass="secondary" text="Buscar" />
-            <Separator orientation="VERTICAL" />
-            <Button fx:id="catAllBtn" onAction="#onFilterAll" styleClass="tab-btn-active" text="Todas" />
-            <Button fx:id="catAcadBtn" onAction="#onFilterAcad" styleClass="tab-btn" text="Académica" />
-            <Button fx:id="catStudyBtn" onAction="#onFilterStudy" styleClass="tab-btn" text="Estudio" />
-            <Button fx:id="catProjBtn" onAction="#onFilterProj" styleClass="tab-btn" text="Proyectos" />
-            <Button fx:id="catCareerBtn" onAction="#onFilterCareer" styleClass="tab-btn" text="Carrera" />
-            <Button fx:id="catInterestBtn" onAction="#onFilterInterest" styleClass="tab-btn" text="Interés" />
-        </HBox>
+        <VBox spacing="8.0" styleClass="toolbar-strip">
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                <TextField fx:id="searchField" onAction="#onSearch" prefWidth="260.0" promptText="Buscar por nombre, descripción o temática..." styleClass="input" />
+                <Button onAction="#onSearch" styleClass="secondary" text="Buscar" />
+                <Separator orientation="VERTICAL" />
+                <Button fx:id="catAllBtn" onAction="#onFilterAll" styleClass="tab-btn-active" text="Todas" />
+                <Button fx:id="catAcadBtn" onAction="#onFilterAcad" styleClass="tab-btn" text="Académica" />
+                <Button fx:id="catStudyBtn" onAction="#onFilterStudy" styleClass="tab-btn" text="Estudio" />
+                <Button fx:id="catProjBtn" onAction="#onFilterProj" styleClass="tab-btn" text="Proyectos" />
+                <Button fx:id="catCareerBtn" onAction="#onFilterCareer" styleClass="tab-btn" text="Carrera" />
+                <Button fx:id="catInterestBtn" onAction="#onFilterInterest" styleClass="tab-btn" text="Interés" />
+            </HBox>
+
+            <!-- Filtros específicos del Catálogo (Acceso, Disponibilidad y Ordenamiento) -->
+            <HBox fx:id="catalogFiltersBar" alignment="CENTER_LEFT" managed="false" spacing="10.0" visible="false">
+                <Label styleClass="field-label" text="ACCESO:" />
+                <ComboBox fx:id="accessFilterCombo" onAction="#onCatalogFilterChanged" prefWidth="160.0" />
+
+                <Label styleClass="field-label" text="DISPONIBILIDAD:" />
+                <ComboBox fx:id="availabilityFilterCombo" onAction="#onCatalogFilterChanged" prefWidth="185.0" />
+
+                <Label styleClass="field-label" text="ORDENAR:" />
+                <ComboBox fx:id="sortCombo" onAction="#onCatalogFilterChanged" prefWidth="215.0" />
+
+                <Region HBox.hgrow="ALWAYS" />
+                <Button fx:id="clearFiltersBtn" onAction="#onClearFilters" styleClass="secondary" text="Limpiar filtros" />
+            </HBox>
+        </VBox>
 
         <Label fx:id="statusLabel" styleClass="muted" text="Cargando comunidades..." />
 
         <!-- Disposición en 2 Columnas: Lista de Comunidades y Panel Informativo -->
-        <HBox spacing="20.0">
+        <HBox spacing="18.0">
             <!-- Columna Izquierda: Tarjetas de Comunidades (Mis Comunidades o Explorar) -->
             <VBox fx:id="communityListBox" spacing="12.0" HBox.hgrow="ALWAYS" />
 
             <!-- Columna Derecha: Panel de Privacidad y Acceso -->
-            <VBox maxWidth="320.0" minWidth="280.0" prefWidth="300.0" spacing="14.0">
+            <VBox maxWidth="320.0" minWidth="270.0" prefWidth="300.0" spacing="14.0">
                 <VBox spacing="10.0" styleClass="card">
                     <Label styleClass="section-title" text="Privacidad y Acceso" />
+                    <Separator />
                     <Label styleClass="muted" text="• Pública: visible en Explorar Comunidades; cualquier estudiante puede unirse directamente si hay espacios disponibles." wrapText="true" />
                     <Label styleClass="muted" text="• Solo con invitación: visible en el catálogo; requiere ingresar un código válido emitido por un administrador." wrapText="true" />
                     <Label styleClass="muted" text="• Privada: oculta en búsquedas públicas; solo accesible mediante 'Unirse con Código'." wrapText="true" />

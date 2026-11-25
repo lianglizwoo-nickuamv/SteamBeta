@@ -5,12 +5,16 @@ import com.example.steambeta.client.SessionScope;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import java.io.File;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -48,6 +52,21 @@ public final class AuthController {
     @FXML private Label hintEmail;
     @FXML private Button registerSubmitBtn;
 
+    // Vistas Etapa 2: Presentación Académica (Opcional tras crear la cuenta)
+    @FXML private VBox onboardingPane;
+    @FXML private ImageView onbAvatarImage;
+    @FXML private Label onbAvatarInitials;
+    @FXML private Button onbChoosePhotoBtn;
+    @FXML private Button onbRemovePhotoBtn;
+    @FXML private Label onbPhotoHintLabel;
+    @FXML private TextField onbUniField;
+    @FXML private TextField onbCareerField;
+    @FXML private TextField onbSemesterField;
+    @FXML private TextField onbInterestsField;
+    @FXML private TextArea onbBioArea;
+    @FXML private Button onbSkipBtn;
+    @FXML private Button onbSaveBtn;
+
     // Estado compartido
     @FXML private ProgressIndicator busyIndicator;
     @FXML private Label statusLabel;
@@ -56,6 +75,12 @@ public final class AuthController {
     private ExecutorService workers;
     private AuthListener listener;
     private final AtomicBoolean authInFlight = new AtomicBoolean(false);
+
+    // Estado de sesión recién creada durante Etapa 2 (Presentación académica)
+    private ApiClient pendingClient;
+    private ApiClient.Identity pendingIdentity;
+    private String pendingAlias;
+    private Path selectedOnboardingPhoto;
 
     @FXML
     public void initialize() {
@@ -282,7 +307,8 @@ public final class AuthController {
                         return;
                     }
                     if (finalIdentity != null) {
-                        listener.onLoginSuccess(client, finalIdentity);
+                        setBusy(false);
+                        showOnboardingStep(client, finalIdentity, alias);
                     } else {
                         onShowLogin();
                         loginIdentifierField.setText(login);
@@ -308,6 +334,139 @@ public final class AuthController {
                 });
             }
         });
+    }
+
+    private void showOnboardingStep(ApiClient client, ApiClient.Identity identity, String alias) {
+        this.pendingClient = client;
+        this.pendingIdentity = identity;
+        this.pendingAlias = alias;
+        this.selectedOnboardingPhoto = null;
+
+        loginPane.setVisible(false);
+        loginPane.setManaged(false);
+        registerPane.setVisible(false);
+        registerPane.setManaged(false);
+        onboardingPane.setVisible(true);
+        onboardingPane.setManaged(true);
+
+        AvatarLoader.showInitials(onbAvatarImage, onbAvatarInitials, alias);
+        onbRemovePhotoBtn.setVisible(false);
+        onbRemovePhotoBtn.setManaged(false);
+        onbPhotoHintLabel.setText("JPG, PNG o WEBP · máximo 5 MB.");
+        setStatus("¡Cuenta creada! Completa tu perfil académico o pulsa 'Completar más tarde'.", "status-success");
+        Platform.runLater(onbUniField::requestFocus);
+    }
+
+    @FXML
+    private void onChooseOnboardingPhoto() {
+        Stage owner = onboardingPane.getScene() != null ? (Stage) onboardingPane.getScene().getWindow() : null;
+        File chosen = AvatarLoader.createAvatarFileChooser().showOpenDialog(owner);
+        if (chosen == null) return;
+        if (chosen.length() > 5L * 1024L * 1024L) {
+            setStatus("La fotografía supera el límite máximo de 5 MB.", "status-error");
+            return;
+        }
+        this.selectedOnboardingPhoto = chosen.toPath();
+        AvatarLoader.showLocalPreview(onbAvatarImage, onbAvatarInitials, selectedOnboardingPhoto, 60.0, pendingAlias);
+        onbRemovePhotoBtn.setVisible(true);
+        onbRemovePhotoBtn.setManaged(true);
+        onbPhotoHintLabel.setText("Seleccionada: " + chosen.getName());
+        clearStatus();
+    }
+
+    @FXML
+    private void onRemoveOnboardingPhoto() {
+        this.selectedOnboardingPhoto = null;
+        AvatarLoader.showInitials(onbAvatarImage, onbAvatarInitials, pendingAlias);
+        onbRemovePhotoBtn.setVisible(false);
+        onbRemovePhotoBtn.setManaged(false);
+        onbPhotoHintLabel.setText("JPG, PNG o WEBP · máximo 5 MB.");
+    }
+
+    @FXML
+    private void onSkipOnboarding() {
+        if (pendingClient != null && pendingIdentity != null) {
+            ApiClient c = pendingClient;
+            ApiClient.Identity id = pendingIdentity;
+            pendingClient = null;
+            pendingIdentity = null;
+            listener.onLoginSuccess(c, id);
+        }
+    }
+
+    @FXML
+    private void onSaveOnboarding() {
+        if (pendingClient == null || pendingIdentity == null) return;
+
+        String uni = onbUniField.getText() == null ? "" : onbUniField.getText().strip();
+        String career = onbCareerField.getText() == null ? "" : onbCareerField.getText().strip();
+        String semRaw = onbSemesterField.getText() == null ? "" : onbSemesterField.getText().strip();
+        String interests = onbInterestsField.getText() == null ? "" : onbInterestsField.getText().strip();
+        String bio = onbBioArea.getText() == null ? "" : onbBioArea.getText().strip();
+
+        Integer semester = null;
+        if (!semRaw.isBlank()) {
+            try {
+                semester = Integer.parseInt(semRaw);
+                if (semester < 1 || semester > 20) {
+                    setStatus("El semestre debe ser un número entre 1 y 20.", "status-error");
+                    onbSemesterField.requestFocus();
+                    return;
+                }
+            } catch (NumberFormatException ex) {
+                setStatus("El semestre debe ser un número entero entre 1 y 20.", "status-error");
+                onbSemesterField.requestFocus();
+                return;
+            }
+        }
+        if (bio.length() > 500) {
+            setStatus("La biografía no puede superar los 500 caracteres.", "status-error");
+            onbBioArea.requestFocus();
+            return;
+        }
+
+        final Integer finalSem = semester;
+        final Path photoToUpload = selectedOnboardingPhoto;
+        final ApiClient c = pendingClient;
+        final ApiClient.Identity id = pendingIdentity;
+        final String alias = pendingAlias != null && !pendingAlias.isBlank() ? pendingAlias : "Estudiante";
+
+        setOnboardingBusy(true);
+        setStatus("Guardando tu identidad académica…", "status-pending");
+
+        workers.submit(() -> {
+            try {
+                boolean hasAcademicData = !uni.isBlank() || !career.isBlank() || finalSem != null
+                        || !interests.isBlank() || !bio.isBlank();
+                if (hasAcademicData) {
+                    c.updateProfile(alias, uni, career, finalSem, bio, null, interests, false);
+                }
+                if (photoToUpload != null) {
+                    c.uploadAvatar(photoToUpload);
+                }
+                Platform.runLater(() -> {
+                    pendingClient = null;
+                    pendingIdentity = null;
+                    listener.onLoginSuccess(c, id);
+                });
+            } catch (Throwable err) {
+                Platform.runLater(() -> {
+                    setOnboardingBusy(false);
+                    String msg = err.getMessage() != null && !err.getMessage().isBlank()
+                            ? err.getMessage() : "No se pudo guardar la información académica.";
+                    setStatus(msg, "status-error");
+                });
+            }
+        });
+    }
+
+    private void setOnboardingBusy(boolean busy) {
+        busyIndicator.setVisible(busy);
+        busyIndicator.setManaged(busy);
+        onbSaveBtn.setDisable(busy);
+        onbSkipBtn.setDisable(busy);
+        onbChoosePhotoBtn.setDisable(busy);
+        onbRemovePhotoBtn.setDisable(busy);
     }
 
     private void validateLiveRegistration() {

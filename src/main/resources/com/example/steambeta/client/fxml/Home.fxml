@@ -10,7 +10,7 @@
             <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
         </padding>
 
-        <!-- Saludo y Bienvenida -->
+        <!-- Saludo y Bienvenida (Moodle + Handshake + JabRef) -->
         <VBox spacing="6.0">
             <HBox alignment="CENTER_LEFT" spacing="12.0">
                 <Label fx:id="greetingLabel" styleClass="title" text="Bienvenido a SteamBeta Campus" />
@@ -20,10 +20,10 @@
             <Separator />
         </VBox>
 
-        <!-- Métricas Rápidas en 4 Tarjetas Elevadas (Clickeables) -->
+        <!-- Métricas Rápidas en 4 Tarjetas KPI con acento superior semántico (Clickeables) -->
         <HBox spacing="14.0">
             <!-- Métrica 1: Tareas Pendientes -->
-            <VBox onMouseClicked="#onOpenTasks" spacing="6.0" styleClass="card-elevated, card-clickable" HBox.hgrow="ALWAYS">
+            <VBox onMouseClicked="#onOpenTasks" spacing="6.0" styleClass="kpi-card, kpi-accent-primary, card-clickable" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <Label styleClass="field-label" text="TAREAS PENDIENTES" />
                     <Region HBox.hgrow="ALWAYS" />
@@ -34,7 +34,7 @@
             </VBox>
 
             <!-- Métrica 2: Comunidades Activas -->
-            <VBox onMouseClicked="#onOpenCommunities" spacing="6.0" styleClass="card-elevated, card-clickable" HBox.hgrow="ALWAYS">
+            <VBox onMouseClicked="#onOpenCommunities" spacing="6.0" styleClass="kpi-card, kpi-accent-secondary, card-clickable" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <Label styleClass="field-label" text="MIS COMUNIDADES" />
                     <Region HBox.hgrow="ALWAYS" />
@@ -45,7 +45,7 @@
             </VBox>
 
             <!-- Métrica 3: Próximos Eventos -->
-            <VBox onMouseClicked="#onOpenCalendar" spacing="6.0" styleClass="card-elevated, card-clickable" HBox.hgrow="ALWAYS">
+            <VBox onMouseClicked="#onOpenCalendar" spacing="6.0" styleClass="kpi-card, kpi-accent-warn, card-clickable" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <Label styleClass="field-label" text="FECHAS CLAVE" />
                     <Region HBox.hgrow="ALWAYS" />
@@ -56,7 +56,7 @@
             </VBox>
 
             <!-- Métrica 4: Avisos sin leer -->
-            <VBox onMouseClicked="#onOpenNotifications" spacing="6.0" styleClass="card-elevated, card-clickable" HBox.hgrow="ALWAYS">
+            <VBox onMouseClicked="#onOpenNotifications" spacing="6.0" styleClass="kpi-card, kpi-accent-danger, card-clickable" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <Label styleClass="field-label" text="AVISOS PENDIENTES" />
                     <Region HBox.hgrow="ALWAYS" />
@@ -74,11 +74,14 @@
                 <!-- Sección: Próximos Vencimientos y Exámenes -->
                 <VBox spacing="10.0" styleClass="card">
                     <HBox alignment="CENTER_LEFT" spacing="10.0">
-                        <Label styleClass="section-title" text="Próximas Fechas Clave y Entregas" />
+                        <VBox spacing="2.0">
+                            <Label styleClass="section-title" text="Próximas Fechas Clave y Entregas" />
+                            <Label styleClass="muted" text="Hitos académicos sincronizados con tus comunidades universitarias:" />
+                        </VBox>
                         <Region HBox.hgrow="ALWAYS" />
                         <Button onAction="#onOpenCalendar" styleClass="secondary" text="Ver Calendario Completo →" />
                     </HBox>
-                    <Label styleClass="muted" text="Hitos académicos sincronizados con tus comunidades universitarias:" />
+                    <Separator />
                     <VBox fx:id="urgentEventsBox" spacing="8.0" />
                 </VBox>
 
@@ -94,31 +97,31 @@
                 </VBox>
             </VBox>
 
-            <!-- Columna Derecha: Estado Académico y Resumen Personal -->
+            <!-- Columna Derecha: Estado Académico y Resumen Personal (Inspector Handshake) -->
             <VBox maxWidth="350.0" minWidth="290.0" prefWidth="320.0" spacing="14.0">
                 <!-- Ficha del Estudiante -->
                 <VBox spacing="10.0" styleClass="card">
                     <Label styleClass="section-title" text="Tu Ficha Académica" />
-                    <VBox spacing="6.0">
-                        <HBox spacing="8.0">
-                            <Label styleClass="field-label" text="Alias:" />
-                            <Label fx:id="aliasSummaryLabel" styleClass="identity" text="Estudiante" />
-                        </HBox>
-                        <HBox spacing="8.0">
-                            <Label styleClass="field-label" text="Universidad:" />
-                            <Label fx:id="uniSummaryLabel" styleClass="muted" text="No declarada" />
-                        </HBox>
-                        <HBox spacing="8.0">
-                            <Label styleClass="field-label" text="Carrera:" />
-                            <Label fx:id="careerSummaryLabel" styleClass="muted" text="No declarada" />
-                        </HBox>
-                        <HBox spacing="8.0">
-                            <Label styleClass="field-label" text="Semestre:" />
-                            <Label fx:id="semesterSummaryLabel" styleClass="muted" text="No especificado" />
-                        </HBox>
-                    </VBox>
                     <Separator />
-                    <Button onAction="#onOpenProfile" styleClass="secondary" text="Editar Mi Perfil →" />
+                    <GridPane hgap="10.0" vgap="7.0">
+                        <columnConstraints>
+                            <ColumnConstraints minWidth="82.0" />
+                            <ColumnConstraints hgrow="ALWAYS" />
+                        </columnConstraints>
+                        <Label styleClass="field-label" text="ALIAS" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <Label fx:id="aliasSummaryLabel" styleClass="identity" text="Estudiante" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                        <Label styleClass="field-label" text="UNIVERSIDAD" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <Label fx:id="uniSummaryLabel" styleClass="muted" text="No declarada" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                        <Label styleClass="field-label" text="CARRERA" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                        <Label fx:id="careerSummaryLabel" styleClass="muted" text="No declarada" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                        <Label styleClass="field-label" text="SEMESTRE" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                        <Label fx:id="semesterSummaryLabel" styleClass="muted" text="No especificado" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                    </GridPane>
+                    <Separator />
+                    <Button maxWidth="Infinity" onAction="#onOpenProfile" styleClass="primary" text="Editar Mi Perfil →" />
                 </VBox>
 
                 <!-- Consejos y Estado del Sistema -->

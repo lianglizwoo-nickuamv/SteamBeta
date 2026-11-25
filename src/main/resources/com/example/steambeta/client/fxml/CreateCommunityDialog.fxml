@@ -63,7 +63,7 @@
     </VBox>
 
     <!-- Indicador de Flujo Administrativo -->
-    <VBox spacing="4.0" styleClass="card-elevated">
+    <VBox spacing="5.0" styleClass="dialog-info-card">
         <Label styleClass="badge-admin" text="Información de Rol Administrativo:" />
         <Label styleClass="muted" text="• Al crear la comunidad, serás registrado como Administrador local (ADMIN)." wrapText="true" />
         <Label styleClass="muted" text="• Para comunidades de tipo INVITE_ONLY o PRIVATE, se generará de inmediato tu código único de invitación." wrapText="true" />

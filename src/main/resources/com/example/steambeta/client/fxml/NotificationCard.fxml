@@ -4,16 +4,18 @@
 <?import javafx.scene.layout.*?>
 
 <VBox fx:id="cardRoot" spacing="6.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.NotificationCardController">
-    <HBox alignment="CENTER_LEFT" spacing="10.0">
+    <HBox alignment="CENTER_LEFT" spacing="8.0">
         <Label fx:id="typeBadge" styleClass="badge-role" text="AVISO" />
+        <Label fx:id="statusBadge" styleClass="badge-pending" text="Sin leer" />
+        <Label fx:id="originLabel" managed="false" styleClass="muted" text="" visible="false" />
         <Region HBox.hgrow="ALWAYS" />
         <Label fx:id="dateLabel" styleClass="muted" text="01/01/2026" />
     </HBox>
 
-    <Label fx:id="titleLabel" styleClass="field-label" text="Título de la notificación" wrapText="true" />
-    <Label fx:id="msgLabel" styleClass="muted" text="Mensaje o detalle del aviso..." wrapText="true" />
+    <Label fx:id="titleLabel" styleClass="card-title" text="Título de la notificación" wrapText="true" />
+    <Label fx:id="msgLabel" styleClass="post-body" text="Mensaje o detalle del aviso..." wrapText="true" />
 
     <HBox fx:id="actionRow" alignment="CENTER_RIGHT" managed="false" visible="false">
-        <Button onAction="#onMarkRead" styleClass="secondary" text="Marcar como leída" />
+        <Button onAction="#onMarkRead" styleClass="secondary, btn-compact" text="Marcar como leída" />
     </HBox>
 </VBox>

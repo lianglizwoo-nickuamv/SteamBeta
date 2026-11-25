@@ -1,14 +1,17 @@
 package com.example.steambeta.client.ui;
 
+import com.example.steambeta.client.ThemeManager;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.paint.Color;
+import javafx.scene.control.Button;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 /**
  * Utilidades no visuales compartidas para SteamBeta Campus:
@@ -50,6 +53,60 @@ public final class UiHelper {
         }
     }
 
+    public static String formatFileSize(long bytes) {
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return String.format(Locale.US, "%.1f KB", bytes / 1024.0);
+        return String.format(Locale.US, "%.2f MB", bytes / (1024.0 * 1024.0));
+    }
+
+    public static void setVisible(Node node, boolean visible) {
+        if (node != null) {
+            node.setVisible(visible);
+            node.setManaged(visible);
+        }
+    }
+
+    public static void setActiveTab(Button active, Button... group) {
+        if (group == null) return;
+        for (Button b : group) {
+            if (b != null) {
+                b.getStyleClass().removeAll("tab-btn-active", "tab-btn");
+                b.getStyleClass().add(b == active ? "tab-btn-active" : "tab-btn");
+            }
+        }
+    }
+
+    public static String formatCommunityCategory(String raw) {
+        if (raw == null || raw.isBlank()) return "Académica";
+        return switch (raw.strip().toUpperCase(Locale.ROOT)) {
+            case "ACADEMICA" -> "Académica";
+            case "ESTUDIO" -> "Estudio";
+            case "PROYECTO" -> "Proyecto";
+            case "CARRERA" -> "Carrera";
+            case "INTERES" -> "Interés";
+            default -> raw;
+        };
+    }
+
+    public static String formatCommunityVisibility(String raw) {
+        if (raw == null || raw.isBlank()) return "Pública";
+        return switch (raw.strip().toUpperCase(Locale.ROOT)) {
+            case "PUBLIC" -> "Pública";
+            case "INVITE_ONLY" -> "Solo con invitación";
+            case "PRIVATE" -> "Privada";
+            default -> raw;
+        };
+    }
+
+    public static String formatCommunityRole(String role) {
+        if (role == null) return "Miembro";
+        return switch (role.strip().toUpperCase(Locale.ROOT)) {
+            case "ADMIN" -> "Administrador Local (ADMIN)";
+            case "MODERATOR" -> "Moderador (MODERATOR)";
+            default -> "Miembro (MEMBER)";
+        };
+    }
+
     // -------------------------------------------------------------------------
     // 2. VENTANAS MODALES ESTILIZADAS CON ACADEMIC.CSS (100% FXML)
     // -------------------------------------------------------------------------
@@ -62,10 +119,7 @@ public final class UiHelper {
         }
         modal.setTitle(title);
         Scene scene = new Scene(root);
-        scene.setFill(Color.web("#0a0f1d"));
-        if (!STYLESHEET.isEmpty()) {
-            scene.getStylesheets().add(STYLESHEET);
-        }
+        ThemeManager.apply(scene);
         modal.setScene(scene);
         return modal;
     }

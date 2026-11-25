@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="6.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.StudyMatchCardController">
+<VBox spacing="8.0" styleClass="match-card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.StudyMatchCardController">
     <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <StackPane maxHeight="38.0" maxWidth="38.0" minHeight="38.0" minWidth="38.0" prefHeight="38.0" prefWidth="38.0" styleClass="avatar-circle">
+            <ImageView fx:id="avatarImage" fitHeight="38.0" fitWidth="38.0" managed="false" visible="false" />
+            <Label fx:id="avatarInitials" styleClass="field-label" text="ST" />
+        </StackPane>
         <Label fx:id="aliasLabel" styleClass="card-title" text="Alias del estudiante" />
         <Label fx:id="careerBadge" styleClass="badge-role" text="Carrera" />
         <Label fx:id="visibilityBadge" managed="false" styleClass="badge-resolved" text="Visible" visible="false" />
@@ -12,10 +17,12 @@
         <Label fx:id="availBadge" styleClass="tag-pill" text="Disponibilidad: Tardes" />
     </HBox>
 
-    <Label fx:id="subjectsLabel" styleClass="field-label" text="Materias: Álgebra, Cálculo" wrapText="true" />
-    <Label fx:id="interestsLabel" managed="false" styleClass="muted" text="" visible="false" wrapText="true" />
-    <Label fx:id="helpLabel" styleClass="muted" text="Ofrece apoyo en: Varios temas..." wrapText="true" />
-    <Label fx:id="needsHelpLabel" managed="false" styleClass="muted" text="" visible="false" wrapText="true" />
+    <VBox spacing="4.0">
+        <Label fx:id="subjectsLabel" styleClass="post-body" text="Materias: Álgebra, Cálculo" wrapText="true" />
+        <Label fx:id="interestsLabel" managed="false" styleClass="muted" text="" visible="false" wrapText="true" />
+        <Label fx:id="helpLabel" styleClass="muted" text="Ofrece apoyo en: Varios temas..." wrapText="true" />
+        <Label fx:id="needsHelpLabel" managed="false" styleClass="muted" text="" visible="false" wrapText="true" />
+    </VBox>
 
     <HBox fx:id="actionsBox" alignment="CENTER_RIGHT" managed="false" spacing="8.0" visible="false">
         <Region HBox.hgrow="ALWAYS" />

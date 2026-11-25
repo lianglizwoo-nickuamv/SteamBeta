@@ -50,6 +50,7 @@ public final class PublishMaterialDialogController {
     @FXML private TextArea descriptionArea;
     @FXML private ComboBox<String> categoryCombo;
     @FXML private ComboBox<String> typeCombo;
+    @FXML private Label modalityHintLabel;
     @FXML private TextField contactField;
     @FXML private ListView<String> attachmentsList;
     @FXML private Button btnAttach;
@@ -62,6 +63,7 @@ public final class PublishMaterialDialogController {
     private ExecutorService workers;
     private Runnable onSuccess;
     private ApiClient.ExchangeItem editingItem;
+    private final List<ApiClient.ExchangeAttachment> storedAttachments = new ArrayList<>();
     private final List<Path> selectedFiles = new ArrayList<>();
 
     @FXML
@@ -75,6 +77,22 @@ public final class PublishMaterialDialogController {
                 "Intercambio", "Donación", "Préstamo"
         ));
         typeCombo.setValue("Intercambio");
+        typeCombo.valueProperty().addListener((obs, oldVal, newVal) -> updateModalityHint(newVal));
+        updateModalityHint("Intercambio");
+    }
+
+    private void updateModalityHint(String selectedLabel) {
+        if (modalityHintLabel == null) return;
+        modalityHintLabel.setText(modalityExplanation(TYPE_TO_ENUM.getOrDefault(selectedLabel, "EXCHANGE")));
+    }
+
+    public static String modalityExplanation(String code) {
+        if (code == null) code = "EXCHANGE";
+        return switch (code.toUpperCase(Locale.ROOT)) {
+            case "GIFT" -> "Donación: entregas gratuitamente un material sin recibir otro a cambio (ej. regalar apuntes de programación). Sin dinero de por medio.";
+            case "LOAN" -> "Préstamo: prestas temporalmente un material y esperas que te lo devuelvan (ej. prestar un libro durante una semana). Sin dinero de por medio.";
+            default -> "Intercambio: entregas un material y recibes otro a cambio (ej. libro de Álgebra por calculadora científica). Sin dinero de por medio.";
+        };
     }
 
     public void init(ApiClient api, ExecutorService workers, Runnable onSuccess) {
@@ -97,6 +115,37 @@ public final class PublishMaterialDialogController {
             categoryCombo.setValue(categoryLabel(item.category()));
             typeCombo.setValue(typeLabel(item.exchangeType()));
             btnSubmit.setText("Guardar Cambios");
+            loadExistingAttachments(item.id());
+        }
+    }
+
+    private void loadExistingAttachments(String itemId) {
+        if (api == null || workers == null || itemId == null) return;
+        workers.submit(() -> {
+            try {
+                var list = api.exchangeAttachments(itemId);
+                Platform.runLater(() -> {
+                    storedAttachments.clear();
+                    if (list != null) storedAttachments.addAll(list);
+                    refreshAttachmentsListView();
+                });
+            } catch (Exception ignored) {}
+        });
+    }
+
+    private void refreshAttachmentsListView() {
+        attachmentsList.getItems().clear();
+        for (var att : storedAttachments) {
+            attachmentsList.getItems().add("[Almacenado] " + att.originalFilename() + " (."
+                    + att.extension().toUpperCase(Locale.ROOT) + " · " + formatSize(att.fileSizeBytes()) + ")");
+        }
+        for (Path p : selectedFiles) {
+            String name = p.getFileName().toString();
+            int dot = name.lastIndexOf('.');
+            String ext = dot > 0 ? name.substring(dot + 1).toUpperCase(Locale.ROOT) : "";
+            long size = 0;
+            try { size = Files.size(p); } catch (Exception ignored) {}
+            attachmentsList.getItems().add("[Nuevo] " + name + " (." + ext + " · " + formatSize(size) + ")");
         }
     }
 
@@ -138,11 +187,15 @@ public final class PublishMaterialDialogController {
         if (chosen == null || chosen.isEmpty()) return;
 
         for (File f : chosen) {
-            if (selectedFiles.size() >= MAX_FILES) {
-                showError("Solo puedes adjuntar hasta " + MAX_FILES + " archivos por publicación.");
+            if (storedAttachments.size() + selectedFiles.size() >= MAX_FILES) {
+                showError("Solo puedes tener hasta " + MAX_FILES + " archivos por publicación.");
                 break;
             }
-            Path p = f.toPath();
+            Path p = f.toPath().toAbsolutePath().normalize();
+            if (selectedFiles.contains(p)) {
+                showInfo("El archivo '" + p.getFileName() + "' ya está seleccionado.");
+                continue;
+            }
             String name = p.getFileName().toString();
             int dot = name.lastIndexOf('.');
             String ext = dot > 0 ? name.substring(dot + 1).toLowerCase(Locale.ROOT) : "";
@@ -157,8 +210,8 @@ public final class PublishMaterialDialogController {
                     continue;
                 }
                 selectedFiles.add(p);
-                attachmentsList.getItems().add(name + " (." + ext.toUpperCase(Locale.ROOT) + " · " + formatSize(size) + ")");
-                showInfo("Archivo adjuntado: " + name);
+                refreshAttachmentsListView();
+                showInfo("Archivo seleccionado (se subirá al guardar): " + name);
             } catch (Exception ex) {
                 showError("No se pudo leer el archivo '" + name + "'.");
             }
@@ -168,9 +221,15 @@ public final class PublishMaterialDialogController {
     @FXML
     private void onRemoveSelectedFile() {
         int idx = attachmentsList.getSelectionModel().getSelectedIndex();
-        if (idx >= 0 && idx < selectedFiles.size()) {
-            selectedFiles.remove(idx);
-            attachmentsList.getItems().remove(idx);
+        if (idx < 0) return;
+        if (idx < storedAttachments.size()) {
+            showInfo("Los archivos ya almacenados se eliminan desde 'Ver detalle / Adjuntos' para evitar borrados accidentales.");
+            return;
+        }
+        int newIdx = idx - storedAttachments.size();
+        if (newIdx >= 0 && newIdx < selectedFiles.size()) {
+            selectedFiles.remove(newIdx);
+            refreshAttachmentsListView();
         }
     }
 
@@ -266,8 +325,6 @@ public final class PublishMaterialDialogController {
     }
 
     public static String formatSize(long bytes) {
-        if (bytes < 1024) return bytes + " B";
-        if (bytes < 1024 * 1024) return String.format(Locale.ROOT, "%.1f KB", bytes / 1024.0);
-        return String.format(Locale.ROOT, "%.2f MB", bytes / (1024.0 * 1024.0));
+        return UiHelper.formatFileSize(bytes);
     }
 }

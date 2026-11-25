@@ -3,23 +3,25 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="6.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ExchangeCardController">
+<VBox spacing="8.0" styleClass="file-card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ExchangeCardController">
     <HBox alignment="CENTER_LEFT" spacing="8.0">
         <Label fx:id="typeBadge" styleClass="badge-resolved" text="Intercambio" />
         <Label fx:id="catBadge" styleClass="badge-role" text="Libros" />
-        <Label fx:id="attachBadge" managed="false" styleClass="tag-pill" text="📎 0 adjuntos" visible="false" />
+        <Label fx:id="attachBadge" managed="false" styleClass="tag-pill" text="0 adjuntos" visible="false" />
         <Region HBox.hgrow="ALWAYS" />
         <Label fx:id="ownerLabel" styleClass="muted" text="Publicado por:" />
     </HBox>
 
-    <Label fx:id="titleLabel" styleClass="card-title" text="Título del libro o material" />
-    <Label fx:id="descLabel" styleClass="muted" text="Estado, edición y detalles..." wrapText="true" />
+    <Label fx:id="titleLabel" styleClass="card-title" text="Título del libro o material" wrapText="true" />
+    <Label fx:id="descLabel" styleClass="post-body" text="Estado, edición y detalles..." wrapText="true" />
     <Label fx:id="contactLabel" styleClass="field-label" text="Contacto: @usuario" />
 
+    <Separator />
+
     <HBox alignment="CENTER_LEFT" spacing="8.0">
-        <Button fx:id="btnDetails" onAction="#onDetails" styleClass="secondary" text="Ver detalle / Adjuntos" />
+        <Button fx:id="btnDetails" onAction="#onDetails" styleClass="secondary, btn-compact" text="Ver detalle / Adjuntos" />
         <Region HBox.hgrow="ALWAYS" />
-        <Button fx:id="btnEdit" managed="false" onAction="#onEdit" styleClass="secondary" text="Editar" visible="false" />
-        <Button fx:id="btnDelete" managed="false" onAction="#onDelete" styleClass="danger-btn" text="Eliminar" visible="false" />
+        <Button fx:id="btnEdit" managed="false" onAction="#onEdit" styleClass="secondary, btn-compact" text="Editar" visible="false" />
+        <Button fx:id="btnDelete" managed="false" onAction="#onDelete" styleClass="danger-btn, btn-compact" text="Eliminar" visible="false" />
     </HBox>
 </VBox>

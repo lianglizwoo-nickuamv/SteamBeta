@@ -5,6 +5,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
@@ -22,6 +23,8 @@ import java.util.concurrent.ExecutorService;
  */
 public final class StudyProfileDetailDialogController {
 
+    @FXML private ImageView avatarImage;
+    @FXML private Label avatarInitials;
     @FXML private Label aliasLabel;
     @FXML private Label careerBadge;
     @FXML private Label universityLabel;
@@ -41,12 +44,17 @@ public final class StudyProfileDetailDialogController {
     @FXML private Button btnCopyEmail;
     @FXML private Label copyFeedbackLabel;
 
+    private ApiClient api;
+    private ExecutorService workers;
     private String publicEmail;
     private String studentAlias;
 
     public void load(ApiClient api, ExecutorService workers, ApiClient.StudyProfile preview, boolean focusContact) {
+        this.api = api;
+        this.workers = workers;
         if (preview != null) {
             this.studentAlias = preview.alias();
+            AvatarLoader.showInitials(avatarImage, avatarInitials, preview.alias());
             aliasLabel.setText(preview.alias() != null ? preview.alias() : "Estudiante");
             careerBadge.setText(preview.declaredCareer() != null && !preview.declaredCareer().isBlank()
                     ? preview.declaredCareer() : "Estudiante");
@@ -80,6 +88,7 @@ public final class StudyProfileDetailDialogController {
         contactCard.setManaged(true);
 
         this.studentAlias = d.alias();
+        AvatarLoader.load(avatarImage, avatarInitials, d.alias(), d.accountId(), d.avatarUrl(), 58.0, api, workers);
         aliasLabel.setText(d.alias() != null ? d.alias() : "Estudiante");
         careerBadge.setText(d.declaredCareer() != null && !d.declaredCareer().isBlank() ? d.declaredCareer() : "Estudiante");
         universityLabel.setText(d.declaredUniversity() != null && !d.declaredUniversity().isBlank()
@@ -102,7 +111,7 @@ public final class StudyProfileDetailDialogController {
 
         if (d.contactEmailEnabled() && d.publicEmail() != null && !d.publicEmail().isBlank()) {
             this.publicEmail = d.publicEmail().strip();
-            contactInfoLabel.setText("Correo electrónico público: " + this.publicEmail);
+            contactInfoLabel.setText("Correo electrónico habilitado: " + this.publicEmail);
             contactActionsBox.setVisible(true);
             contactActionsBox.setManaged(true);
             if (focusContact) {

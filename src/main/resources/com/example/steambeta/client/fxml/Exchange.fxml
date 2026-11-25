@@ -10,7 +10,7 @@
             <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
         </padding>
 
-        <!-- Cabecera de Módulo -->
+        <!-- Cabecera de Módulo (Nextcloud Files + Zotero) -->
         <VBox spacing="10.0">
             <HBox alignment="CENTER_LEFT" spacing="16.0">
                 <VBox spacing="4.0">
@@ -18,10 +18,10 @@
                         <Label styleClass="title" text="Intercambio Universitario de Materiales" />
                         <Label styleClass="badge-admin" text="TRUEQUE SOLIDARIO" />
                     </HBox>
-                    <Label styleClass="muted" text="Comparte libros de texto, calculadoras, guías o material académico sin transacciones monetarias." />
+                    <Label styleClass="muted" text="Comparte libros, apuntes y herramientas mediante intercambio, donación o préstamo — sin dinero ni transacciones monetarias." wrapText="true" />
                 </VBox>
                 <Region HBox.hgrow="ALWAYS" />
-                <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                <HBox alignment="CENTER_RIGHT" spacing="8.0">
                     <Button onAction="#onPublish" styleClass="primary" text="+ Publicar Material o Libro" />
                     <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar" />
                 </HBox>
@@ -29,16 +29,28 @@
             <Separator />
         </VBox>
 
-        <!-- Filtros por categoría y autor -->
-        <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <Label styleClass="field-label" text="Categoría:" />
-            <Button fx:id="filterAllBtn" onAction="#onFilterAll" styleClass="tab-btn-active" text="Todos" />
-            <Button fx:id="filterBooksBtn" onAction="#onFilterBooks" styleClass="tab-btn" text="Libros" />
-            <Button fx:id="filterToolsBtn" onAction="#onFilterTools" styleClass="tab-btn" text="Herramientas" />
-            <Button fx:id="filterNotesBtn" onAction="#onFilterNotes" styleClass="tab-btn" text="Apuntes" />
-            <Separator orientation="VERTICAL" />
-            <Button fx:id="filterMyPostsBtn" onAction="#onFilterMyPosts" styleClass="tab-btn" text="Mis Publicaciones" />
-        </HBox>
+        <!-- Filtros por categoría, modalidad, búsqueda y autor (Toolbar Strip) -->
+        <VBox spacing="8.0" styleClass="toolbar-strip">
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                <Label styleClass="field-label" text="CATEGORÍA:" />
+                <Button fx:id="filterAllBtn" onAction="#onFilterAll" styleClass="tab-btn-active" text="Todos" />
+                <Button fx:id="filterBooksBtn" onAction="#onFilterBooks" styleClass="tab-btn" text="Libros" />
+                <Button fx:id="filterToolsBtn" onAction="#onFilterTools" styleClass="tab-btn" text="Herramientas" />
+                <Button fx:id="filterNotesBtn" onAction="#onFilterNotes" styleClass="tab-btn" text="Apuntes" />
+                <Separator orientation="VERTICAL" />
+                <Button fx:id="filterMyPostsBtn" onAction="#onFilterMyPosts" styleClass="tab-btn" text="Mis Publicaciones" />
+            </HBox>
+
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <Label styleClass="field-label" text="MODALIDAD:" />
+                <ComboBox fx:id="modalityFilterCombo" onAction="#onFilterChanged" prefWidth="175.0" />
+                <TextField fx:id="searchField" onAction="#onFilterChanged" prefWidth="280.0" promptText="Buscar por título, descripción o autor..." styleClass="input" HBox.hgrow="ALWAYS" />
+                <Button onAction="#onFilterChanged" styleClass="secondary" text="Buscar" />
+                <Button onAction="#onClearFilters" styleClass="secondary" text="Limpiar filtros" />
+            </HBox>
+        </VBox>
+
+        <Label fx:id="statusLabel" styleClass="muted" text="Cargando materiales solidarios…" />
 
         <!-- Listado de Materiales -->
         <VBox fx:id="exchangeListBox" spacing="12.0" />

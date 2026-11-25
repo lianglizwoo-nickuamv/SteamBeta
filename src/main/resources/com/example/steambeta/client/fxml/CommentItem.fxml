@@ -4,14 +4,18 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="4.0" styleClass="comment-card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.CommentItemController">
+<VBox fx:id="commentRoot" spacing="5.0" styleClass="comment-card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.CommentItemController">
     <padding>
-        <Insets bottom="6.0" left="10.0" right="10.0" top="6.0" />
+        <Insets bottom="8.0" left="12.0" right="12.0" top="8.0" />
     </padding>
     <HBox alignment="CENTER_LEFT" spacing="8.0">
-        <Label fx:id="authorLabel" styleClass="field-label" text="Autor" />
+        <Label fx:id="authorLabel" styleClass="identity" text="Autor" />
+        <Label fx:id="solutionBadge" managed="false" styleClass="badge-resolved" text="✓ SOLUCIÓN ACEPTADA" visible="false" />
         <Region HBox.hgrow="ALWAYS" />
         <Label fx:id="dateLabel" styleClass="muted" text="01/01/2026" />
     </HBox>
-    <Label fx:id="bodyLabel" styleClass="muted" text="Contenido del comentario..." wrapText="true" />
+    <Label fx:id="bodyLabel" styleClass="post-body" text="Contenido del comentario..." wrapText="true" />
+    <HBox fx:id="solutionActionRow" alignment="CENTER_RIGHT" managed="false" visible="false">
+        <Button fx:id="btnAcceptSolution" onAction="#onAcceptSolution" styleClass="secondary, btn-compact" text="Marcar como solución" />
+    </HBox>
 </VBox>

@@ -56,9 +56,14 @@ public final class ExchangeDetailDialogController {
 
         typeBadge.setText(PublishMaterialDialogController.typeLabel(item.exchangeType()));
         catBadge.setText(PublishMaterialDialogController.categoryLabel(item.category()));
-        ownerLabel.setText("Publicado por: " + (item.ownerAlias() != null ? item.ownerAlias() : "Estudiante"));
+        String author = item.ownerAlias() != null && !item.ownerAlias().isBlank() ? item.ownerAlias() : "Estudiante";
+        String dateText = item.createdAt() != null && !item.createdAt().isBlank()
+                ? " · " + UiHelper.formatDate(item.createdAt()) : "";
+        String statusText = "AVAILABLE".equalsIgnoreCase(item.status()) ? " · Disponible" : "";
+        ownerLabel.setText("Publicado por " + author + dateText + statusText);
         titleLabel.setText(item.title());
-        descLabel.setText(item.description() != null ? item.description() : "");
+        String modalityNote = PublishMaterialDialogController.modalityExplanation(item.exchangeType());
+        descLabel.setText((item.description() != null ? item.description() : "") + "\n\nCondición: " + modalityNote);
         contactLabel.setText("Contacto: " + (item.contactInfo() != null ? item.contactInfo() : "—"));
 
         btnDeleteAtt.setVisible(isOwner);
@@ -110,6 +115,8 @@ public final class ExchangeDetailDialogController {
     private void loadPreviewIfImage(ApiClient.ExchangeAttachment att) {
         if (att.extension() == null || !PREVIEWABLE_IMAGE_EXTS.contains(att.extension().toLowerCase())) {
             hidePreview();
+            String ext = att.extension() != null ? "." + att.extension().toUpperCase() : "este formato";
+            statusLabel.setText("Vista previa no disponible para " + ext + "; pulsa 'Descargar archivo' para abrir el archivo original.");
             return;
         }
         statusLabel.setText("Cargando vista previa de " + att.originalFilename() + "…");

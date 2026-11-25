@@ -30,7 +30,7 @@
         <Label fx:id="roleLabel" styleClass="status-success" text="Tu rol asignado: Administrador Local (ADMIN)" />
 
         <!-- Bloque de Código de Invitación -->
-        <VBox fx:id="invitationBlock" spacing="6.0" styleClass="card-elevated">
+        <VBox fx:id="invitationBlock" spacing="6.0" styleClass="dialog-info-card">
             <Label styleClass="field-label" text="CÓDIGO ÚNICO DE INVITACIÓN GENERADO:" />
             <HBox alignment="CENTER_LEFT" spacing="10.0">
                 <TextField fx:id="codeField" editable="false" prefWidth="240.0" styleClass="input" text="CAMPUS1234" />

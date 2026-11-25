@@ -4,13 +4,13 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.AcademicQuestionsController">
+<ScrollPane fitToWidth="true" styleClass="app-background" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.AcademicQuestionsController">
     <VBox spacing="14.0">
         <padding>
             <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
         </padding>
 
-        <!-- Cabecera de Módulo -->
+        <!-- Cabecera de Módulo (Discourse + Mattermost) -->
         <VBox spacing="10.0">
             <HBox alignment="CENTER_LEFT" spacing="16.0">
                 <VBox spacing="4.0">
@@ -29,12 +29,13 @@
             <Separator />
         </VBox>
 
-        <!-- Barra de Filtros -->
-        <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <Label styleClass="field-label" text="Comunidad:" />
-            <ComboBox fx:id="commCombo" prefWidth="260.0" promptText="Selecciona una comunidad..." />
+        <!-- Barra de Filtros (Toolbar Strip) -->
+        <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="toolbar-strip">
+            <Label styleClass="field-label" text="COMUNIDAD:" />
+            <ComboBox fx:id="commCombo" prefWidth="250.0" promptText="Selecciona una comunidad..." />
+            <Separator orientation="VERTICAL" />
             <Button fx:id="filterAllBtn" onAction="#onFilterAll" styleClass="tab-btn-active" text="Todas" />
-            <Button fx:id="filterOpenBtn" onAction="#onFilterOpen" styleClass="tab-btn" text="❓ Pendientes" />
+            <Button fx:id="filterOpenBtn" onAction="#onFilterOpen" styleClass="tab-btn" text="○ Pendientes" />
             <Button fx:id="filterResolvedBtn" onAction="#onFilterResolved" styleClass="tab-btn" text="✓ Resueltas" />
             <Region HBox.hgrow="ALWAYS" />
             <TextField fx:id="searchField" onAction="#onSearch" prefWidth="240.0" promptText="Buscar tema o palabra clave..." />

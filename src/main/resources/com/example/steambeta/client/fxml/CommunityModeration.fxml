@@ -4,13 +4,13 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.CommunityModerationController">
+<ScrollPane fitToWidth="true" styleClass="app-background" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.CommunityModerationController">
     <VBox spacing="14.0">
         <padding>
             <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
         </padding>
 
-        <!-- Cabecera de Módulo -->
+        <!-- Cabecera de Módulo (Moderación Mattermost) -->
         <VBox spacing="10.0">
             <HBox alignment="CENTER_LEFT" spacing="16.0">
                 <VBox spacing="4.0">

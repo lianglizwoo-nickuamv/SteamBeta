@@ -5,12 +5,12 @@
 <?import javafx.scene.layout.*?>
 
 <ScrollPane fitToWidth="true" styleClass="app-background" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.StudyTeamsController">
-    <VBox spacing="16.0">
+    <VBox spacing="14.0">
         <padding>
             <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
         </padding>
 
-        <!-- Cabecera de Módulo -->
+        <!-- Cabecera de Módulo (Handshake + Mattermost) -->
         <VBox spacing="10.0">
             <HBox alignment="CENTER_LEFT" spacing="16.0">
                 <VBox spacing="4.0">
@@ -21,7 +21,7 @@
                     <Label styleClass="muted" text="Encuentra compañeros para repasar materias difíciles, resolver guías o preparar exámenes." />
                 </VBox>
                 <Region HBox.hgrow="ALWAYS" />
-                <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                <HBox alignment="CENTER_RIGHT" spacing="8.0">
                     <Button onAction="#onEditProfile" styleClass="primary" text="Mi Ficha de Estudio" />
                     <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar" />
                 </HBox>
@@ -29,20 +29,24 @@
             <Separator />
         </VBox>
 
-        <!-- Barra de búsqueda por nombre, alias o materia -->
-        <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <!-- Barra de búsqueda por nombre, alias o materia (Toolbar Strip) -->
+        <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="toolbar-strip">
             <Label styleClass="field-label" text="Buscar compañeros por nombre, alias o materia:" />
-            <TextField fx:id="subjectSearchField" onAction="#onSearch" prefWidth="340.0" promptText="Ej. Jospeay, Álgebra Lineal, Programación..." styleClass="input" />
+            <TextField fx:id="subjectSearchField" onAction="#onSearch" prefWidth="340.0" promptText="Ej. Jospeay, Álgebra Lineal, Programación..." styleClass="input" HBox.hgrow="ALWAYS" />
             <Button onAction="#onSearch" styleClass="secondary" text="Buscar" />
             <Button onAction="#onClearSearch" styleClass="secondary" text="Limpiar" />
         </HBox>
 
         <!-- Panel de Mi Ficha de Estudio -->
-        <Label styleClass="section-title" text="Mi Ficha de Estudio" />
-        <VBox fx:id="myProfileCard" spacing="8.0" styleClass="card" />
+        <VBox spacing="8.0">
+            <Label styleClass="section-title" text="Mi Ficha de Estudio" />
+            <VBox fx:id="myProfileCard" spacing="8.0" styleClass="card" />
+        </VBox>
 
         <!-- Listado de Coincidencias de Estudio -->
-        <Label styleClass="section-title" text="Compañeros Disponibles" />
-        <VBox fx:id="matchesListBox" spacing="12.0" />
+        <VBox spacing="8.0">
+            <Label styleClass="section-title" text="Compañeros Disponibles" />
+            <VBox fx:id="matchesListBox" spacing="12.0" />
+        </VBox>
     </VBox>
 </ScrollPane>

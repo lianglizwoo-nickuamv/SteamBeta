@@ -4,58 +4,67 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefWidth="600.0" spacing="12.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.PublishMaterialDialogController">
+<VBox prefHeight="640.0" prefWidth="640.0" spacing="12.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.PublishMaterialDialogController">
     <padding>
         <Insets bottom="20.0" left="22.0" right="22.0" top="20.0" />
     </padding>
 
     <VBox spacing="4.0">
         <Label fx:id="headerTitle" styleClass="title" text="Publicar Material de Intercambio" />
-        <Label styleClass="muted" text="Comparte libros, calculadoras, apuntes o documentos académicos sin transacciones monetarias." />
+        <Label styleClass="muted" text="Espacio solidario universitario: comparte libros, apuntes o herramientas mediante intercambio, donación o préstamo sin dinero de por medio." wrapText="true" />
         <Separator />
     </VBox>
 
-    <VBox spacing="10.0" styleClass="card">
-        <VBox spacing="4.0">
-            <Label styleClass="field-label" text="TÍTULO DEL MATERIAL (3–160 caracteres):" />
-            <TextField fx:id="titleField" promptText="Ej. Álgebra de Baldor / Apuntes de Cálculo II" styleClass="input" />
-        </VBox>
-
-        <HBox spacing="14.0">
-            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-                <Label styleClass="field-label" text="CATEGORÍA:" />
-                <ComboBox fx:id="categoryCombo" maxWidth="Infinity" styleClass="combo-box" />
+    <ScrollPane fitToWidth="true" styleClass="app-background" VBox.vgrow="ALWAYS">
+        <VBox spacing="10.0" styleClass="card">
+            <VBox spacing="4.0">
+                <Label styleClass="field-label" text="TÍTULO DEL MATERIAL (3–160 caracteres):" />
+                <TextField fx:id="titleField" promptText="Ej. Álgebra de Baldor / Apuntes de Cálculo II" styleClass="input" />
             </VBox>
-            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-                <Label styleClass="field-label" text="MODALIDAD:" />
-                <ComboBox fx:id="typeCombo" maxWidth="Infinity" styleClass="combo-box" />
-            </VBox>
-        </HBox>
 
-        <VBox spacing="4.0">
-            <Label styleClass="field-label" text="DESCRIPCIÓN Y ESTADO DEL MATERIAL (5–3000 caracteres):" />
-            <TextArea fx:id="descriptionArea" prefRowCount="3" promptText="Detalla el estado físico, edición o contenido..." styleClass="text-area" wrapText="true" />
-        </VBox>
-
-        <VBox spacing="4.0">
-            <Label styleClass="field-label" text="INFORMACIÓN DE CONTACTO:" />
-            <TextField fx:id="contactField" promptText="Ej. @mi_usuario o entrega en biblioteca del campus" styleClass="input" />
-        </VBox>
-
-        <!-- Adjuntos -->
-        <VBox spacing="6.0">
-            <HBox alignment="CENTER_LEFT" spacing="10.0">
-                <Label styleClass="field-label" text="ARCHIVOS ADJUNTOS (Máx. 5 archivos, 25 MB c/u):" />
-                <Region HBox.hgrow="ALWAYS" />
-                <Button fx:id="btnAttach" onAction="#onAttachFiles" styleClass="secondary" text="+ Adjuntar archivos" />
-                <Button fx:id="btnRemoveFile" onAction="#onRemoveSelectedFile" styleClass="secondary" text="Retirar seleccionado" />
+            <HBox spacing="14.0">
+                <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                    <Label styleClass="field-label" text="CATEGORÍA:" />
+                    <ComboBox fx:id="categoryCombo" maxWidth="Infinity" styleClass="combo-box" />
+                </VBox>
+                <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                    <Label styleClass="field-label" text="MODALIDAD SOLIDARIA:" />
+                    <ComboBox fx:id="typeCombo" maxWidth="Infinity" styleClass="combo-box" />
+                </VBox>
             </HBox>
-            <Label styleClass="muted" text="Formatos admitidos: PDF, DOC, DOCX, PPT, PPTX, JPG, JPEG, PNG, GIF, WEBP, BMP, TIFF." wrapText="true" />
-            <ListView fx:id="attachmentsList" prefHeight="88.0" styleClass="input" />
-        </VBox>
 
-        <Label fx:id="errorLabel" managed="false" styleClass="status-error" text="" visible="false" wrapText="true" />
-    </VBox>
+            <!-- Explicación contextual de la modalidad elegida -->
+            <VBox spacing="3.0" styleClass="dialog-info-card">
+                <Label fx:id="modalityHintLabel" styleClass="muted" text="Intercambio: entregas un material y recibes otro a cambio (ej. libro de Álgebra por calculadora científica). Sin dinero de por medio." wrapText="true" />
+            </VBox>
+
+            <VBox spacing="4.0">
+                <Label styleClass="field-label" text="DESCRIPCIÓN Y ESTADO FÍSICO DEL ARTÍCULO (5–3000 caracteres):" />
+                <TextArea fx:id="descriptionArea" prefRowCount="3" promptText="Detalla el estado físico (nuevo, buen estado, usado), edición, materia y condiciones del préstamo o intercambio..." styleClass="text-area" wrapText="true" />
+            </VBox>
+
+            <VBox spacing="4.0">
+                <Label styleClass="field-label" text="INFORMACIÓN DE CONTACTO:" />
+                <TextField fx:id="contactField" promptText="Ej. @mi_usuario, correo institucional o punto de entrega en el campus" styleClass="input" />
+            </VBox>
+
+            <!-- Adjuntos -->
+            <VBox spacing="6.0">
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <Label styleClass="field-label" text="ARCHIVOS ADJUNTOS (Máx. 5 archivos, 25 MB c/u):" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button fx:id="btnAttach" onAction="#onAttachFiles" styleClass="secondary" text="+ Adjuntar archivos" />
+                    <Button fx:id="btnRemoveFile" onAction="#onRemoveSelectedFile" styleClass="secondary" text="Quitar seleccionado" />
+                </HBox>
+                <Label styleClass="muted" text="Formatos admitidos: PDF, DOC, DOCX, PPT, PPTX, JPG, JPEG, PNG, GIF, WEBP, BMP, TIF, TIFF." wrapText="true" />
+                <ListView fx:id="attachmentsList" prefHeight="105.0" styleClass="input" />
+            </VBox>
+
+            <Label fx:id="errorLabel" managed="false" styleClass="status-error" text="" visible="false" wrapText="true" />
+        </VBox>
+    </ScrollPane>
+
+    <Separator />
 
     <HBox alignment="CENTER_RIGHT" spacing="12.0">
         <Region HBox.hgrow="ALWAYS" />

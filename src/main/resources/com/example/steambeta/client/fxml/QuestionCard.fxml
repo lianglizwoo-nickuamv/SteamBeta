@@ -3,20 +3,22 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="8.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.QuestionCardController">
-    <HBox alignment="CENTER_LEFT" spacing="10.0">
-        <Label fx:id="stateBadge" styleClass="badge-pending" text="⏳ PENDIENTE" />
+<VBox spacing="8.0" styleClass="question-card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.QuestionCardController">
+    <HBox alignment="CENTER_LEFT" spacing="8.0">
+        <Label fx:id="stateBadge" styleClass="badge-pending" text="○ PENDIENTE" />
         <Label fx:id="subjectBadge" managed="false" styleClass="tag-pill" text="Materia" visible="false" />
         <Region HBox.hgrow="ALWAYS" />
         <Label fx:id="authorDateLabel" styleClass="muted" text="Por: Sofia · 01/01/2026" />
     </HBox>
 
-    <Label fx:id="titleLabel" styleClass="card-title" text="Título de la duda o ejercicio" />
+    <Label fx:id="titleLabel" styleClass="card-title" text="Título de la duda o ejercicio" wrapText="true" />
     <Label fx:id="bodyLabel" styleClass="post-body" text="Descripción detallada de la pregunta..." wrapText="true" />
 
-    <HBox alignment="CENTER_LEFT" spacing="12.0">
+    <Separator />
+
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
         <Label fx:id="repliesBadge" styleClass="badge-role" text="0 respuestas / aportes" />
         <Region HBox.hgrow="ALWAYS" />
-        <Button fx:id="openBtn" onAction="#onOpen" styleClass="secondary" text="Ver respuestas y soluciones →" />
+        <Button fx:id="openBtn" onAction="#onOpen" styleClass="secondary, btn-compact" text="Ver respuestas y soluciones →" />
     </HBox>
 </VBox>

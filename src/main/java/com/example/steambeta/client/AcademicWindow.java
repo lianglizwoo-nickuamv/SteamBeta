@@ -58,10 +58,11 @@ public final class AcademicWindow {
 
         if (stage.getScene() == null) {
             var scene = new Scene(authView.root(), 1240, 820);
-            scene.getStylesheets().add(getClass().getResource("academic.css").toExternalForm());
+            ThemeManager.apply(scene);
             stage.setScene(scene);
         } else {
             stage.getScene().setRoot(authView.root());
+            ThemeManager.apply(stage.getScene());
         }
     }
 

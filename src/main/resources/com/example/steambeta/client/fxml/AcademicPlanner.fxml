@@ -10,7 +10,7 @@
             <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
         </padding>
 
-        <!-- Cabecera de Módulo -->
+        <!-- Cabecera de Módulo (OpenProject Kanban) -->
         <VBox spacing="10.0">
             <HBox alignment="CENTER_LEFT" spacing="16.0">
                 <VBox spacing="4.0">
@@ -29,45 +29,49 @@
             <Separator />
         </VBox>
 
-        <!-- Tablero Kanban de 4 Columnas con clases semánticas -->
+        <!-- Tablero Kanban de 4 Columnas con franjas de estado (OpenProject) -->
         <HBox spacing="14.0">
             <!-- Columna 1: Pendiente -->
-            <VBox prefWidth="260.0" spacing="10.0" styleClass="kanban-col" HBox.hgrow="ALWAYS">
+            <VBox prefWidth="260.0" spacing="10.0" styleClass="kanban-col, kanban-col-pending" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <Label styleClass="kanban-col-header" text="Pendiente" />
                     <Region HBox.hgrow="ALWAYS" />
                     <Label styleClass="badge-pending" text="Por iniciar" />
                 </HBox>
+                <Separator />
                 <VBox fx:id="pendingCol" spacing="10.0" />
             </VBox>
 
             <!-- Columna 2: En Proceso -->
-            <VBox prefWidth="260.0" spacing="10.0" styleClass="kanban-col" HBox.hgrow="ALWAYS">
+            <VBox prefWidth="260.0" spacing="10.0" styleClass="kanban-col, kanban-col-progress" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <Label styleClass="kanban-col-header" text="En Proceso" />
                     <Region HBox.hgrow="ALWAYS" />
                     <Label styleClass="badge-academic" text="En curso" />
                 </HBox>
+                <Separator />
                 <VBox fx:id="progressCol" spacing="10.0" />
             </VBox>
 
             <!-- Columna 3: En Revisión -->
-            <VBox prefWidth="260.0" spacing="10.0" styleClass="kanban-col" HBox.hgrow="ALWAYS">
+            <VBox prefWidth="260.0" spacing="10.0" styleClass="kanban-col, kanban-col-review" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <Label styleClass="kanban-col-header" text="En Revisión" />
                     <Region HBox.hgrow="ALWAYS" />
                     <Label styleClass="badge-academic" text="Revisando" />
                 </HBox>
+                <Separator />
                 <VBox fx:id="reviewCol" spacing="10.0" />
             </VBox>
 
             <!-- Columna 4: Completada -->
-            <VBox prefWidth="260.0" spacing="10.0" styleClass="kanban-col" HBox.hgrow="ALWAYS">
+            <VBox prefWidth="260.0" spacing="10.0" styleClass="kanban-col, kanban-col-done" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <Label styleClass="kanban-col-header" text="Completada" />
                     <Region HBox.hgrow="ALWAYS" />
                     <Label styleClass="badge-resolved" text="Finalizado" />
                 </HBox>
+                <Separator />
                 <VBox fx:id="completedCol" spacing="10.0" />
             </VBox>
         </HBox>

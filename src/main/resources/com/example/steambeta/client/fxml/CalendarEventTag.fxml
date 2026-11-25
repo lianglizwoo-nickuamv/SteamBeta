@@ -2,4 +2,4 @@
 
 <?import javafx.scene.control.Label?>
 
-<Label fx:id="tagLabel" style="-fx-font-size: 9px; -fx-padding: 1 4; -fx-background-radius: 3;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.CalendarEventTagController" />
+<Label fx:id="tagLabel" styleClass="calendar-event-tag" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.CalendarEventTagController" />

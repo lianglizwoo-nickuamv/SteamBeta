@@ -31,14 +31,19 @@ public final class ApiClient {
     public record Activity(String activityId, String code, String name, boolean required, boolean completed) {}
     public record Detail(Subject summary, List<Activity> activities) {}
 
-    // Comunidad y Publicaciones (V4, V5 & V14 capacidad)
+    // Comunidad y Publicaciones (V4, V5 & V14 capacidad/acceso)
     public record Community(String id, String slug, String name, String description, String rules, String role,
-                            String initialInvitationCode, long memberCount, int maxMembers, int availableSlots) {
+                            String initialInvitationCode, long memberCount, int maxMembers, int availableSlots,
+                            String category, String visibility) {
         public Community(String id, String slug, String name, String description, String rules, String role) {
-            this(id, slug, name, description, rules, role, null, 0, 50, 50);
+            this(id, slug, name, description, rules, role, null, 0, 50, 50, null, null);
         }
         public Community(String id, String slug, String name, String description, String rules, String role, String initialInvitationCode) {
-            this(id, slug, name, description, rules, role, initialInvitationCode, 0, 50, 50);
+            this(id, slug, name, description, rules, role, initialInvitationCode, 0, 50, 50, null, null);
+        }
+        public Community(String id, String slug, String name, String description, String rules, String role,
+                         String initialInvitationCode, long memberCount, int maxMembers, int availableSlots) {
+            this(id, slug, name, description, rules, role, initialInvitationCode, memberCount, maxMembers, availableSlots, null, null);
         }
     }
     public record Post(String id, String communityId, String authorAccountId, String authorAlias,
@@ -106,7 +111,8 @@ public final class ApiClient {
     public record StudyMatchDetail(String accountId, String alias, String declaredUniversity,
                                    String declaredCareer, List<String> subjects, List<String> interests,
                                    String canHelpWith, String needsHelpWith, String availability,
-                                   String bio, boolean contactEmailEnabled, String publicEmail) {}
+                                   String bio, boolean contactEmailEnabled, String publicEmail,
+                                   String avatarUrl) {}
 
     // Oportunidades Campus (V11 & V15)
     public record OpportunityItem(String id, String ownerAccountId, String ownerAlias,
@@ -568,8 +574,95 @@ public final class ApiClient {
     }
 
     // =========================================================================
+    // Centro de Reportes Personales (JasperReports)
+    // =========================================================================
+
+    public byte[] downloadPersonalReport(String reportKey, String format, String fromIsoDate, String toIsoDate) throws Exception {
+        StringBuilder path = new StringBuilder("api/me/reports/")
+                .append(encode(reportKey))
+                .append("?format=").append(encode(format != null ? format : "PDF"));
+        if (fromIsoDate != null && !fromIsoDate.isBlank()) {
+            path.append("&from=").append(encode(fromIsoDate.strip()));
+        }
+        if (toIsoDate != null && !toIsoDate.isBlank()) {
+            path.append("&to=").append(encode(toIsoDate.strip()));
+        }
+        long timeout = Long.parseLong(System.getenv().getOrDefault("STEAMBETA_HTTP_TIMEOUT_SECONDS", "30"));
+        var req = HttpRequest.newBuilder(base.resolve(path.toString()))
+                .timeout(Duration.ofSeconds(Math.max(15, timeout)))
+                .GET()
+                .build();
+        var response = getHttp().send(req, HttpResponse.BodyHandlers.ofByteArray());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new Failure(response.statusCode(), new String(response.body(), StandardCharsets.UTF_8));
+        }
+        return response.body();
+    }
+
+    // =========================================================================
     // Comunidades y Membresías (V4 & FASE 2)
     // =========================================================================
+
+    public Profile uploadAvatar(Path file) throws Exception {
+        if (file == null || !Files.isRegularFile(file)) {
+            throw new IllegalArgumentException("Archivo de fotografía no encontrado.");
+        }
+        String boundary = "----SteamBetaAvatar" + UUID.randomUUID().toString().replace("-", "");
+        String filename = file.getFileName().toString().replace("\"", "");
+        String contentType = Files.probeContentType(file);
+        if (contentType == null || contentType.isBlank()) {
+            contentType = "application/octet-stream";
+        }
+        byte[] fileBytes = Files.readAllBytes(file);
+        String header = "--" + boundary + "\r\n"
+                + "Content-Disposition: form-data; name=\"file\"; filename=\"" + filename + "\"\r\n"
+                + "Content-Type: " + contentType + "\r\n\r\n";
+        String footer = "\r\n--" + boundary + "--\r\n";
+
+        byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
+        byte[] footerBytes = footer.getBytes(StandardCharsets.UTF_8);
+        byte[] payload = new byte[headerBytes.length + fileBytes.length + footerBytes.length];
+        System.arraycopy(headerBytes, 0, payload, 0, headerBytes.length);
+        System.arraycopy(fileBytes, 0, payload, headerBytes.length, fileBytes.length);
+        System.arraycopy(footerBytes, 0, payload, headerBytes.length + fileBytes.length, footerBytes.length);
+
+        long timeout = Long.parseLong(System.getenv().getOrDefault("STEAMBETA_HTTP_TIMEOUT_SECONDS", "30"));
+        var reqBuilder = HttpRequest.newBuilder(base.resolve("api/account/avatar"))
+                .timeout(Duration.ofSeconds(timeout))
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                .POST(HttpRequest.BodyPublishers.ofByteArray(payload));
+        if (csrf != null) {
+            reqBuilder.header(csrf.headerName(), csrf.token());
+        }
+        var response = getHttp().send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new Failure(response.statusCode(), response.body());
+        }
+        Profile updated = json.fromJson(response.body(), Profile.class);
+        this.cachedProfile = updated;
+        return updated;
+    }
+
+    public Profile deleteAvatar() throws Exception {
+        Profile updated = json.fromJson(request("/api/account/avatar", null, "application/json", "DELETE"), Profile.class);
+        this.cachedProfile = updated;
+        return updated;
+    }
+
+    public byte[] downloadAvatarBytes(String targetAccountId) throws Exception {
+        if (targetAccountId == null || targetAccountId.isBlank()) return null;
+        long timeout = Long.parseLong(System.getenv().getOrDefault("STEAMBETA_HTTP_TIMEOUT_SECONDS", "15"));
+        var req = HttpRequest.newBuilder(base.resolve("api/accounts/" + UUID.fromString(targetAccountId) + "/avatar"))
+                .timeout(Duration.ofSeconds(timeout))
+                .GET()
+                .build();
+        var response = getHttp().send(req, HttpResponse.BodyHandlers.ofByteArray());
+        if (response.statusCode() == 404) return null;
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new Failure(response.statusCode(), new String(response.body(), StandardCharsets.UTF_8));
+        }
+        return response.body();
+    }
 
     public List<Community> communities() throws Exception {
         return List.of(json.fromJson(request("/api/me/communities", null), Community[].class));
@@ -654,6 +747,12 @@ public final class ApiClient {
 
     public void removeMember(String communityId, String targetAccountId) throws Exception {
         request("/api/communities/" + UUID.fromString(communityId) + "/members/" + UUID.fromString(targetAccountId),
+                null, "application/json", "DELETE");
+    }
+
+    /** Abandona la comunidad usando exclusivamente la sesión autenticada en el servidor. */
+    public void leaveCommunity(String communityId) throws Exception {
+        request("/api/communities/" + UUID.fromString(communityId) + "/membership",
                 null, "application/json", "DELETE");
     }
 

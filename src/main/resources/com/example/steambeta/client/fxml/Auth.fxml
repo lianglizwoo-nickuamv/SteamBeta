@@ -2,27 +2,28 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
 <ScrollPane fitToHeight="true" fitToWidth="true" styleClass="app-background" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.AuthController">
     <StackPane alignment="CENTER">
         <padding>
-            <Insets bottom="40.0" left="24.0" right="24.0" top="40.0" />
+            <Insets bottom="32.0" left="24.0" right="24.0" top="32.0" />
         </padding>
 
-        <HBox alignment="CENTER" maxWidth="960.0" spacing="32.0">
+        <HBox alignment="CENTER" maxWidth="1020.0" spacing="28.0">
             <!-- Columna Izquierda: Introducción y Marca Institucional -->
-            <VBox fx:id="introCard" alignment="CENTER_LEFT" maxWidth="460.0" prefWidth="420.0" spacing="20.0" styleClass="auth-intro-card">
+            <VBox fx:id="introCard" alignment="CENTER_LEFT" maxWidth="420.0" prefWidth="390.0" spacing="18.0" styleClass="auth-intro-card">
                 <HBox alignment="CENTER_LEFT" spacing="10.0">
                     <Label styleClass="brand" text="SteamBeta" />
                     <Label styleClass="brand-badge" text="CAMPUS" />
                 </HBox>
                 <Label styleClass="display" text="Tu espacio universitario,&#10;conectado." />
-                <Label styleClass="muted" text="Organiza tus tareas, conecta con comunidades estudiantiles y colabora en proyectos académicos." wrapText="true" />
+                <Label styleClass="muted" text="Organiza tus tareas, construye tu perfil académico, conecta con comunidades estudiantiles y colabora en proyectos universitarios." wrapText="true" />
             </VBox>
 
             <!-- Columna Derecha: Tarjeta de Formulario Unificada -->
-            <VBox fx:id="formCard" alignment="CENTER_LEFT" maxWidth="480.0" prefWidth="440.0" spacing="14.0" styleClass="auth-card">
+            <VBox fx:id="formCard" alignment="CENTER_LEFT" maxWidth="540.0" prefWidth="500.0" spacing="14.0" styleClass="auth-card">
                 <!-- Panel de Inicio de Sesión -->
                 <VBox fx:id="loginPane" spacing="12.0">
                     <Label styleClass="title" text="Bienvenido a SteamBeta Campus" />
@@ -44,10 +45,14 @@
                     <Button maxWidth="Infinity" onAction="#onShowRegister" styleClass="secondary" text="Crear cuenta de estudiante" />
                 </VBox>
 
-                <!-- Panel de Registro de Estudiante -->
-                <VBox fx:id="registerPane" managed="false" spacing="12.0" visible="false">
-                    <Label styleClass="title" text="Registro de Estudiante" />
-                    <Label styleClass="muted" text="Completa estos datos para activar tu cuenta en SteamBeta Campus." />
+                <!-- Panel de Registro de Estudiante — Paso 1: Datos de Acceso -->
+                <VBox fx:id="registerPane" managed="false" spacing="11.0" visible="false">
+                    <HBox alignment="CENTER_LEFT" spacing="8.0">
+                        <Label styleClass="title" text="Registro de Estudiante" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label styleClass="badge-admin" text="PASO 1 DE 2" />
+                    </HBox>
+                    <Label styleClass="muted" text="Completa tus datos básicos de acceso para activar tu cuenta en SteamBeta Campus." wrapText="true" />
 
                     <Label styleClass="field-label" text="1. Nombre o alias público" />
                     <TextField fx:id="regAliasField" promptText="Tu nombre visible (ej. Sofía Martínez)" />
@@ -81,13 +86,72 @@
                     </VBox>
 
                     <!-- Tarjeta informativa de privacidad -->
-                    <VBox spacing="4.0" styleClass="card">
+                    <VBox spacing="4.0" styleClass="dialog-info-card">
                         <Label styleClass="card-title" text="Tu privacidad académica" />
                         <Label styleClass="muted" text="Tu correo electrónico permanecerá confidencial en PostgreSQL." wrapText="true" />
                     </VBox>
 
-                    <Button fx:id="registerSubmitBtn" defaultButton="true" maxWidth="Infinity" onAction="#onRegisterSubmit" styleClass="primary" text="Crear mi cuenta en SteamBeta" />
+                    <Button fx:id="registerSubmitBtn" defaultButton="true" maxWidth="Infinity" onAction="#onRegisterSubmit" styleClass="primary" text="Crear mi cuenta y continuar" />
                     <Button maxWidth="Infinity" onAction="#onShowLogin" styleClass="secondary" text="Ya tengo una cuenta: Volver al inicio" />
+                </VBox>
+
+                <!-- Panel de Presentación Académica — Paso 2 (Opcional tras crear la cuenta) -->
+                <VBox fx:id="onboardingPane" managed="false" spacing="11.0" visible="false">
+                    <HBox alignment="CENTER_LEFT" spacing="8.0">
+                        <Label styleClass="title" text="Presentación Académica" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label styleClass="badge-resolved" text="PASO 2 DE 2 · OPCIONAL" />
+                    </HBox>
+                    <Label styleClass="muted" text="Completa tu identidad estudiantil para que tus compañeros te reconozcan. También puedes omitir este paso y completarlo después desde Mi Perfil." wrapText="true" />
+                    <Separator />
+
+                    <!-- Fotografía de perfil opcional con vista previa -->
+                    <HBox alignment="CENTER_LEFT" spacing="14.0">
+                        <StackPane prefHeight="60.0" prefWidth="60.0" styleClass="avatar-circle">
+                            <ImageView fx:id="onbAvatarImage" fitHeight="60.0" fitWidth="60.0" managed="false" visible="false" />
+                            <Label fx:id="onbAvatarInitials" styleClass="avatar-initials" text="ST" />
+                        </StackPane>
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                            <Label styleClass="field-label" text="FOTOGRAFÍA DE PERFIL (Opcional)" />
+                            <HBox spacing="8.0">
+                                <Button fx:id="onbChoosePhotoBtn" onAction="#onChooseOnboardingPhoto" styleClass="secondary" text="Elegir fotografía" />
+                                <Button fx:id="onbRemovePhotoBtn" managed="false" onAction="#onRemoveOnboardingPhoto" styleClass="danger-btn" text="Quitar" visible="false" />
+                            </HBox>
+                            <Label fx:id="onbPhotoHintLabel" styleClass="muted" text="JPG, PNG o WEBP · máximo 5 MB." wrapText="true" />
+                        </VBox>
+                    </HBox>
+
+                    <HBox spacing="10.0">
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                            <Label styleClass="field-label" text="UNIVERSIDAD" />
+                            <TextField fx:id="onbUniField" promptText="Ej. Universidad Nacional de Ingeniería" />
+                        </VBox>
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                            <Label styleClass="field-label" text="CARRERA O ESPECIALIDAD" />
+                            <TextField fx:id="onbCareerField" promptText="Ej. Ingeniería en Computación" />
+                        </VBox>
+                    </HBox>
+
+                    <HBox spacing="10.0">
+                        <VBox prefWidth="135.0" spacing="4.0">
+                            <Label styleClass="field-label" text="SEMESTRE (1–20)" />
+                            <TextField fx:id="onbSemesterField" promptText="Ej. 5" />
+                        </VBox>
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                            <Label styleClass="field-label" text="INTERESES ACADÉMICOS" />
+                            <TextField fx:id="onbInterestsField" promptText="Ej. Algoritmos, IA, Bases de Datos..." />
+                        </VBox>
+                    </HBox>
+
+                    <VBox spacing="4.0">
+                        <Label styleClass="field-label" text="BIOGRAFÍA ACADÉMICA (Opcional, hasta 500 caracteres)" />
+                        <TextArea fx:id="onbBioArea" prefRowCount="3" promptText="Cuéntale brevemente a tus compañeros qué estudias o en qué proyectos te interesa colaborar..." wrapText="true" />
+                    </VBox>
+
+                    <HBox spacing="10.0">
+                        <Button fx:id="onbSkipBtn" maxWidth="Infinity" onAction="#onSkipOnboarding" styleClass="secondary" text="Completar más tarde" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="onbSaveBtn" maxWidth="Infinity" onAction="#onSaveOnboarding" styleClass="primary" text="Guardar y entrar al campus" HBox.hgrow="ALWAYS" />
+                    </HBox>
                 </VBox>
 
                 <!-- Barra de estado y progreso -->

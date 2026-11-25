@@ -4,12 +4,12 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="14.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.AcademicLibraryController">
+<VBox spacing="14.0" styleClass="app-background" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.AcademicLibraryController">
     <padding>
         <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
     </padding>
 
-    <!-- Cabecera de Módulo -->
+    <!-- Cabecera de Módulo (Moodle + Zotero) -->
     <VBox spacing="10.0">
         <HBox alignment="CENTER_LEFT" spacing="12.0">
             <VBox spacing="4.0">
@@ -20,8 +20,10 @@
                 <Label styleClass="muted" text="Consulta materias institucionales vinculadas y administra tus materias registradas manualmente." />
             </VBox>
             <Region HBox.hgrow="ALWAYS" />
-            <Button fx:id="addSubjectBtn" onAction="#onAddManualSubject" styleClass="primary" text="+ Agregar materia" />
-            <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar Biblioteca" />
+            <HBox alignment="CENTER_RIGHT" spacing="8.0">
+                <Button fx:id="addSubjectBtn" onAction="#onAddManualSubject" styleClass="primary" text="+ Agregar materia" />
+                <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar Biblioteca" />
+            </HBox>
         </HBox>
         <Separator />
     </VBox>
@@ -29,16 +31,18 @@
     <!-- Estado vacío compacto y centrado (cuando no hay materias registradas) -->
     <VBox fx:id="emptyContainer" alignment="CENTER" managed="false" spacing="12.0" visible="false" VBox.vgrow="ALWAYS" />
 
-    <!-- Contenido en 2 Paneles: visible cuando existen materias institucionales o manuales -->
+    <!-- Contenido en 2 Paneles: Lista Zotero a la izquierda + Detalle Moodle a la derecha -->
     <HBox fx:id="librarySplitBox" spacing="16.0" VBox.vgrow="ALWAYS">
         <!-- Panel Izquierdo: Lista de Materias y Filtros por Período -->
-        <VBox fx:id="subjectsPanel" prefWidth="340.0" spacing="10.0">
-            <Label styleClass="section-title" text="Mis Materias" />
+        <VBox fx:id="subjectsPanel" minWidth="300.0" prefWidth="340.0" spacing="10.0" styleClass="card">
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                <Label styleClass="section-title" text="Mis Materias" />
+            </HBox>
             <HBox spacing="8.0">
                 <ComboBox fx:id="yearFilterCombo" maxWidth="Infinity" promptText="Año" styleClass="combo-box" HBox.hgrow="ALWAYS" />
                 <ComboBox fx:id="termFilterCombo" maxWidth="Infinity" promptText="Período" styleClass="combo-box" HBox.hgrow="ALWAYS" />
             </HBox>
-            <ListView fx:id="subjectsList" styleClass="card" VBox.vgrow="ALWAYS">
+            <ListView fx:id="subjectsList" VBox.vgrow="ALWAYS">
                 <placeholder>
                     <Label styleClass="muted" text="No hay materias para el filtro seleccionado." wrapText="true" />
                 </placeholder>
@@ -47,46 +51,58 @@
         </VBox>
 
         <!-- Panel Derecho: Detalle de Materia -->
-        <ScrollPane fitToWidth="true" HBox.hgrow="ALWAYS">
+        <ScrollPane fitToWidth="true" styleClass="app-background" HBox.hgrow="ALWAYS">
             <VBox fx:id="detailPane" spacing="14.0">
                 <padding>
-                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                    <Insets bottom="6.0" left="4.0" right="4.0" top="2.0" />
                 </padding>
 
                 <Label fx:id="detailStatusLabel" styleClass="muted" text="Selecciona una materia de la lista para ver su detalle." />
 
                 <VBox fx:id="detailContentBox" managed="false" spacing="12.0" visible="false">
-                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                        <Label fx:id="subjectCodeLabel" styleClass="subject-code" text="INF-101" />
-                        <Label fx:id="subjectSourceBadge" styleClass="badge-admin" text="Institucional" />
-                        <Region HBox.hgrow="ALWAYS" />
-                        <Button fx:id="btnEditManual" managed="false" onAction="#onEditManualSubject" styleClass="secondary" text="Editar" visible="false" />
-                        <Button fx:id="btnDeleteManual" managed="false" onAction="#onDeleteManualSubject" styleClass="danger-btn" text="Eliminar" visible="false" />
-                    </HBox>
-                    <Label fx:id="subjectNameLabel" styleClass="title" text="Nombre de la Asignatura" wrapText="true" />
-                    <Label fx:id="subjectMetaLabel" styleClass="muted" text="Período: 2026-1 · Sección: 01" wrapText="true" />
+                    <!-- Cabecera de Asignatura -->
+                    <VBox spacing="6.0" styleClass="community-hero">
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                            <Label fx:id="subjectCodeLabel" styleClass="subject-code" text="INF-101" />
+                            <Label fx:id="subjectSourceBadge" styleClass="badge-admin" text="Institucional" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Button fx:id="btnEditManual" managed="false" onAction="#onEditManualSubject" styleClass="secondary" text="Editar" visible="false" />
+                            <Button fx:id="btnDeleteManual" managed="false" onAction="#onDeleteManualSubject" styleClass="danger-btn" text="Eliminar" visible="false" />
+                        </HBox>
+                        <Label fx:id="subjectNameLabel" styleClass="title" text="Nombre de la Asignatura" wrapText="true" />
+                        <Label fx:id="subjectMetaLabel" styleClass="muted" text="Período: 2026-1 · Sección: 01" wrapText="true" />
+                    </VBox>
 
                     <!-- Detalle Institucional (Actividades Obligatorias) -->
                     <VBox fx:id="institutionalDetailBox" managed="false" spacing="12.0" visible="false">
                         <VBox spacing="8.0" styleClass="card">
-                            <Label styleClass="section-title" text="Progreso de Actividades Obligatorias" />
-                            <Label fx:id="progressPercentLabel" styleClass="progress-number" text="0%" />
+                            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                <Label styleClass="section-title" text="Progreso de Actividades Obligatorias" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Label fx:id="progressPercentLabel" styleClass="progress-number" text="0%" />
+                            </HBox>
                             <ProgressBar fx:id="progressBar" maxWidth="Infinity" progress="0.0" />
                             <Label fx:id="progressCountsLabel" styleClass="muted" text="0 de 0 completadas" />
                         </VBox>
 
-                        <Label styleClass="section-title" text="Listado de Actividades y Tareas" />
-                        <VBox fx:id="activitiesListBox" spacing="8.0" />
+                        <VBox spacing="8.0" styleClass="card">
+                            <Label styleClass="section-title" text="Listado de Actividades y Tareas" />
+                            <Separator />
+                            <VBox fx:id="activitiesListBox" spacing="8.0" />
+                        </VBox>
                     </VBox>
 
                     <!-- Detalle Manual (Registro Declarado por el Estudiante) -->
                     <VBox fx:id="manualDetailBox" managed="false" spacing="10.0" styleClass="card" visible="false">
                         <Label styleClass="section-title" text="Información del Registro Manual" />
-                        <Label fx:id="manualPeriodLabel" styleClass="post-body" text="Año y período:" wrapText="true" />
-                        <Label fx:id="manualGroupLabel" styleClass="post-body" text="Grupo / Sección:" wrapText="true" />
-                        <Label fx:id="manualTeacherLabel" styleClass="post-body" text="Docente:" wrapText="true" />
-                        <Label fx:id="manualCreditsLabel" styleClass="post-body" text="Créditos:" wrapText="true" />
-                        <Label fx:id="manualScheduleLabel" styleClass="post-body" text="Horario:" wrapText="true" />
+                        <Separator />
+                        <VBox spacing="6.0">
+                            <Label fx:id="manualPeriodLabel" styleClass="post-body" text="Año y período:" wrapText="true" />
+                            <Label fx:id="manualGroupLabel" styleClass="post-body" text="Grupo / Sección:" wrapText="true" />
+                            <Label fx:id="manualTeacherLabel" styleClass="post-body" text="Docente:" wrapText="true" />
+                            <Label fx:id="manualCreditsLabel" styleClass="post-body" text="Créditos:" wrapText="true" />
+                            <Label fx:id="manualScheduleLabel" styleClass="post-body" text="Horario:" wrapText="true" />
+                        </VBox>
                         <Separator />
                         <Label styleClass="field-label" text="DESCRIPCIÓN O NOTAS PERSONALES" />
                         <Label fx:id="manualNotesLabel" styleClass="post-body" text="Sin notas registradas." wrapText="true" />

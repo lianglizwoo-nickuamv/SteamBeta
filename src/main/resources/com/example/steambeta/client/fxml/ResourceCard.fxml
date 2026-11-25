@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="6.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ResourceCardController">
+<VBox spacing="7.0" styleClass="file-card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ResourceCardController">
     <HBox alignment="CENTER_LEFT" spacing="10.0">
         <Label fx:id="typeBadge" styleClass="badge-role" text="PDF" />
         <Label fx:id="uploaderLabel" styleClass="muted" text="Subido por: Sofia" />

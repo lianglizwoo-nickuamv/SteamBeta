@@ -2,67 +2,90 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefWidth="560.0" spacing="12.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.StudyProfileDetailDialogController">
+<VBox minHeight="580.0" minWidth="620.0" prefHeight="650.0" prefWidth="660.0" spacing="12.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.StudyProfileDetailDialogController">
     <padding>
         <Insets bottom="20.0" left="22.0" right="22.0" top="20.0" />
     </padding>
 
-    <VBox spacing="4.0">
-        <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <Label fx:id="aliasLabel" styleClass="title" text="Estudiante" />
-            <Label fx:id="careerBadge" styleClass="badge-role" text="Carrera" />
-        </HBox>
-        <Label fx:id="universityLabel" styleClass="muted" text="Universidad no especificada" wrapText="true" />
-        <Separator />
-    </VBox>
-
-    <Label fx:id="loadingLabel" styleClass="muted" text="Consultando ficha pública del compañero…" />
-
-    <VBox fx:id="detailCard" managed="false" spacing="10.0" styleClass="card" visible="false">
-        <VBox spacing="2.0">
-            <Label styleClass="field-label" text="MATERIAS QUE ESTUDIA" />
-            <Label fx:id="subjectsLabel" styleClass="post-body" text="Sin materias declaradas" wrapText="true" />
+    <!-- Sección 1: Identidad del Estudiante (Handshake Desktop) -->
+    <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="profile-hero">
+        <StackPane maxHeight="58.0" maxWidth="58.0" minHeight="58.0" minWidth="58.0" prefHeight="58.0" prefWidth="58.0" styleClass="avatar-circle">
+            <ImageView fx:id="avatarImage" fitHeight="58.0" fitWidth="58.0" managed="false" visible="false" />
+            <Label fx:id="avatarInitials" styleClass="avatar-initials" text="ST" />
+        </StackPane>
+        <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+            <Label styleClass="field-label" text="IDENTIDAD DEL ESTUDIANTE" />
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <Label fx:id="aliasLabel" styleClass="title" text="Estudiante" wrapText="true" />
+                <Label fx:id="careerBadge" styleClass="badge-admin" text="Carrera" />
+            </HBox>
+            <Label fx:id="universityLabel" styleClass="muted" text="Universidad no declarada" wrapText="true" />
         </VBox>
+    </HBox>
 
-        <VBox spacing="2.0">
-            <Label styleClass="field-label" text="TEMAS DE INTERÉS" />
-            <Label fx:id="interestsLabel" styleClass="post-body" text="Sin temas declarados" wrapText="true" />
+    <!-- Contenido desplazable para evitar cortes -->
+    <ScrollPane fitToWidth="true" styleClass="app-background" VBox.vgrow="ALWAYS">
+        <VBox spacing="12.0">
+            <padding>
+                <Insets bottom="4.0" left="2.0" right="4.0" top="2.0" />
+            </padding>
+
+            <Label fx:id="loadingLabel" styleClass="muted" text="Consultando ficha pública del compañero…" wrapText="true" />
+
+            <!-- Sección 2: Información Académica -->
+            <VBox fx:id="detailCard" managed="false" spacing="10.0" styleClass="card" visible="false">
+                <Label styleClass="section-title" text="Información Académica" />
+                <Separator />
+
+                <GridPane hgap="16.0" vgap="10.0">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="150.0" prefWidth="160.0" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                    </columnConstraints>
+
+                    <Label styleClass="field-label" text="MATERIAS" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.valignment="TOP" />
+                    <Label fx:id="subjectsLabel" styleClass="post-body" text="Sin materias declaradas" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                    <Label styleClass="field-label" text="INTERESES" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.valignment="TOP" />
+                    <Label fx:id="interestsLabel" styleClass="post-body" text="Sin temas declarados" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                    <Label styleClass="field-label" text="OFRECE AYUDA EN" GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.valignment="TOP" />
+                    <Label fx:id="canHelpLabel" styleClass="post-body" text="No especificado" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                    <Label styleClass="field-label" text="NECESITA AYUDA EN" GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.valignment="TOP" />
+                    <Label fx:id="needsHelpLabel" styleClass="post-body" text="No especificado" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                    <Label styleClass="field-label" text="DISPONIBILIDAD" GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.valignment="TOP" />
+                    <Label fx:id="availabilityLabel" styleClass="post-body" text="A convenir" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                </GridPane>
+
+                <VBox fx:id="bioBox" managed="false" spacing="4.0" visible="false">
+                    <Separator />
+                    <Label styleClass="field-label" text="BIOGRAFÍA ACADÉMICA" />
+                    <Label fx:id="bioLabel" styleClass="post-body" text="" wrapText="true" />
+                </VBox>
+            </VBox>
+
+            <!-- Sección 3: Contacto Autorizado -->
+            <VBox fx:id="contactCard" managed="false" spacing="10.0" styleClass="dialog-info-card" visible="false">
+                <Label styleClass="section-title" text="Contacto" />
+                <Separator />
+                <Label fx:id="contactInfoLabel" styleClass="post-body" text="" wrapText="true" />
+                <HBox fx:id="contactActionsBox" alignment="CENTER_LEFT" managed="false" spacing="10.0" visible="false">
+                    <Button fx:id="btnSendEmail" onAction="#onSendEmail" styleClass="primary" text="Enviar correo" />
+                    <Button fx:id="btnCopyEmail" onAction="#onCopyEmail" styleClass="secondary" text="Copiar correo" />
+                    <Label fx:id="copyFeedbackLabel" managed="false" styleClass="status-success" text="" visible="false" />
+                </HBox>
+            </VBox>
         </VBox>
+    </ScrollPane>
 
-        <VBox spacing="2.0">
-            <Label styleClass="field-label" text="OFRECE APOYO EN" />
-            <Label fx:id="canHelpLabel" styleClass="post-body" text="No especificado" wrapText="true" />
-        </VBox>
+    <Separator />
 
-        <VBox spacing="2.0">
-            <Label styleClass="field-label" text="NECESITA APOYO EN" />
-            <Label fx:id="needsHelpLabel" styleClass="post-body" text="No especificado" wrapText="true" />
-        </VBox>
-
-        <VBox spacing="2.0">
-            <Label styleClass="field-label" text="DISPONIBILIDAD" />
-            <Label fx:id="availabilityLabel" styleClass="post-body" text="A convenir" wrapText="true" />
-        </VBox>
-
-        <VBox fx:id="bioBox" managed="false" spacing="2.0" visible="false">
-            <Label styleClass="field-label" text="BIOGRAFÍA ACADÉMICA" />
-            <Label fx:id="bioLabel" styleClass="post-body" text="" wrapText="true" />
-        </VBox>
-    </VBox>
-
-    <!-- Sección de contacto autorizado -->
-    <VBox fx:id="contactCard" managed="false" spacing="8.0" styleClass="card" visible="false">
-        <Label styleClass="section-title" text="Contacto" />
-        <Label fx:id="contactInfoLabel" styleClass="post-body" text="" wrapText="true" />
-        <HBox fx:id="contactActionsBox" alignment="CENTER_LEFT" managed="false" spacing="10.0" visible="false">
-            <Button fx:id="btnSendEmail" onAction="#onSendEmail" styleClass="primary" text="Enviar correo" />
-            <Button fx:id="btnCopyEmail" onAction="#onCopyEmail" styleClass="secondary" text="Copiar correo" />
-            <Label fx:id="copyFeedbackLabel" managed="false" styleClass="status-success" text="" visible="false" />
-        </HBox>
-    </VBox>
-
+    <!-- Pie fijo siempre visible -->
     <HBox alignment="CENTER_RIGHT" spacing="10.0">
         <Region HBox.hgrow="ALWAYS" />
         <Button onAction="#onClose" styleClass="secondary" text="Cerrar" />

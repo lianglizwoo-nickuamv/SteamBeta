@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
 <VBox spacing="6.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.MemberCardController">
     <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <StackPane maxHeight="36.0" maxWidth="36.0" minHeight="36.0" minWidth="36.0" prefHeight="36.0" prefWidth="36.0" styleClass="avatar-circle">
+            <ImageView fx:id="avatarImage" fitHeight="36.0" fitWidth="36.0" managed="false" visible="false" />
+            <Label fx:id="avatarInitials" styleClass="field-label" text="ST" />
+        </StackPane>
         <Label fx:id="aliasLabel" styleClass="card-title" text="Estudiante" />
         <Label fx:id="roleBadge" styleClass="badge-role" text="MEMBER" />
         <Region HBox.hgrow="ALWAYS" />

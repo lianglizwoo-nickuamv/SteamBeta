@@ -4,25 +4,29 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="8.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.PostCardController">
-    <HBox alignment="CENTER_LEFT" spacing="8.0">
-        <Label fx:id="titleLabel" styleClass="card-title" text="Título de la publicación" />
+<VBox spacing="10.0" styleClass="post-card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.PostCardController">
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <Label fx:id="titleLabel" styleClass="card-title" text="Título de la publicación" wrapText="true" />
         <Region HBox.hgrow="ALWAYS" />
         <Label fx:id="authorDateLabel" styleClass="muted" text="Autor · 01/01/2026" />
     </HBox>
 
     <Label fx:id="bodyLabel" styleClass="post-body" text="Cuerpo de la publicación académica..." wrapText="true" />
 
-    <HBox alignment="CENTER_LEFT" spacing="10.0">
-        <Button fx:id="toggleCommentsBtn" onAction="#onToggleComments" styleClass="secondary" text="💬 Comentarios (0)" />
+    <Separator />
+
+    <HBox alignment="CENTER_LEFT" spacing="8.0">
+        <Button fx:id="toggleCommentsBtn" onAction="#onToggleComments" styleClass="secondary, btn-compact" text="Comentarios (0)" />
         <Region HBox.hgrow="ALWAYS" />
-        <Button fx:id="reportBtn" onAction="#onReportPost" styleClass="secondary" text="Reportar" />
-        <Button fx:id="deleteBtn" managed="false" onAction="#onDeletePost" styleClass="danger-btn" text="Eliminar" visible="false" />
+        <Button fx:id="reportBtn" onAction="#onReportPost" styleClass="secondary, btn-compact" text="Reportar" />
+        <Button fx:id="deleteBtn" managed="false" onAction="#onDeletePost" styleClass="danger-btn, btn-compact" text="Eliminar" visible="false" />
     </HBox>
 
-    <!-- Sección desplegable de comentarios -->
+    <!-- Sección desplegable de comentarios (Hilo Mattermost) -->
     <VBox fx:id="commentsBox" managed="false" spacing="8.0" visible="false">
-        <Separator />
+        <padding>
+            <Insets left="8.0" top="2.0" />
+        </padding>
         <VBox fx:id="commentsListBox" spacing="6.0" />
         <HBox alignment="CENTER_LEFT" spacing="8.0">
             <TextField fx:id="commentInputField" promptText="Escribe un comentario o aporte…" HBox.hgrow="ALWAYS" />

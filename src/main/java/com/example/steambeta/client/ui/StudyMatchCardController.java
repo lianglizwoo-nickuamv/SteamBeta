@@ -4,13 +4,17 @@ import com.example.steambeta.client.ApiClient;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Controlador de Tarjeta de Ficha / Coincidencia de Estudio (FXML) — SteamBeta Campus.
  */
 public final class StudyMatchCardController {
 
+    @FXML private ImageView avatarImage;
+    @FXML private Label avatarInitials;
     @FXML private Label aliasLabel;
     @FXML private Label careerBadge;
     @FXML private Label visibilityBadge;
@@ -58,7 +62,15 @@ public final class StudyMatchCardController {
         setOwnProfile(m);
     }
 
+    public void bindAvatar(ApiClient.StudyProfile m, ApiClient api, ExecutorService workers) {
+        if (m == null) return;
+        // Intenta cargar la fotografía del estudiante (si no tiene, AvatarLoader conserva las iniciales)
+        AvatarLoader.load(avatarImage, avatarInitials, m.alias(), m.accountId(),
+                "account:" + m.accountId(), 38.0, api, workers);
+    }
+
     private void populateCommon(ApiClient.StudyProfile m, boolean showInterests) {
+        AvatarLoader.showInitials(avatarImage, avatarInitials, m.alias());
         aliasLabel.setText(m.alias() != null ? m.alias() : "Estudiante");
         careerBadge.setText(m.declaredCareer() != null && !m.declaredCareer().isBlank() ? m.declaredCareer() : "Estudiante");
         availBadge.setText("Disponibilidad: " + (m.availability() != null && !m.availability().isBlank() ? m.availability() : "A convenir"));

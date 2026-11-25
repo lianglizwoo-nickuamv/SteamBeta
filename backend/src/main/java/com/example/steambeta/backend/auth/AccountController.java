@@ -64,6 +64,26 @@ public class AccountController {
         return accounts.updateProfile(update);
     }
 
+    @PostMapping(value = "/api/account/avatar", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public AccountService.FullProfile uploadAvatar(@RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        return accounts.uploadAvatar(file);
+    }
+
+    @DeleteMapping("/api/account/avatar")
+    public AccountService.FullProfile deleteAvatar() {
+        return accounts.deleteAvatar();
+    }
+
+    @GetMapping("/api/accounts/{accountId}/avatar")
+    public ResponseEntity<org.springframework.core.io.Resource> getAccountAvatar(@PathVariable UUID accountId) {
+        var download = accounts.readAvatarForAccount(accountId);
+        return ResponseEntity.ok()
+                .header("X-Content-Type-Options", "nosniff")
+                .header("Cache-Control", "private, max-age=300")
+                .contentType(org.springframework.http.MediaType.parseMediaType(download.mimeType()))
+                .body(download.resource());
+    }
+
     @GetMapping("/api/account/sanctions")
     public List<AccountService.Sanction> mySanctions() {
         return accounts.mySanctions();

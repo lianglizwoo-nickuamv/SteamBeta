@@ -45,7 +45,8 @@ public class StudyTeamService {
             String availability,
             String bio,
             boolean contactEmailEnabled,
-            String publicEmail
+            String publicEmail,
+            String avatarUrl
     ) {}
 
     private final JdbcTemplate jdbc;
@@ -110,27 +111,52 @@ public class StudyTeamService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes consultar tu propia ficha como compañero.");
         }
 
-        // Verifica mediante la función autorizada V15 que el compañero existe, está activo y tiene su ficha visible.
+        // Verifica mediante las funciones autorizadas V15 que el compañero existe, está activo y tiene su ficha visible.
+        // Primero consulta su perfil de estudio directo para obtener su alias y luego valida visibilidad real
+        // con search_study_matches_v15(currentId, alias), evitando falsos 404 por el LIMIT 40 de la búsqueda sin filtro.
+        StudyProfile direct;
+        try {
+            var directRows = jdbc.query(
+                    "select * from replica.read_study_profile_v15(?::uuid)",
+                    (rs, row) -> mapProfile(rs),
+                    targetAccountId
+            );
+            if (directRows.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La ficha de estudio no está disponible o es privada.");
+            }
+            direct = directRows.getFirst();
+        } catch (ResponseStatusException rse) {
+            throw rse;
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La ficha de estudio no está disponible o es privada.");
+        }
+
+        if (!direct.visible()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La ficha de estudio no está disponible o es privada.");
+        }
+
+        String aliasFilter = (direct.alias() != null && !direct.alias().isBlank()) ? direct.alias().strip() : null;
         StudyProfile match = jdbc.query(
-                "select * from replica.search_study_matches_v15(?::uuid, NULL::text)",
+                "select * from replica.search_study_matches_v15(?::uuid, ?::text)",
                 (rs, row) -> mapProfile(rs),
-                currentId
+                currentId, aliasFilter
         ).stream().filter(p -> targetAccountId.equals(p.accountId())).findFirst()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "La ficha de estudio no está disponible o es privada."));
 
-        // Consulta autorizada V13 para biografía y correo SOLO si email_public = true.
+        // Consulta autorizada V13 para biografía, avatar_url y correo SOLO si email_public = true.
         // Nunca se expone el correo cuando email_public es false.
         String bio = null;
         boolean emailEnabled = false;
         String publicEmail = null;
+        String avatarUrl = null;
 
         var rows = jdbc.query(
-                "select bio, email_public, email from replica.read_full_account_profile(?::uuid)",
+                "select bio, email_public, email, avatar_url from replica.read_full_account_profile(?::uuid)",
                 (rs, row) -> {
                     boolean isPublic = rs.getBoolean("email_public");
                     String email = rs.getString("email");
                     boolean canContact = isPublic && email != null && !email.isBlank();
-                    return new Object[]{rs.getString("bio"), canContact, canContact ? email.strip() : null};
+                    return new Object[]{rs.getString("bio"), canContact, canContact ? email.strip() : null, rs.getString("avatar_url")};
                 },
                 targetAccountId
         );
@@ -139,6 +165,7 @@ public class StudyTeamService {
             bio = (String) info[0];
             emailEnabled = (Boolean) info[1];
             publicEmail = (String) info[2];
+            avatarUrl = (String) info[3];
         }
 
         return new PublicStudyDetail(
@@ -153,7 +180,8 @@ public class StudyTeamService {
                 match.availability(),
                 bio,
                 emailEnabled,
-                publicEmail
+                publicEmail,
+                avatarUrl
         );
     }
 

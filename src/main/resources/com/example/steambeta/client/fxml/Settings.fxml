@@ -10,7 +10,7 @@
             <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
         </padding>
 
-        <!-- Cabecera de Módulo -->
+        <!-- Cabecera de Módulo (JabRef Preferencias) -->
         <VBox spacing="10.0">
             <HBox alignment="CENTER_LEFT" spacing="16.0">
                 <VBox spacing="4.0">
@@ -27,37 +27,45 @@
         </VBox>
 
         <!-- Sección 1: Preferencias de Usuario -->
-        <VBox spacing="10.0" styleClass="card">
+        <VBox spacing="12.0" styleClass="card">
             <Label styleClass="section-title" text="Preferencias de Usuario y Aplicación" />
-            <HBox alignment="CENTER_LEFT" spacing="12.0">
-                <Label styleClass="field-label" text="Apariencia:" />
-                <Label styleClass="badge-admin" text="Grafito Oscuro + Acentos Esmeralda (Predeterminado)" />
-            </HBox>
-            <HBox alignment="CENTER_LEFT" spacing="12.0">
-                <Label styleClass="field-label" text="Notificaciones:" />
-                <Label styleClass="muted" text="Avisos de entregas, exámenes y menciones comunitarias activadas." />
-            </HBox>
-            <HBox alignment="CENTER_LEFT" spacing="12.0">
-                <Label styleClass="field-label" text="Privacidad de perfil:" />
-                <Label styleClass="muted" text="Configurable desde tu Perfil (visibilidad de correo institucional)." />
-            </HBox>
+            <Separator />
+            <GridPane hgap="16.0" vgap="10.0">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="165.0" />
+                    <ColumnConstraints hgrow="ALWAYS" />
+                </columnConstraints>
+
+                <Label styleClass="field-label" text="APARIENCIA" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                <ComboBox fx:id="themeCombo" prefWidth="280.0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                <Label styleClass="field-label" text="NOTIFICACIONES" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                <Label styleClass="muted" text="Avisos de entregas, exámenes y menciones comunitarias activadas." wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                <Label styleClass="field-label" text="PRIVACIDAD DE PERFIL" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <Label styleClass="muted" text="Configurable desde tu Perfil (visibilidad de correo institucional)." wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            </GridPane>
         </VBox>
 
         <!-- Sección 2: Diagnóstico Técnico del Sistema -->
-        <VBox spacing="8.0" styleClass="card">
+        <VBox spacing="12.0" styleClass="card">
             <Label styleClass="section-title" text="Diagnóstico Técnico y Conectividad" />
-            <HBox alignment="CENTER_LEFT" spacing="12.0">
-                <Label styleClass="field-label" text="Entorno configurado:" />
-                <Label fx:id="envBadge" styleClass="badge-admin" text="LOCAL" />
-            </HBox>
-            <HBox alignment="CENTER_LEFT" spacing="12.0">
-                <Label styleClass="field-label" text="URL del Backend:" />
-                <Label fx:id="apiUrlLabel" styleClass="identity" text="http://localhost:8080" />
-            </HBox>
-            <HBox alignment="CENTER_LEFT" spacing="12.0">
-                <Label styleClass="field-label" text="Base de Datos:" />
-                <Label styleClass="badge-resolved" text="PostgreSQL (steam_academico · V13)" />
-            </HBox>
+            <Separator />
+            <GridPane hgap="16.0" vgap="10.0">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="165.0" />
+                    <ColumnConstraints hgrow="ALWAYS" />
+                </columnConstraints>
+
+                <Label styleClass="field-label" text="ENTORNO CONFIGURADO" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                <Label fx:id="envBadge" styleClass="badge-admin" text="LOCAL" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                <Label styleClass="field-label" text="URL DEL BACKEND" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                <Label fx:id="apiUrlLabel" styleClass="identity" text="http://localhost:8080" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                <Label styleClass="field-label" text="BASE DE DATOS" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <Label styleClass="badge-resolved" text="PostgreSQL (steam_academico · V13)" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            </GridPane>
             <Separator />
             <Label fx:id="pingStatusLabel" styleClass="muted" text="Pulsa 'Comprobar Conexión' para medir la latencia y validar el estado de sesión en tiempo real." wrapText="true" />
         </VBox>

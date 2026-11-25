@@ -10,7 +10,7 @@
             <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
         </padding>
 
-        <!-- Cabecera de Módulo -->
+        <!-- Cabecera de Módulo (Handshake Oportunidades) -->
         <VBox spacing="10.0">
             <HBox alignment="CENTER_LEFT" spacing="16.0">
                 <VBox spacing="4.0">
@@ -21,7 +21,7 @@
                     <Label styleClass="muted" text="Encuentra becas, pasantías profesionales, concursos universitarios y actividades extracurriculares." />
                 </VBox>
                 <Region HBox.hgrow="ALWAYS" />
-                <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                <HBox alignment="CENTER_RIGHT" spacing="8.0">
                     <Button onAction="#onNewOpportunity" styleClass="primary" text="+ Publicar Convocatoria" />
                     <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar" />
                 </HBox>
@@ -29,9 +29,9 @@
             <Separator />
         </VBox>
 
-        <!-- Filtros por categoría -->
-        <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <Label styleClass="field-label" text="Categoría:" />
+        <!-- Filtros por categoría (Toolbar Strip) -->
+        <HBox alignment="CENTER_LEFT" spacing="8.0" styleClass="toolbar-strip">
+            <Label styleClass="field-label" text="CATEGORÍA:" />
             <Button fx:id="filterAllBtn" onAction="#onFilterAll" styleClass="tab-btn-active" text="Todas" />
             <Button fx:id="filterScholarshipsBtn" onAction="#onFilterScholarships" styleClass="tab-btn" text="Becas" />
             <Button fx:id="filterInternshipsBtn" onAction="#onFilterInternships" styleClass="tab-btn" text="Pasantías" />

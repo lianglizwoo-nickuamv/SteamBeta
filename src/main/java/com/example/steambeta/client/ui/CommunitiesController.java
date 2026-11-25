@@ -5,11 +5,14 @@ import com.example.steambeta.client.SessionScope;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -18,9 +21,23 @@ import java.util.concurrent.ExecutorService;
  * Controlador de Comunidades Universitarias (FXML) — SteamBeta Campus:
  * Separa claramente dos vistas:
  * 1. MIS COMUNIDADES: espacios en los que participa el estudiante autenticado.
- * 2. EXPLORAR COMUNIDADES: catálogo global de comunidades públicas y solo con invitación.
+ * 2. EXPLORAR COMUNIDADES: catálogo global de comunidades públicas y solo con invitación
+ *    con filtros combinables de categoría, acceso, disponibilidad y ordenamiento.
  */
 public final class CommunitiesController {
+
+    private static final String ACCESS_ALL = "Todos";
+    private static final String ACCESS_PUBLIC = "Públicas";
+    private static final String ACCESS_INVITE = "Requieren invitación";
+
+    private static final String AVAIL_ALL = "Todas";
+    private static final String AVAIL_OPEN = "Con espacios disponibles";
+    private static final String AVAIL_FULL = "Llenas";
+
+    private static final String SORT_NAME = "Nombre";
+    private static final String SORT_MOST_MEMBERS = "Mayor cantidad de integrantes";
+    private static final String SORT_LEAST_MEMBERS = "Menor cantidad de integrantes";
+    private static final String SORT_MOST_SLOTS = "Mayor disponibilidad";
 
     @FXML private Button tabMyCommunitiesBtn;
     @FXML private Button tabExploreBtn;
@@ -32,6 +49,12 @@ public final class CommunitiesController {
     @FXML private Button catProjBtn;
     @FXML private Button catCareerBtn;
     @FXML private Button catInterestBtn;
+
+    @FXML private HBox catalogFiltersBar;
+    @FXML private ComboBox<String> accessFilterCombo;
+    @FXML private ComboBox<String> availabilityFilterCombo;
+    @FXML private ComboBox<String> sortCombo;
+    @FXML private Button clearFiltersBtn;
 
     @FXML private Label statusLabel;
     @FXML private VBox communityListBox;
@@ -45,6 +68,25 @@ public final class CommunitiesController {
     private List<ApiClient.Community> myCommunities = new ArrayList<>();
     private List<ApiClient.CommunityOverview> exploreCatalog = new ArrayList<>();
     private String selectedCategory = null;
+    private boolean suppressFilterEvents = false;
+
+    @FXML
+    public void initialize() {
+        suppressFilterEvents = true;
+        if (accessFilterCombo != null) {
+            accessFilterCombo.getItems().setAll(ACCESS_ALL, ACCESS_PUBLIC, ACCESS_INVITE);
+            accessFilterCombo.setValue(ACCESS_ALL);
+        }
+        if (availabilityFilterCombo != null) {
+            availabilityFilterCombo.getItems().setAll(AVAIL_ALL, AVAIL_OPEN, AVAIL_FULL);
+            availabilityFilterCombo.setValue(AVAIL_ALL);
+        }
+        if (sortCombo != null) {
+            sortCombo.getItems().setAll(SORT_NAME, SORT_MOST_MEMBERS, SORT_LEAST_MEMBERS, SORT_MOST_SLOTS);
+            sortCombo.setValue(SORT_NAME);
+        }
+        suppressFilterEvents = false;
+    }
 
     public void init(ApiClient api, SessionScope scope, ExecutorService workers, MainLayoutController navigator) {
         this.api = api;
@@ -52,7 +94,16 @@ public final class CommunitiesController {
         this.workers = workers;
         this.navigator = navigator;
 
+        updateCatalogFiltersVisibility();
         loadMyCommunities();
+    }
+
+    private void updateCatalogFiltersVisibility() {
+        boolean isExplore = "EXPLORE".equals(activeView);
+        if (catalogFiltersBar != null) {
+            catalogFiltersBar.setVisible(isExplore);
+            catalogFiltersBar.setManaged(isExplore);
+        }
     }
 
     // =========================================================================
@@ -93,6 +144,8 @@ public final class CommunitiesController {
         String query = searchField.getText() != null ? searchField.getText().strip().toLowerCase(Locale.ROOT) : "";
 
         var filtered = myCommunities.stream()
+                .filter(c -> selectedCategory == null
+                        || (c.category() != null && selectedCategory.equalsIgnoreCase(c.category())))
                 .filter(c -> query.isBlank()
                         || (c.name() != null && c.name().toLowerCase(Locale.ROOT).contains(query))
                         || (c.description() != null && c.description().toLowerCase(Locale.ROOT).contains(query))
@@ -110,9 +163,9 @@ public final class CommunitiesController {
             } else {
                 statusLabel.setText("Sin coincidencias en tus comunidades para la búsqueda actual.");
                 var empty = ViewLoader.<EmptyStateController>load("EmptyState.fxml");
-                empty.controller().set("🔍", "Sin coincidencias",
+                empty.controller().set("◆", "Sin coincidencias",
                         "Ninguna de tus comunidades coincide con el filtro ingresado.",
-                        "Explorar Catálogo Global", this::onTabExplore);
+                        "Limpiar filtros", this::onClearFilters);
                 communityListBox.getChildren().add(empty.root());
             }
         } else {
@@ -128,22 +181,23 @@ public final class CommunitiesController {
     }
 
     // =========================================================================
-    // PESTAÑA 2: EXPLORAR COMUNIDADES (CATÁLOGO GLOBAL)
+    // PESTAÑA 2: EXPLORAR COMUNIDADES (CATÁLOGO GLOBAL V14 + FILTROS LOCALES)
     // =========================================================================
 
     private void loadExploreCatalog() {
         long epoch = scope.generation();
-        String query = searchField.getText() != null ? searchField.getText().strip() : "";
         statusLabel.setText("Consultando catálogo global de comunidades en el servidor...");
 
         workers.submit(() -> {
             try {
-                var list = api.exploreCommunities(query.isBlank() ? null : query, selectedCategory);
+                // Obtiene el catálogo completo V14 (solo PUBLIC e INVITE_ONLY; nunca PRIVATE)
+                // y aplica todos los filtros de manera local e instantánea.
+                var list = api.exploreCommunities(null, null);
                 Platform.runLater(() -> {
                     if (!scope.current(epoch)) return;
                     this.exploreCatalog = list != null ? list : new ArrayList<>();
                     if ("EXPLORE".equals(activeView)) {
-                        renderExploreCatalog(query);
+                        renderExploreCatalog();
                     }
                 });
             } catch (Exception e) {
@@ -161,37 +215,84 @@ public final class CommunitiesController {
         });
     }
 
-    private void renderExploreCatalog(String query) {
+    private void renderExploreCatalog() {
         communityListBox.getChildren().clear();
 
-        // Garantizar que jamás se rendericen comunidades privadas en el catálogo
+        String query = searchField.getText() != null ? searchField.getText().strip().toLowerCase(Locale.ROOT) : "";
+        String access = accessFilterCombo != null && accessFilterCombo.getValue() != null
+                ? accessFilterCombo.getValue() : ACCESS_ALL;
+        String availability = availabilityFilterCombo != null && availabilityFilterCombo.getValue() != null
+                ? availabilityFilterCombo.getValue() : AVAIL_ALL;
+        String sort = sortCombo != null && sortCombo.getValue() != null
+                ? sortCombo.getValue() : SORT_NAME;
+
+        Comparator<ApiClient.CommunityOverview> comparator = switch (sort) {
+            case SORT_MOST_MEMBERS -> Comparator.comparingLong(ApiClient.CommunityOverview::memberCount).reversed()
+                    .thenComparing(c -> safeLower(c.name()));
+            case SORT_LEAST_MEMBERS -> Comparator.comparingLong(ApiClient.CommunityOverview::memberCount)
+                    .thenComparing(c -> safeLower(c.name()));
+            case SORT_MOST_SLOTS -> Comparator.comparingInt(ApiClient.CommunityOverview::availableSlots).reversed()
+                    .thenComparing(c -> safeLower(c.name()));
+            default -> Comparator.comparing(c -> safeLower(c.name()));
+        };
+
+        // Garantizar siempre que PRIVATE jamás aparezca en el catálogo público
         var visible = exploreCatalog.stream()
                 .filter(c -> "PUBLIC".equalsIgnoreCase(c.visibility()) || "INVITE_ONLY".equalsIgnoreCase(c.visibility()))
+                .filter(c -> selectedCategory == null
+                        || (c.category() != null && selectedCategory.equalsIgnoreCase(c.category())))
+                .filter(c -> switch (access) {
+                    case ACCESS_PUBLIC -> "PUBLIC".equalsIgnoreCase(c.visibility());
+                    case ACCESS_INVITE -> "INVITE_ONLY".equalsIgnoreCase(c.visibility());
+                    default -> true;
+                })
+                .filter(c -> switch (availability) {
+                    case AVAIL_OPEN -> c.availableSlots() > 0;
+                    case AVAIL_FULL -> c.availableSlots() <= 0;
+                    default -> true;
+                })
+                .filter(c -> query.isBlank()
+                        || safeLower(c.name()).contains(query)
+                        || safeLower(c.description()).contains(query)
+                        || safeLower(c.slug()).contains(query)
+                        || safeLower(c.category()).contains(query))
+                .sorted(comparator)
                 .toList();
 
+        boolean hasFilters = !query.isBlank()
+                || selectedCategory != null
+                || !ACCESS_ALL.equals(access)
+                || !AVAIL_ALL.equals(availability)
+                || !SORT_NAME.equals(sort);
+
         if (visible.isEmpty()) {
-            boolean hasFilters = (query != null && !query.isBlank()) || selectedCategory != null;
             statusLabel.setText(hasFilters
-                    ? "Sin coincidencias en el catálogo global para los criterios indicados."
+                    ? "Sin coincidencias en el catálogo global para los filtros combinados."
                     : "No hay comunidades públicas ni por invitación registradas aún en el campus.");
             var empty = ViewLoader.<EmptyStateController>load("EmptyState.fxml");
-            empty.controller().set(hasFilters ? "🔍" : "🏛️",
+            empty.controller().set(hasFilters ? "◆" : "●",
                     hasFilters ? "Sin coincidencias" : "Catálogo sin comunidades disponibles",
                     hasFilters
-                            ? "Prueba con otro término de búsqueda o selecciona 'Todas' las categorías."
+                            ? "Prueba con otros criterios o pulsa 'Limpiar filtros' para ver el catálogo completo."
                             : "Sé el primero en crear una comunidad pública para otros estudiantes.",
                     hasFilters ? "Limpiar filtros" : "+ Crear Comunidad",
-                    hasFilters ? this::resetFiltersAndExplore : this::onCreateCommunity);
+                    hasFilters ? this::onClearFilters : this::onCreateCommunity);
             communityListBox.getChildren().add(empty.root());
             return;
         }
 
-        statusLabel.setText("Explorar Comunidades · Mostrando " + visible.size() + " comunidad(es) disponible(s):");
+        statusLabel.setText("Explorar Comunidades · Mostrando " + visible.size() + " de "
+                + exploreCatalog.stream().filter(c -> "PUBLIC".equalsIgnoreCase(c.visibility()) || "INVITE_ONLY".equalsIgnoreCase(c.visibility())).count()
+                + " comunidad(es) disponible(s):");
         for (var ov : visible) {
             var card = ViewLoader.<CommunityOverviewCardController>load("CommunityOverviewCard.fxml");
             card.controller().set(ov, this::handleOverviewAction);
             communityListBox.getChildren().add(card.root());
         }
+    }
+
+    private static String safeLower(String value) {
+        return value == null ? "" : value.toLowerCase(Locale.ROOT);
     }
 
     private void handleOverviewAction(ApiClient.CommunityOverview ov) {
@@ -246,23 +347,16 @@ public final class CommunitiesController {
     }
 
     private void openOverviewAsCommunity(ApiClient.CommunityOverview ov) {
-        // Buscar objeto completo en myCommunities o abrir con datos disponibles
         var match = myCommunities.stream().filter(c -> c.id().equals(ov.id())).findFirst();
         if (match.isPresent()) {
             if (navigator != null) navigator.openCommunityDetail(match.get());
         } else {
             var comm = new ApiClient.Community(ov.id(), ov.slug(), ov.name(), ov.description(),
                     "", ov.userRole() != null ? ov.userRole() : "MEMBER", null,
-                    ov.memberCount(), ov.maxMembers(), ov.availableSlots());
+                    ov.memberCount(), ov.maxMembers(), ov.availableSlots(),
+                    ov.category(), ov.visibility());
             if (navigator != null) navigator.openCommunityDetail(comm);
         }
-    }
-
-    private void resetFiltersAndExplore() {
-        searchField.setText("");
-        selectedCategory = null;
-        updateCategoryButtons(catAllBtn, catAcadBtn, catStudyBtn, catProjBtn, catCareerBtn, catInterestBtn);
-        loadExploreCatalog();
     }
 
     // =========================================================================
@@ -273,6 +367,7 @@ public final class CommunitiesController {
     private void onTabMyCommunities() {
         activeView = "MINE";
         updateMainTabs(tabMyCommunitiesBtn, tabExploreBtn);
+        updateCatalogFiltersVisibility();
         loadMyCommunities();
     }
 
@@ -280,6 +375,7 @@ public final class CommunitiesController {
     private void onTabExplore() {
         activeView = "EXPLORE";
         updateMainTabs(tabExploreBtn, tabMyCommunitiesBtn);
+        updateCatalogFiltersVisibility();
         loadExploreCatalog();
     }
 
@@ -293,7 +389,33 @@ public final class CommunitiesController {
     @FXML
     private void onSearch() {
         if ("EXPLORE".equals(activeView)) {
-            loadExploreCatalog();
+            renderExploreCatalog();
+        } else {
+            renderMyCommunities();
+        }
+    }
+
+    @FXML
+    private void onCatalogFilterChanged() {
+        if (suppressFilterEvents) return;
+        if ("EXPLORE".equals(activeView)) {
+            renderExploreCatalog();
+        }
+    }
+
+    @FXML
+    private void onClearFilters() {
+        suppressFilterEvents = true;
+        searchField.setText("");
+        selectedCategory = null;
+        updateCategoryButtons(catAllBtn, catAcadBtn, catStudyBtn, catProjBtn, catCareerBtn, catInterestBtn);
+        if (accessFilterCombo != null) accessFilterCombo.setValue(ACCESS_ALL);
+        if (availabilityFilterCombo != null) availabilityFilterCombo.setValue(AVAIL_ALL);
+        if (sortCombo != null) sortCombo.setValue(SORT_NAME);
+        suppressFilterEvents = false;
+
+        if ("EXPLORE".equals(activeView)) {
+            renderExploreCatalog();
         } else {
             renderMyCommunities();
         }

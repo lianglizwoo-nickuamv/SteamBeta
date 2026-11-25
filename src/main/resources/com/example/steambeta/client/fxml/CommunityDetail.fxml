@@ -6,40 +6,133 @@
 
 <BorderPane fx:id="rootPane" styleClass="app-background" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.CommunityDetailController">
     <center>
-        <ScrollPane fitToWidth="true" styleClass="app-background">
+        <ScrollPane fx:id="mainScrollPane" fitToWidth="true" styleClass="app-background">
             <VBox spacing="14.0">
                 <padding>
-                    <Insets bottom="24.0" left="24.0" right="24.0" top="16.0" />
+                    <Insets bottom="24.0" left="24.0" right="24.0" top="18.0" />
                 </padding>
 
-                <!-- Botón Volver y Cabecera de Comunidad -->
-                <Button onAction="#onBackToHome" styleClass="secondary" text="← Mis Comunidades" />
+                <!-- Barra superior contextual + Acción Salir de la comunidad -->
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <Button onAction="#onBackToHome" styleClass="secondary" text="← Mis Comunidades" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button fx:id="btnLeaveCommunity" onAction="#onLeaveCommunity" styleClass="danger-btn" text="Salir de la comunidad" />
+                </HBox>
 
-                <VBox spacing="6.0" styleClass="card">
-                    <HBox alignment="CENTER_LEFT" spacing="12.0">
-                        <Label fx:id="communityNameLabel" styleClass="title" text="Nombre de la Comunidad" />
+                <!-- Cabecera de Comunidad (Mattermost) -->
+                <VBox spacing="6.0" styleClass="community-hero">
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label fx:id="communityNameLabel" styleClass="title" text="Nombre de la Comunidad" wrapText="true" />
+                        <Label fx:id="categoryBadge" styleClass="brand-badge" text="Académica" />
+                        <Label fx:id="visibilityBadge" styleClass="badge-admin" text="Pública" />
+                        <Region HBox.hgrow="ALWAYS" />
                         <Label fx:id="roleBadge" styleClass="badge-role" text="Rol: MEMBER" />
                     </HBox>
-                    <Label fx:id="descLabel" styleClass="muted" text="Descripción de la comunidad..." wrapText="true" />
+                    <Label fx:id="descLabel" styleClass="post-body" text="Descripción de la comunidad..." wrapText="true" />
                     <Label fx:id="rulesLabel" styleClass="muted" text="Reglas: Respeto mutuo y rigor académico." wrapText="true" />
                 </VBox>
 
-                <!-- Barra de Pestañas Fijas de la Comunidad -->
-                <HBox fx:id="tabHeader" alignment="CENTER_LEFT" spacing="8.0">
-                    <Button fx:id="btnPosts" onAction="#onTabPosts" styleClass="tab-btn-active" text="Conversaciones" />
-                    <Button fx:id="btnQA" onAction="#onTabQA" styleClass="tab-btn" text="Dudas y Soluciones (Q&amp;A)" />
+                <!-- Barra de Pestañas de la Comunidad (Toolbar Strip) -->
+                <HBox fx:id="tabHeader" alignment="CENTER_LEFT" spacing="6.0" styleClass="toolbar-strip">
+                    <Button fx:id="btnOverview" onAction="#onTabOverview" styleClass="tab-btn-active" text="Presentación" />
+                    <Button fx:id="btnPosts" onAction="#onTabPosts" styleClass="tab-btn" text="Conversación" />
                     <Button fx:id="btnResources" onAction="#onTabResources" styleClass="tab-btn" text="Recursos" />
                     <Button fx:id="btnCalendar" onAction="#onTabCalendar" styleClass="tab-btn" text="Calendario" />
                     <Button fx:id="btnMembers" onAction="#onTabMembers" styleClass="tab-btn" text="Integrantes" />
                     <Button fx:id="btnModeration" managed="false" onAction="#onOpenModeration" styleClass="secondary" text="Panel de Moderación" visible="false" />
                     <Region HBox.hgrow="ALWAYS" />
+                    <Button fx:id="btnNewQuestion" managed="false" onAction="#onNewCommunityQuestion" styleClass="secondary" text="+ Pregunta detallada" visible="false" />
                     <Button fx:id="btnNewResource" managed="false" onAction="#onNewCommunityResource" styleClass="primary" text="+ Publicar Recurso" visible="false" />
                     <Button fx:id="btnNewCalendarEvent" managed="false" onAction="#onNewCommunityEvent" styleClass="primary" text="+ Nuevo Evento" visible="false" />
                 </HBox>
-                <Separator />
+
+                <!-- Filtros rápidos del espacio unificado de Conversación (100% FXML) -->
+                <HBox fx:id="chatFilterBar" alignment="CENTER_LEFT" managed="false" spacing="8.0" styleClass="toolbar-strip" visible="false">
+                    <Label styleClass="field-label" text="VER:" />
+                    <Button fx:id="btnFilterAll" onAction="#onFilterAll" styleClass="tab-btn-active" text="Todo el flujo" />
+                    <Button fx:id="btnFilterMessages" onAction="#onFilterMessages" styleClass="tab-btn" text="Mensajes" />
+                    <Button fx:id="btnFilterQuestions" onAction="#onFilterQuestions" styleClass="tab-btn" text="Preguntas académicas" />
+                    <Button fx:id="btnFilterUnresolved" onAction="#onFilterUnresolved" styleClass="tab-btn" text="Pendientes" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button onAction="#onRefreshChat" styleClass="secondary, btn-compact" text="Actualizar" />
+                </HBox>
+
+                <!-- Descripción breve del propósito de la pestaña activa -->
+                <Label fx:id="tabPurposeLabel" managed="false" styleClass="muted" text="" visible="false" wrapText="true" />
 
                 <!-- Estado de la pestaña activa -->
                 <Label fx:id="tabStatusLabel" managed="false" styleClass="muted" text="" visible="false" />
+
+                <!-- Sección de Presentación / Inicio de Comunidad (100% FXML) -->
+                <VBox fx:id="overviewPane" managed="false" spacing="14.0" visible="false">
+                    <HBox spacing="16.0">
+                        <!-- Columna Izquierda: Información General y Reglas -->
+                        <VBox spacing="14.0" HBox.hgrow="ALWAYS">
+                            <VBox spacing="10.0" styleClass="card">
+                                <Label styleClass="section-title" text="Acerca de esta Comunidad" />
+                                <Separator />
+                                <Label fx:id="overviewDescLabel" styleClass="post-body" text="Sin descripción disponible." wrapText="true" />
+                                <GridPane hgap="14.0" vgap="8.0">
+                                    <columnConstraints>
+                                        <ColumnConstraints minWidth="135.0" />
+                                        <ColumnConstraints hgrow="ALWAYS" />
+                                    </columnConstraints>
+                                    <Label styleClass="field-label" text="CATEGORÍA" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                    <Label fx:id="overviewCategoryLabel" styleClass="identity" text="Académica" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                                    <Label styleClass="field-label" text="TIPO DE ACCESO" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                    <Label fx:id="overviewAccessLabel" styleClass="identity" text="Pública" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                                    <Label styleClass="field-label" text="TU ROL ACTUAL" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                    <Label fx:id="overviewRoleLabel" styleClass="identity" text="Miembro" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                </GridPane>
+                            </VBox>
+
+                            <VBox spacing="10.0" styleClass="card">
+                                <Label styleClass="section-title" text="Reglas de Convivencia" />
+                                <Separator />
+                                <Label fx:id="overviewRulesLabel" styleClass="post-body" text="Respeto mutuo y rigor académico." wrapText="true" />
+                            </VBox>
+                        </VBox>
+
+                        <!-- Columna Derecha: Ocupación y Actividad Real -->
+                        <VBox maxWidth="350.0" minWidth="290.0" prefWidth="330.0" spacing="14.0">
+                            <VBox spacing="10.0" styleClass="card">
+                                <Label styleClass="section-title" text="Integrantes y Capacidad" />
+                                <Separator />
+                                <Label fx:id="overviewMembersCountLabel" styleClass="progress-number" text="0 / 50" />
+                                <ProgressBar fx:id="overviewCapacityBar" maxWidth="Infinity" progress="0.0" />
+                                <Label fx:id="overviewSlotsLabel" styleClass="muted" text="50 espacios disponibles" wrapText="true" />
+                            </VBox>
+
+                            <VBox fx:id="overviewStatsCard" spacing="10.0" styleClass="card">
+                                <Label styleClass="section-title" text="Actividad de la Comunidad" />
+                                <Separator />
+                                <Label fx:id="overviewStatsStatusLabel" styleClass="muted" text="Consultando actividad real..." wrapText="true" />
+                                <GridPane fx:id="overviewStatsGrid" hgap="12.0" managed="false" vgap="7.0" visible="false">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="ALWAYS" />
+                                        <ColumnConstraints minWidth="60.0" />
+                                    </columnConstraints>
+                                    <Label styleClass="muted" text="Publicaciones en Conversaciones" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                    <Label fx:id="statPostsLabel" alignment="CENTER_RIGHT" styleClass="identity" text="0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                                    <Label styleClass="muted" text="Preguntas y respuestas" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                    <Label fx:id="statQuestionsLabel" alignment="CENTER_RIGHT" styleClass="identity" text="0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                                    <Label styleClass="muted" text="Preguntas resueltas" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                    <Label fx:id="statResolvedLabel" alignment="CENTER_RIGHT" styleClass="identity" text="0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                                    <Label styleClass="muted" text="Recursos compartidos" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                    <Label fx:id="statResourcesLabel" alignment="CENTER_RIGHT" styleClass="identity" text="0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                                    <Label styleClass="muted" text="Eventos próximos" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                    <Label fx:id="statEventsLabel" alignment="CENTER_RIGHT" styleClass="identity" text="0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                </GridPane>
+                            </VBox>
+                        </VBox>
+                    </HBox>
+                </VBox>
 
                 <!-- Contenedor Dinámico de la Pestaña Activa -->
                 <VBox fx:id="tabContentPane" spacing="12.0" />
@@ -47,18 +140,30 @@
         </ScrollPane>
     </center>
 
-    <!-- Barra Inferior Opcional para Compositores -->
+    <!-- Área inferior de escritura para el chat comunitario unificado (Mensajes y Preguntas) -->
     <bottom>
         <VBox fx:id="bottomComposer" managed="false" spacing="8.0" styleClass="bottom-bar" visible="false">
             <padding>
                 <Insets bottom="14.0" left="24.0" right="24.0" top="10.0" />
             </padding>
-            <TextField fx:id="composerTitleField" promptText="Título del tema o pregunta (3–160 caracteres)" styleClass="input" />
-            <TextArea fx:id="composerBodyArea" prefRowCount="3" promptText="Explica tu duda o comentario con detalle…" styleClass="text-area" wrapText="true" />
-            <HBox alignment="CENTER_LEFT" spacing="12.0">
-                <Button onAction="#onPublishPost" styleClass="primary" text="Publicar en la comunidad" />
-                <Label fx:id="composerStatus" styleClass="error" />
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                <Label styleClass="field-label" text="ESCRIBIR COMO:" />
+                <Button fx:id="btnModeMessage" onAction="#onModeMessage" styleClass="tab-btn-active" text="Mensaje" />
+                <Button fx:id="btnModeQuestion" onAction="#onModeQuestion" styleClass="tab-btn" text="Pregunta académica" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label fx:id="composerModeHint" styleClass="muted" text="Comparte un mensaje rápido con los integrantes de la comunidad." />
             </HBox>
+
+            <HBox fx:id="questionMetaRow" managed="false" spacing="10.0" visible="false">
+                <TextField fx:id="composerTitleField" promptText="Título de la pregunta académica (3–160 caracteres)" styleClass="input" HBox.hgrow="ALWAYS" />
+                <TextField fx:id="composerSubjectField" prefWidth="210.0" promptText="Materia (opcional)" styleClass="input" />
+            </HBox>
+
+            <HBox alignment="BOTTOM_LEFT" spacing="10.0">
+                <TextArea fx:id="composerBodyArea" prefRowCount="2" promptText="Escribe un mensaje para la comunidad…" styleClass="text-area" wrapText="true" HBox.hgrow="ALWAYS" />
+                <Button fx:id="btnSendComposer" onAction="#onPublishPost" styleClass="primary" text="Enviar mensaje" />
+            </HBox>
+            <Label fx:id="composerStatus" managed="false" styleClass="error" visible="false" />
         </VBox>
     </bottom>
 </BorderPane>

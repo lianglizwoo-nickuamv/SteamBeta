@@ -5,19 +5,20 @@
 <?import javafx.scene.layout.*?>
 
 <BorderPane fx:id="rootPane" prefHeight="820.0" prefWidth="1240.0" styleClass="app-background" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.MainLayoutController">
-    <!-- Encabezado Superior Persistente -->
+    <!-- Encabezado Superior Persistente (JabRef Desktop) -->
     <top>
-        <HBox fx:id="topBar" alignment="CENTER_LEFT" spacing="12.0" styleClass="topbar-surface">
+        <HBox fx:id="topBar" alignment="CENTER_LEFT" spacing="10.0" styleClass="topbar-surface">
             <padding>
-                <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                <Insets bottom="9.0" left="18.0" right="18.0" top="9.0" />
             </padding>
             <HBox alignment="CENTER_LEFT" spacing="8.0">
                 <Label styleClass="brand" text="SteamBeta" />
                 <Label styleClass="brand-badge" text="CAMPUS" />
             </HBox>
+            <Separator orientation="VERTICAL" />
             <Label fx:id="connectionBadge" styleClass="badge-resolved" text="● Conectado: steam_academico" />
             <Region HBox.hgrow="ALWAYS" />
-            <TextField fx:id="searchField" onAction="#onSearchAction" prefWidth="300.0" promptText="Buscar en el campus (comunidades, dudas, apuntes)..." styleClass="input" />
+            <TextField fx:id="searchField" onAction="#onSearchAction" prefWidth="315.0" promptText="Buscar en el campus (comunidades, dudas, apuntes)..." styleClass="input" />
             <Button fx:id="helpBtn" onAction="#onHelpClicked" styleClass="secondary" text="Ayuda" />
             <Button fx:id="notifBtn" onAction="#onNotificationsClicked" styleClass="secondary" text="Avisos" />
             <Button fx:id="profileBtn" onAction="#onProfileClicked" styleClass="secondary" text="Mi Perfil" />
@@ -25,38 +26,50 @@
         </HBox>
     </top>
 
-    <!-- Barra Lateral de Navegación (Sidebar) -->
+    <!-- Barra Lateral de Navegación (Sidebar JabRef) -->
     <left>
-        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefWidth="230.0" styleClass="sidebar-surface">
-            <VBox fx:id="sidebar" spacing="3.0" styleClass="sidebar-surface">
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefWidth="226.0" styleClass="sidebar-surface">
+            <VBox fx:id="sidebar" spacing="2.0" styleClass="sidebar-surface">
                 <padding>
-                    <Insets bottom="16.0" left="10.0" right="10.0" top="12.0" />
+                    <Insets bottom="16.0" left="10.0" right="10.0" top="10.0" />
                 </padding>
 
                 <!-- Categoría: Académico -->
                 <Label styleClass="nav-category-label" text="ACADÉMICO" />
-                <Button fx:id="navHome" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavHome" styleClass="nav-item" text="  Inicio" />
-                <Button fx:id="navCommunities" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavCommunities" styleClass="nav-item" text="  Comunidades" />
-                <Button fx:id="navLibrary" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavLibrary" styleClass="nav-item" text="  Biblioteca Univ." />
-                <Button fx:id="navCalendar" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavCalendar" styleClass="nav-item" text="  Calendario" />
+                <Button fx:id="navHome" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavHome" styleClass="nav-item" text="Inicio" />
+                <Button fx:id="navCommunities" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavCommunities" styleClass="nav-item" text="Comunidades" />
+                <Button fx:id="navLibrary" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavLibrary" styleClass="nav-item" text="Biblioteca Univ." />
+                <Button fx:id="navCalendar" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavCalendar" styleClass="nav-item" text="Calendario" />
+
+                <Separator>
+                    <VBox.margin><Insets bottom="2.0" top="6.0" /></VBox.margin>
+                </Separator>
 
                 <!-- Categoría: Colaboración -->
                 <Label styleClass="nav-category-label" text="COLABORACIÓN" />
-                <Button fx:id="navTasks" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavTasks" styleClass="nav-item" text="  Mi Planificación" />
-                <Button fx:id="navStudyTeams" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavStudyTeams" styleClass="nav-item" text="  Equipos de Estudio" />
-                <Button fx:id="navExchange" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavExchange" styleClass="nav-item" text="  Intercambio" />
-                <Button fx:id="navOpportunities" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavOpportunities" styleClass="nav-item" text="  Oportunidades" />
+                <Button fx:id="navTasks" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavTasks" styleClass="nav-item" text="Mi Planificación" />
+                <Button fx:id="navStudyTeams" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavStudyTeams" styleClass="nav-item" text="Equipos de Estudio" />
+                <Button fx:id="navExchange" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavExchange" styleClass="nav-item" text="Intercambio" />
+                <Button fx:id="navOpportunities" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavOpportunities" styleClass="nav-item" text="Oportunidades" />
+
+                <Separator>
+                    <VBox.margin><Insets bottom="2.0" top="6.0" /></VBox.margin>
+                </Separator>
 
                 <!-- Categoría: Cuenta -->
                 <Label styleClass="nav-category-label" text="CUENTA" />
-                <Button fx:id="navNotifications" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavNotifications" styleClass="nav-item" text="  Notificaciones" />
-                <Button fx:id="navProfile" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavProfile" styleClass="nav-item" text="  Mi Perfil" />
-                <Button fx:id="navSettings" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavSettings" styleClass="nav-item" text="  Configuración" />
+                <Button fx:id="navReports" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavReports" styleClass="nav-item" text="Mis reportes" />
+                <Button fx:id="navNotifications" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavNotifications" styleClass="nav-item" text="Notificaciones" />
+                <Button fx:id="navProfile" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavProfile" styleClass="nav-item" text="Mi Perfil" />
+                <Button fx:id="navSettings" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavSettings" styleClass="nav-item" text="Configuración" />
 
                 <!-- Categoría: Administración (Moderadores Globales) -->
-                <VBox fx:id="adminSection" managed="false" spacing="3.0" visible="false">
+                <VBox fx:id="adminSection" managed="false" spacing="2.0" visible="false">
+                    <Separator>
+                        <VBox.margin><Insets bottom="2.0" top="6.0" /></VBox.margin>
+                    </Separator>
                     <Label styleClass="nav-category-label" text="ADMINISTRACIÓN" />
-                    <Button fx:id="navControlCenter" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavControlCenter" styleClass="nav-item" text="⛨  Control Center" />
+                    <Button fx:id="navControlCenter" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavControlCenter" styleClass="nav-item" text="Control Center" />
                 </VBox>
             </VBox>
         </ScrollPane>

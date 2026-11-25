@@ -10,9 +10,11 @@
         <Label fx:id="dateLabel" styleClass="muted" text="01/01/2026" />
     </HBox>
 
-    <Label fx:id="reasonLabel" styleClass="field-label" text="Motivo del reporte" />
+    <Label fx:id="reasonLabel" styleClass="identity" text="Motivo del reporte" />
     <Label fx:id="authorLabel" styleClass="muted" text="Autor del contenido original" />
     <Label fx:id="contentLabel" styleClass="post-body" text="Contenido reportado..." wrapText="true" />
+
+    <Separator />
 
     <HBox alignment="CENTER_LEFT" spacing="10.0">
         <Button fx:id="hideBtn" onAction="#onHide" styleClass="danger-btn" text="Ocultar y Resolver" />

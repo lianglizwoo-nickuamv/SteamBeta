@@ -30,6 +30,8 @@
     <!-- Descripción pública -->
     <Label fx:id="descLabel" styleClass="post-body" text="Descripción del espacio universitario..." wrapText="true" />
 
+    <Separator />
+
     <!-- Barra Inferior: Indicador de acceso y Botón contextual -->
     <HBox alignment="CENTER_LEFT" spacing="10.0">
         <Label fx:id="roleLabel" styleClass="muted" text="Acceso abierto" />

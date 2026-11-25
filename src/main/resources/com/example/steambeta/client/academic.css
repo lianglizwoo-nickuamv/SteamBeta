@@ -1,15 +1,7 @@
-/* =========================================================================
-   SteamBeta Campus · JavaFX Modena Nativo + CSS Mínimo
-   - Controles nativos administrados íntegramente por JavaFX Modena
-     (sin sobrescrituras globales sobre .button, .text-field, .password-field,
-     .text-area, .combo-box, .date-picker, .spinner, .check-box, .radio-button,
-     .tab, .list-view, .table-view ni .progress-bar).
-   - Paleta de 5 colores aplicada moderadamente solo en detalles:
-     Lavanda #A5BEFA | Celeste #64B7CC | Ciruela #451531 | Carmesí #B3093F | Rosa #FF3877
-   ========================================================================= */
+
 
 .root {
-    /* Paleta de detalles SteamBeta */
+    /* Paleta académica SteamBeta (Claro predeterminado) */
     -sb-lavender: #A5BEFA;
     -sb-sky: #64B7CC;
     -sb-plum: #451531;
@@ -17,13 +9,14 @@
     -sb-pink: #FF3877;
 
     /* Superficies neutras compatibles con JavaFX Modena */
-    -sb-bg: #F4F4F4;
-    -sb-sidebar: #ECEEF2;
+    -sb-bg: #F3F4F6;
+    -sb-sidebar: #EAEDF2;
     -sb-surface: #FFFFFF;
-    -sb-surface-subtle: #F8F9FA;
-    -sb-border: #D4D8DE;
-    -sb-text: #22262B;
-    -sb-muted: #5F6770;
+    -sb-surface-subtle: #F7F8FA;
+    -sb-border: #D2D7DF;
+    -sb-border-subtle: #E3E7EE;
+    -sb-text: #1F242B;
+    -sb-muted: #5C6470;
 
     /* Foco y selección nativos de Modena con acento discreto */
     -fx-accent: #A5BEFA;
@@ -32,12 +25,17 @@
 }
 
 /* =========================================================================
-   Superficies de Ventana, Sidebar, Topbar y Diálogos
+   Superficies de Ventana, Sidebar, Topbar y Diálogos (JabRef)
    ========================================================================= */
 .app-background,
 .scroll-pane.app-background,
 .scroll-pane.app-background > .viewport {
     -fx-background-color: -sb-bg;
+}
+
+.scroll-pane.app-background {
+    -fx-background-insets: 0;
+    -fx-padding: 0;
 }
 
 .sidebar-surface,
@@ -69,18 +67,64 @@
     -fx-background-color: -sb-bg;
 }
 
+.toolbar-strip {
+    -fx-background-color: -sb-surface;
+    -fx-border-color: -sb-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 8 12;
+}
+
 /* =========================================================================
-   Tarjetas, Cuadros y Paneles (estructura visual conservada)
+   Tarjetas, Paneles y Contenedores de Módulos
    ========================================================================= */
 .card,
 .activity,
 .card-elevated,
 .empty-state,
-.auth-card {
+.auth-card,
+.post-card,
+.question-card,
+.file-card,
+.match-card,
+.opportunity-card,
+.task-card,
+.profile-hero {
     -fx-background-color: -sb-surface;
     -fx-border-color: -sb-border;
     -fx-border-width: 1;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
     -fx-padding: 14;
+}
+
+.card-elevated,
+.profile-hero {
+    -fx-border-color: -sb-border;
+    -fx-border-width: 1;
+}
+
+.profile-hero {
+    -fx-border-color: -sb-sky -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+    -fx-padding: 16 18;
+}
+
+.community-hero {
+    -fx-background-color: -sb-surface;
+    -fx-border-color: -sb-border -sb-border -sb-border -sb-plum;
+    -fx-border-width: 1 1 1 3;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 14 16;
+}
+
+.panel-header {
+    -fx-background-color: -sb-surface-subtle;
+    -fx-border-color: transparent transparent -sb-border-subtle transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 12;
 }
 
 .auth-card {
@@ -91,22 +135,92 @@
     -fx-background-color: -sb-sidebar;
     -fx-border-color: -sb-border;
     -fx-border-width: 1;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
     -fx-padding: 24;
 }
 
-.comment-card,
-.kanban-col {
-    -fx-background-color: -sb-surface-subtle;
+/* KPI Cards con barra superior semántica (Moodle + Handshake) */
+.kpi-card {
+    -fx-background-color: -sb-surface;
     -fx-border-color: -sb-border;
     -fx-border-width: 1;
-    -fx-padding: 10;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 12 14;
+}
+
+.kpi-accent-primary {
+    -fx-border-color: -sb-plum -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+}
+
+.kpi-accent-secondary {
+    -fx-border-color: -sb-sky -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+}
+
+.kpi-accent-warn {
+    -fx-border-color: -sb-lavender -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+}
+
+.kpi-accent-danger {
+    -fx-border-color: -sb-pink -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+}
+
+/* Comentarios estilo hilo (Mattermost + Discourse) */
+.comment-card {
+    -fx-background-color: -sb-surface-subtle;
+    -fx-border-color: -sb-border-subtle -sb-border-subtle -sb-border-subtle -sb-sky;
+    -fx-border-width: 1 1 1 3;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+    -fx-padding: 8 12;
 }
 
 .solution-card {
     -fx-background-color: rgba(100, 183, 204, 0.12);
     -fx-border-color: -sb-sky;
-    -fx-border-width: 1;
+    -fx-border-width: 1 1 1 3;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
     -fx-padding: 12;
+}
+
+/* Tablero Kanban (OpenProject) */
+.kanban-col {
+    -fx-background-color: -sb-surface-subtle;
+    -fx-border-color: -sb-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 10;
+}
+
+.kanban-col-pending {
+    -fx-border-color: -sb-pink -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+}
+
+.kanban-col-progress {
+    -fx-border-color: -sb-lavender -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+}
+
+.kanban-col-review {
+    -fx-border-color: -sb-plum -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+}
+
+.kanban-col-done {
+    -fx-border-color: -sb-sky -sb-border -sb-border -sb-border;
+    -fx-border-width: 3 1 1 1;
+}
+
+.task-card {
+    -fx-padding: 10 12;
 }
 
 .card-clickable {
@@ -117,11 +231,20 @@
     -fx-border-color: -sb-sky;
 }
 
+.dialog-info-card {
+    -fx-background-color: -sb-surface-subtle;
+    -fx-border-color: -sb-border -sb-border -sb-border -sb-lavender;
+    -fx-border-width: 1 1 1 3;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+    -fx-padding: 10 12;
+}
+
 /* =========================================================================
    Tipografía Jerárquica Simple (fuente predeterminada del sistema JavaFX)
    ========================================================================= */
 .brand {
-    -fx-font-size: 20px;
+    -fx-font-size: 19px;
     -fx-font-weight: bold;
     -fx-text-fill: -sb-plum;
 }
@@ -130,9 +253,12 @@
     -fx-background-color: rgba(165, 190, 250, 0.28);
     -fx-text-fill: -sb-plum;
     -fx-font-size: 10px;
-    -fx-padding: 2 6;
+    -fx-font-weight: bold;
+    -fx-padding: 2 7;
     -fx-border-color: -sb-lavender;
     -fx-border-width: 1;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
 }
 
 .display {
@@ -165,11 +291,12 @@
 .field-label,
 .nav-category-label {
     -fx-font-size: 11px;
+    -fx-font-weight: bold;
     -fx-text-fill: -sb-muted;
 }
 
 .nav-category-label {
-    -fx-padding: 10 6 3 6;
+    -fx-padding: 10 8 4 8;
 }
 
 .identity,
@@ -185,6 +312,7 @@
 }
 
 .post-body {
+    -fx-font-size: 13px;
     -fx-text-fill: -sb-text;
 }
 
@@ -194,9 +322,16 @@
     -fx-text-fill: -sb-plum;
 }
 
+.event-date-chip {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sb-plum;
+}
+
 .empty-state-icon,
 .dialog-icon {
     -fx-font-size: 18px;
+    -fx-font-weight: bold;
     -fx-text-fill: -sb-plum;
 }
 
@@ -218,13 +353,21 @@
     -fx-text-fill: #1A232A;
 }
 
+.button.btn-compact {
+    -fx-font-size: 11px;
+    -fx-padding: 3 8;
+}
+
 .nav-item,
 .tab-btn {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-border-width: 0 0 0 3;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
     -fx-text-fill: -sb-text;
     -fx-alignment: center-left;
+    -fx-padding: 6 10;
 }
 
 .nav-item:hover,
@@ -237,9 +380,23 @@
     -fx-background-color: rgba(165, 190, 250, 0.30);
     -fx-border-color: transparent transparent transparent -sb-sky;
     -fx-border-width: 0 0 0 3;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
     -fx-text-fill: -sb-plum;
     -fx-font-weight: bold;
     -fx-alignment: center-left;
+    -fx-padding: 6 10;
+}
+
+.tab-btn,
+.tab-btn-active {
+    -fx-border-width: 0 0 2 0;
+    -fx-alignment: center;
+    -fx-padding: 5 12;
+}
+
+.tab-btn-active {
+    -fx-border-color: transparent transparent -sb-plum transparent;
 }
 
 /* =========================================================================
@@ -251,9 +408,11 @@
     -fx-background-color: -sb-surface-subtle;
     -fx-text-fill: -sb-muted;
     -fx-font-size: 11px;
-    -fx-padding: 2 6;
+    -fx-padding: 2 7;
     -fx-border-color: -sb-border;
     -fx-border-width: 1;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
 }
 
 .badge-admin,
@@ -262,9 +421,12 @@
     -fx-background-color: rgba(165, 190, 250, 0.25);
     -fx-text-fill: -sb-plum;
     -fx-font-size: 11px;
-    -fx-padding: 2 6;
+    -fx-font-weight: bold;
+    -fx-padding: 2 7;
     -fx-border-color: -sb-lavender;
     -fx-border-width: 1;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
 }
 
 .badge-resolved,
@@ -272,9 +434,12 @@
     -fx-background-color: rgba(100, 183, 204, 0.18);
     -fx-text-fill: #1F5B6B;
     -fx-font-size: 11px;
-    -fx-padding: 2 6;
+    -fx-font-weight: bold;
+    -fx-padding: 2 7;
     -fx-border-color: -sb-sky;
     -fx-border-width: 1;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
 }
 
 .badge-pending,
@@ -283,9 +448,12 @@
     -fx-background-color: rgba(255, 56, 119, 0.10);
     -fx-text-fill: -sb-pink;
     -fx-font-size: 11px;
-    -fx-padding: 2 6;
+    -fx-font-weight: bold;
+    -fx-padding: 2 7;
     -fx-border-color: -sb-pink;
     -fx-border-width: 1;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
 }
 
 .badge-danger,
@@ -293,9 +461,12 @@
     -fx-background-color: rgba(179, 9, 63, 0.10);
     -fx-text-fill: -sb-crimson;
     -fx-font-size: 11px;
-    -fx-padding: 2 6;
+    -fx-font-weight: bold;
+    -fx-padding: 2 7;
     -fx-border-color: -sb-crimson;
     -fx-border-width: 1;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
 }
 
 .error,
@@ -317,16 +488,23 @@
 }
 
 /* =========================================================================
-   Calendario y Avatares
+   Calendario y Avatares (Nextcloud Calendar + Handshake)
    ========================================================================= */
 .calendar-grid {
     -fx-background-color: -sb-surface;
     -fx-border-color: -sb-border;
     -fx-border-width: 1;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 4;
 }
 
 .calendar-day-header {
     -fx-background-color: -sb-sidebar;
+    -fx-border-color: -sb-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
     -fx-padding: 6 4;
     -fx-alignment: center;
     -fx-font-size: 11px;
@@ -335,8 +513,8 @@
 
 .calendar-day-cell {
     -fx-background-color: -sb-surface;
-    -fx-border-color: -sb-border;
-    -fx-border-width: 0.5;
+    -fx-border-color: -sb-border-subtle;
+    -fx-border-width: 0.75;
     -fx-padding: 5;
 }
 
@@ -357,9 +535,15 @@
     -fx-border-width: 1.5;
 }
 
-.calendar-event-dot-exam { -fx-background-color: -sb-pink; }
-.calendar-event-dot-sub  { -fx-background-color: -sb-sky; }
-.calendar-event-dot-meet { -fx-background-color: -sb-lavender; }
+.calendar-event-tag {
+    -fx-font-size: 10px;
+    -fx-padding: 1 5;
+    -fx-background-radius: 3;
+}
+
+.calendar-event-dot-exam { -fx-background-color: -sb-pink; -fx-background-radius: 5; }
+.calendar-event-dot-sub  { -fx-background-color: -sb-sky; -fx-background-radius: 5; }
+.calendar-event-dot-meet { -fx-background-color: -sb-lavender; -fx-background-radius: 5; }
 
 .avatar-circle {
     -fx-background-color: rgba(165, 190, 250, 0.25);
@@ -370,7 +554,75 @@
 }
 
 .avatar-initials {
-    -fx-font-size: 16px;
+    -fx-font-size: 18px;
     -fx-font-weight: bold;
     -fx-text-fill: -sb-plum;
+}
+
+.notification-unread {
+    -fx-border-color: -sb-border -sb-border -sb-border -sb-sky;
+    -fx-border-width: 1 1 1 3;
+    -fx-background-color: rgba(100, 183, 204, 0.08);
+}
+
+.notification-section-header {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sb-muted;
+    -fx-padding: 6 0 2 0;
+}
+
+/* =========================================================================
+   Chat Comunitario Unificado (Conversación + Preguntas Académicas)
+   ========================================================================= */
+.chat-avatar-circle {
+    -fx-background-color: rgba(165, 190, 250, 0.28);
+    -fx-background-radius: 19;
+    -fx-border-color: -sb-sky;
+    -fx-border-radius: 19;
+    -fx-border-width: 1.2;
+}
+
+.chat-avatar-initials {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sb-plum;
+}
+
+.chat-bubble {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 11 14;
+}
+
+.chat-bubble-peer {
+    -fx-background-color: -sb-surface;
+    -fx-border-color: -sb-border;
+    -fx-border-width: 1;
+}
+
+.chat-bubble-own {
+    -fx-background-color: rgba(100, 183, 204, 0.11);
+    -fx-border-color: -sb-border -sb-border -sb-border -sb-sky;
+    -fx-border-width: 1 1 1 3;
+}
+
+.chat-bubble-question {
+    -fx-background-color: -sb-surface;
+    -fx-border-color: -sb-border -sb-border -sb-border -sb-plum;
+    -fx-border-width: 1 1 1 3;
+}
+
+.chat-replies-box {
+    -fx-background-color: -sb-surface-subtle;
+    -fx-background-radius: 6;
+    -fx-border-color: -sb-border-subtle;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+}
+
+.comment-solution {
+    -fx-border-color: -sb-sky;
+    -fx-border-width: 1.2;
+    -fx-background-color: rgba(100, 183, 204, 0.10);
 }

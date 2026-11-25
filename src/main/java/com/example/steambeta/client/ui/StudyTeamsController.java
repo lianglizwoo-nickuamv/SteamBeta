@@ -47,6 +47,7 @@ public final class StudyTeamsController {
 
                     ViewLoader.ViewResult<StudyMatchCardController> card = ViewLoader.load("StudyMatchCard.fxml");
                     card.controller().setOwnProfile(p);
+                    card.controller().bindAvatar(p, api, workers);
                     myProfileCard.getChildren().add(card.root());
                 });
             } catch (Exception ex) {
@@ -96,6 +97,7 @@ public final class StudyTeamsController {
                             card.controller().setMatch(m,
                                     () -> openStudyProfileDetail(m, false),
                                     () -> openStudyProfileDetail(m, true));
+                            card.controller().bindAvatar(m, api, workers);
                             matchesListBox.getChildren().add(card.root());
                         }
                     }

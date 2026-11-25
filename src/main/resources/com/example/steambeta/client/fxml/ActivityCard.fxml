@@ -3,12 +3,12 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="4.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ActivityCardController">
-    <HBox alignment="CENTER_LEFT" spacing="10.0">
+<VBox spacing="6.0" styleClass="card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ActivityCardController">
+    <HBox alignment="CENTER_LEFT" spacing="8.0">
         <Label fx:id="checkBadge" styleClass="badge-pending" text="○ PENDIENTE" />
         <Label fx:id="reqBadge" styleClass="badge-admin" text="OBLIGATORIA" />
         <Region HBox.hgrow="ALWAYS" />
         <Label fx:id="codeLabel" styleClass="muted" text="Código: ACT-01" />
     </HBox>
-    <Label fx:id="nameLabel" styleClass="field-label" text="Nombre de la actividad" wrapText="true" />
+    <Label fx:id="nameLabel" styleClass="card-title" text="Nombre de la actividad" wrapText="true" />
 </VBox>

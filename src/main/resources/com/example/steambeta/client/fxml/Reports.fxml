@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane fitToWidth="true" styleClass="app-background" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ReportsController">
+    <VBox spacing="16.0">
+        <padding>
+            <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
+        </padding>
+
+        <!-- Cabecera del Centro de Reportes Personales -->
+        <VBox spacing="8.0">
+            <HBox alignment="CENTER_LEFT" spacing="12.0">
+                <Label styleClass="title" text="Mis reportes" />
+                <Label styleClass="badge-admin" text="REPORTES PERSONALES" />
+            </HBox>
+            <Label styleClass="muted" text="Genera informes en PDF o Excel (XLSX) exclusivamente con tu propia actividad, comunidades, tareas y publicaciones de intercambio." wrapText="true" />
+            <Separator />
+        </VBox>
+
+        <!-- Barra de filtros: período y formato -->
+        <VBox spacing="10.0" styleClass="toolbar-strip">
+            <HBox alignment="CENTER_LEFT" spacing="12.0">
+                <Label styleClass="field-label" text="DESDE:" />
+                <DatePicker fx:id="fromDatePicker" prefWidth="150.0" promptText="Opcional" />
+
+                <Label styleClass="field-label" text="HASTA:" />
+                <DatePicker fx:id="toDatePicker" prefWidth="150.0" promptText="Opcional" />
+
+                <Button fx:id="btnClearDates" onAction="#onClearDates" styleClass="secondary, btn-compact" text="Histórico completo" />
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <Label styleClass="field-label" text="FORMATO:" />
+                <ComboBox fx:id="formatCombo" prefWidth="155.0" />
+            </HBox>
+            <Label fx:id="statusLabel" styleClass="muted" text="Selecciona un período opcional y el formato de exportación, luego elige el reporte que deseas descargar." wrapText="true" />
+        </VBox>
+
+        <!-- Fila 1: Mi actividad académica + Mis comunidades -->
+        <HBox spacing="16.0">
+            <VBox spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <Label styleClass="badge-academic" text="ACTIVIDAD" />
+                    <Label styleClass="card-title" text="Mi actividad académica" />
+                </HBox>
+                <Label styleClass="post-body" text="Resumen estadístico y detalle cronológico de tus publicaciones propias, preguntas académicas, respuestas, comentarios y soluciones aceptadas." wrapText="true" />
+                <Label styleClass="muted" text="Incluye únicamente tus aportes personales dentro de tus comunidades activas." wrapText="true" />
+                <Region VBox.vgrow="ALWAYS" />
+                <Separator />
+                <HBox alignment="CENTER_RIGHT">
+                    <Button fx:id="btnGenActivity" onAction="#onGenerateActivity" styleClass="primary" text="Generar y guardar…" />
+                </HBox>
+            </VBox>
+
+            <VBox spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <Label styleClass="badge-role" text="COMUNIDADES" />
+                    <Label styleClass="card-title" text="Mis comunidades" />
+                </HBox>
+                <Label styleClass="post-body" text="Listado de las comunidades donde tienes membresía activa: nombre, categoría, privacidad, rol local, estado, fecha de incorporación y ocupación." wrapText="true" />
+                <Label styleClass="muted" text="No expone correos privados, códigos de invitación ni datos de otros integrantes." wrapText="true" />
+                <Region VBox.vgrow="ALWAYS" />
+                <Separator />
+                <HBox alignment="CENTER_RIGHT">
+                    <Button fx:id="btnGenCommunities" onAction="#onGenerateCommunities" styleClass="primary" text="Generar y guardar…" />
+                </HBox>
+            </VBox>
+        </HBox>
+
+        <!-- Fila 2: Mi planificación académica + Mis publicaciones de intercambio -->
+        <HBox spacing="16.0">
+            <VBox spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <Label styleClass="badge-pending" text="PLANIFICACIÓN" />
+                    <Label styleClass="card-title" text="Mi planificación académica" />
+                </HBox>
+                <Label styleClass="post-body" text="Resumen por estado (Pendientes, En proceso, En revisión, Completadas y Vencidas reales) junto con la tabla detallada de tus tareas privadas." wrapText="true" />
+                <Label styleClass="muted" text="Incluye materia o proyecto, prioridad, fecha de vencimiento y fecha de creación." wrapText="true" />
+                <Region VBox.vgrow="ALWAYS" />
+                <Separator />
+                <HBox alignment="CENTER_RIGHT">
+                    <Button fx:id="btnGenPlanning" onAction="#onGeneratePlanning" styleClass="primary" text="Generar y guardar…" />
+                </HBox>
+            </VBox>
+
+            <VBox spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <Label styleClass="badge-resolved" text="INTERCAMBIO" />
+                    <Label styleClass="card-title" text="Mis publicaciones de intercambio" />
+                </HBox>
+                <Label styleClass="post-body" text="Catálogo personal de tus materiales publicados en Intercambio, Donación o Préstamo, con categoría, estado, fecha y resumen de adjuntos." wrapText="true" />
+                <Label styleClass="muted" text="Intercambio solidario sin precios ni información privada de contacto." wrapText="true" />
+                <Region VBox.vgrow="ALWAYS" />
+                <Separator />
+                <HBox alignment="CENTER_RIGHT">
+                    <Button fx:id="btnGenExchange" onAction="#onGenerateExchange" styleClass="primary" text="Generar y guardar…" />
+                </HBox>
+            </VBox>
+        </HBox>
+    </VBox>
+</ScrollPane>

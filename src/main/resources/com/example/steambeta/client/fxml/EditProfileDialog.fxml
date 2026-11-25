@@ -2,60 +2,93 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefWidth="540.0" spacing="14.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.EditProfileDialogController">
+<VBox prefHeight="620.0" prefWidth="600.0" spacing="12.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.EditProfileDialogController">
     <padding>
         <Insets bottom="20.0" left="22.0" right="22.0" top="20.0" />
     </padding>
 
-    <!-- Encabezado con Icono y Título -->
+    <!-- Encabezado -->
     <VBox spacing="4.0">
-        <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <Label styleClass="title" text="Editar Perfil Universitario" />
-        </HBox>
-        <Label styleClass="muted" text="Actualiza tu información personal, académica, intereses y privacidad de correo." />
+        <Label styleClass="title" text="Editar Perfil Universitario" />
+        <Label styleClass="muted" text="Actualiza tu fotografía, información académica, intereses, biografía y privacidad de correo." wrapText="true" />
         <Separator />
     </VBox>
 
-    <!-- Formulario Principal -->
-    <VBox spacing="10.0" styleClass="card">
-        <VBox spacing="4.0">
-            <Label styleClass="field-label" text="NOMBRE O ALIAS VISIBLE EN EL CAMPUS (2 a 60 caracteres):" />
-            <TextField fx:id="aliasField" promptText="Tu nombre o apodo académico" styleClass="input" />
+    <!-- Formulario organizado por secciones con desplazamiento -->
+    <ScrollPane fitToWidth="true" styleClass="app-background" VBox.vgrow="ALWAYS">
+        <VBox spacing="12.0">
+            <padding>
+                <Insets bottom="4.0" left="2.0" right="4.0" top="2.0" />
+            </padding>
+
+            <!-- Sección 1: Fotografía de perfil -->
+            <VBox spacing="8.0" styleClass="card">
+                <Label styleClass="section-title" text="Fotografía de Perfil" />
+                <HBox alignment="CENTER_LEFT" spacing="14.0">
+                    <StackPane maxHeight="62.0" maxWidth="62.0" minHeight="62.0" minWidth="62.0" prefHeight="62.0" prefWidth="62.0" styleClass="avatar-circle">
+                        <ImageView fx:id="avatarPreviewImage" fitHeight="62.0" fitWidth="62.0" managed="false" visible="false" />
+                        <Label fx:id="avatarPreviewInitials" styleClass="avatar-initials" text="ST" />
+                    </StackPane>
+                    <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                        <HBox spacing="8.0">
+                            <Button fx:id="btnSelectPhoto" onAction="#onSelectPhoto" styleClass="secondary" text="Cambiar fotografía" />
+                            <Button fx:id="btnRemovePhoto" managed="false" onAction="#onRemovePhoto" styleClass="danger-btn" text="Eliminar fotografía" visible="false" />
+                        </HBox>
+                        <Label fx:id="photoStatusLabel" styleClass="muted" text="JPG, PNG o WEBP · máximo 5 MB." wrapText="true" />
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <!-- Sección 2: Datos personales y académicos -->
+            <VBox spacing="10.0" styleClass="card">
+                <Label styleClass="section-title" text="Datos Personales y Académicos" />
+                <VBox spacing="4.0">
+                    <Label styleClass="field-label" text="NOMBRE O ALIAS VISIBLE EN EL CAMPUS (2 a 60 caracteres):" />
+                    <TextField fx:id="aliasField" promptText="Tu nombre o apodo académico" styleClass="input" />
+                </VBox>
+
+                <HBox spacing="12.0">
+                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="UNIVERSIDAD DECLARADA:" />
+                        <TextField fx:id="uniField" promptText="Ej. Universidad Central, Politécnico..." styleClass="input" />
+                    </VBox>
+                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="CARRERA O ESPECIALIDAD:" />
+                        <TextField fx:id="careerField" promptText="Ej. Ingeniería Informática..." styleClass="input" />
+                    </VBox>
+                </HBox>
+
+                <HBox spacing="12.0">
+                    <VBox maxWidth="160.0" prefWidth="150.0" spacing="4.0">
+                        <Label styleClass="field-label" text="SEMESTRE ACTUAL (1–20):" />
+                        <TextField fx:id="semesterField" promptText="Ej. 1, 3, 5..." styleClass="input" />
+                    </VBox>
+                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="INTERESES ACADÉMICOS:" />
+                        <TextField fx:id="interestsField" promptText="Ej. Inteligencia Artificial, Algoritmos..." styleClass="input" />
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <!-- Sección 3: Biografía y Privacidad -->
+            <VBox spacing="10.0" styleClass="card">
+                <Label styleClass="section-title" text="Biografía y Privacidad" />
+                <VBox spacing="4.0">
+                    <Label styleClass="field-label" text="BIOGRAFÍA ACADÉMICA (Hasta 500 caracteres):" />
+                    <TextArea fx:id="bioArea" prefRowCount="3" promptText="Cuéntale a tus compañeros tus áreas de interés y proyectos..." styleClass="text-area" wrapText="true" />
+                </VBox>
+
+                <CheckBox fx:id="emailPublicCheck" styleClass="check-box" text="Hacer visible mi correo electrónico para otros estudiantes del campus" />
+            </VBox>
+
+            <Label fx:id="errorLabel" managed="false" styleClass="status-error" visible="false" wrapText="true" />
         </VBox>
+    </ScrollPane>
 
-        <HBox spacing="14.0">
-            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-                <Label styleClass="field-label" text="UNIVERSIDAD DECLARADA:" />
-                <TextField fx:id="uniField" promptText="Ej. Universidad Central, Politécnico..." styleClass="input" />
-            </VBox>
-            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-                <Label styleClass="field-label" text="CARRERA O ESPECIALIDAD:" />
-                <TextField fx:id="careerField" promptText="Ej. Ingeniería Informática..." styleClass="input" />
-            </VBox>
-        </HBox>
-
-        <HBox spacing="14.0">
-            <VBox maxWidth="160.0" prefWidth="150.0" spacing="4.0">
-                <Label styleClass="field-label" text="SEMESTRE ACTUAL (1-20):" />
-                <TextField fx:id="semesterField" promptText="Ej. 1, 3, 5..." styleClass="input" />
-            </VBox>
-            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-                <Label styleClass="field-label" text="INTERESES ACADÉMICOS:" />
-                <TextField fx:id="interestsField" promptText="Ej. Inteligencia Artificial, Algoritmos..." styleClass="input" />
-            </VBox>
-        </HBox>
-
-        <VBox spacing="4.0">
-            <Label styleClass="field-label" text="BIOGRAFÍA ACADÉMICA (Hasta 500 caracteres):" />
-            <TextArea fx:id="bioArea" prefRowCount="3" promptText="Cuéntale a tus compañeros tus áreas de interés y proyectos..." styleClass="text-area" wrapText="true" />
-        </VBox>
-
-        <CheckBox fx:id="emailPublicCheck" styleClass="check-box" text="Hacer visible mi correo electrónico para otros estudiantes del campus" />
-
-        <Label fx:id="errorLabel" managed="false" styleClass="status-error" visible="false" />
-    </VBox>
+    <Separator />
 
     <!-- Botones de Acción -->
     <HBox alignment="CENTER_RIGHT" spacing="12.0">

@@ -43,7 +43,7 @@ public final class CommunityOverviewCardController {
         this.onAction = onAction;
 
         nameLabel.setText(ov.name());
-        categoryBadge.setText(formatCategory(ov.category()));
+        categoryBadge.setText(UiHelper.formatCommunityCategory(ov.category()));
         slugLabel.setText(ov.slug());
         descLabel.setText(ov.description() != null && !ov.description().isBlank()
                 ? ov.description() : "Sin descripción pública proporcionada.");
@@ -107,17 +107,6 @@ public final class CommunityOverviewCardController {
         }
     }
 
-    private static String formatCategory(String raw) {
-        if (raw == null) return "Académica";
-        return switch (raw.toUpperCase()) {
-            case "ESTUDIO" -> "Estudio";
-            case "PROYECTO" -> "Proyecto";
-            case "CARRERA" -> "Carrera";
-            case "INTERES" -> "Interés";
-            default -> "Académica";
-        };
-    }
-
     @FXML
     private void onDetails() {
         if (onAction != null && item != null) {
@@ -125,7 +114,7 @@ public final class CommunityOverviewCardController {
         } else if (item != null) {
             UiHelper.alert("Detalles del Espacio",
                     "Comunidad: " + item.name() + "\nIdentificador: " + item.slug() +
-                            "\nCategoría: " + formatCategory(item.category()) +
+                            "\nCategoría: " + UiHelper.formatCommunityCategory(item.category()) +
                             "\nPrivacidad: " + ("INVITE_ONLY".equalsIgnoreCase(item.visibility()) ? "Requiere invitación" : "Pública") +
                             "\nOcupación: " + item.memberCount() + " / " + item.maxMembers() + " integrantes" +
                             "\n\nDescripción:\n" + item.description(),

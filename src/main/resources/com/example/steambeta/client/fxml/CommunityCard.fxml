@@ -11,7 +11,8 @@
         <Region HBox.hgrow="ALWAYS" />
         <Button fx:id="enterBtn" onAction="#onEnter" styleClass="primary" text="Entrar a la comunidad" />
     </HBox>
-    <Label fx:id="descLabel" styleClass="muted" text="Descripción de la comunidad..." wrapText="true" />
+    <Label fx:id="descLabel" styleClass="post-body" text="Descripción de la comunidad..." wrapText="true" />
+    <Separator />
     <HBox alignment="CENTER_LEFT" spacing="12.0">
         <Label fx:id="capacityLabel" styleClass="muted" text="1 / 50 integrantes" />
         <Label fx:id="slotsLabel" styleClass="muted" text="49 espacios disponibles" />

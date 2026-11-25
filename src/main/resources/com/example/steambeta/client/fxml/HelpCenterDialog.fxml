@@ -4,12 +4,13 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefHeight="620.0" prefWidth="860.0" spacing="12.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.HelpCenterDialogController">
+<VBox prefHeight="620.0" prefWidth="860.0" spacing="14.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.HelpCenterDialogController">
     <padding>
         <Insets bottom="20.0" left="22.0" right="22.0" top="20.0" />
     </padding>
 
-    <VBox spacing="4.0">
+    <!-- Cabecera (Moodle + JabRef) -->
+    <VBox spacing="6.0">
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <Label styleClass="title" text="Centro de Ayuda · SteamBeta Campus" />
             <Label fx:id="moduleBadge" styleClass="badge-admin" text="INICIO" />
@@ -20,9 +21,9 @@
 
     <HBox spacing="16.0" VBox.vgrow="ALWAYS">
         <!-- Lista de módulos -->
-        <VBox prefWidth="210.0" spacing="6.0">
-            <Label styleClass="field-label" text="MÓDULOS" />
-            <ListView fx:id="moduleList" styleClass="card" VBox.vgrow="ALWAYS" />
+        <VBox minWidth="210.0" prefWidth="220.0" spacing="8.0" styleClass="card">
+            <Label styleClass="field-label" text="MÓDULOS DEL CAMPUS" />
+            <ListView fx:id="moduleList" VBox.vgrow="ALWAYS" />
         </VBox>
 
         <!-- Contenido de ayuda del módulo seleccionado -->
@@ -31,21 +32,29 @@
                 <padding>
                     <Insets bottom="16.0" left="18.0" right="18.0" top="14.0" />
                 </padding>
-                <Label fx:id="topicTitle" styleClass="section-title" text="Inicio" wrapText="true" />
+                <Label fx:id="topicTitle" styleClass="title" text="Inicio" wrapText="true" />
                 <Label fx:id="topicPurpose" styleClass="post-body" text="" wrapText="true" />
                 <Separator />
 
-                <Label styleClass="field-label" text="QUÉ PUEDES HACER" />
-                <Label fx:id="topicCapabilities" styleClass="muted" text="" wrapText="true" />
+                <VBox spacing="4.0">
+                    <Label styleClass="field-label" text="QUÉ PUEDES HACER" />
+                    <Label fx:id="topicCapabilities" styleClass="post-body" text="" wrapText="true" />
+                </VBox>
 
-                <Label styleClass="field-label" text="CÓMO AGREGAR, EDITAR Y ELIMINAR" />
-                <Label fx:id="topicSteps" styleClass="muted" text="" wrapText="true" />
+                <VBox spacing="4.0">
+                    <Label styleClass="field-label" text="CÓMO AGREGAR, EDITAR Y ELIMINAR" />
+                    <Label fx:id="topicSteps" styleClass="post-body" text="" wrapText="true" />
+                </VBox>
 
-                <Label styleClass="field-label" text="PERMISOS Y ALMACENAMIENTO" />
-                <Label fx:id="topicSecurity" styleClass="muted" text="" wrapText="true" />
+                <VBox spacing="4.0">
+                    <Label styleClass="field-label" text="PERMISOS Y ALMACENAMIENTO" />
+                    <Label fx:id="topicSecurity" styleClass="muted" text="" wrapText="true" />
+                </VBox>
 
-                <Label styleClass="field-label" text="SOLUCIÓN A ERRORES COMUNES" />
-                <Label fx:id="topicTroubleshooting" styleClass="muted" text="" wrapText="true" />
+                <VBox spacing="4.0">
+                    <Label styleClass="field-label" text="SOLUCIÓN A ERRORES COMUNES" />
+                    <Label fx:id="topicTroubleshooting" styleClass="muted" text="" wrapText="true" />
+                </VBox>
             </VBox>
         </ScrollPane>
     </HBox>

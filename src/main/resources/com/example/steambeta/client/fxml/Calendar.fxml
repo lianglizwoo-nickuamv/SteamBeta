@@ -10,7 +10,7 @@
             <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
         </padding>
 
-        <!-- Cabecera de Módulo -->
+        <!-- Cabecera de Módulo (Nextcloud Calendar + OpenProject) -->
         <VBox spacing="10.0">
             <HBox alignment="CENTER_LEFT" spacing="16.0">
                 <VBox spacing="4.0">
@@ -21,24 +21,27 @@
                     <Label styleClass="muted" text="Cronograma de exámenes, fechas límites de entrega y reuniones de tus comunidades universitarias." />
                 </VBox>
                 <Region HBox.hgrow="ALWAYS" />
-                <!-- Modos de Visualización -->
-                <HBox alignment="CENTER_RIGHT" spacing="6.0">
-                    <Button fx:id="viewMonthBtn" onAction="#onViewMonthly" styleClass="tab-btn-active" text="Vista Mensual" />
-                    <Button fx:id="viewWeekBtn" onAction="#onViewWeekly" styleClass="tab-btn" text="Vista Semanal" />
-                    <Button fx:id="viewAgendaBtn" onAction="#onViewAgenda" styleClass="tab-btn" text="Agenda" />
+                <!-- Acciones principales -->
+                <HBox alignment="CENTER_RIGHT" spacing="8.0">
                     <Button onAction="#onCreateEvent" styleClass="primary" text="+ Crear Evento" />
                     <Button onAction="#onRefresh" styleClass="secondary" text="Actualizar" />
                 </HBox>
             </HBox>
+            <!-- Modos de Visualización -->
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                <Button fx:id="viewMonthBtn" onAction="#onViewMonthly" styleClass="tab-btn-active" text="Vista Mensual" />
+                <Button fx:id="viewWeekBtn" onAction="#onViewWeekly" styleClass="tab-btn" text="Vista Semanal" />
+                <Button fx:id="viewAgendaBtn" onAction="#onViewAgenda" styleClass="tab-btn" text="Agenda" />
+            </HBox>
             <Separator />
         </VBox>
 
-        <!-- Barra de Navegación de Fechas y Filtros -->
-        <HBox alignment="CENTER_LEFT" spacing="12.0">
+        <!-- Barra de Navegación de Fechas y Filtros (Toolbar Strip) -->
+        <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="toolbar-strip">
             <!-- Navegación de Mes -->
-            <HBox alignment="CENTER_LEFT" spacing="8.0">
+            <HBox alignment="CENTER_LEFT" spacing="6.0">
                 <Button onAction="#onPrevMonth" styleClass="secondary" text="&lt; Anterior" />
-                <Label fx:id="monthTitleLabel" alignment="CENTER" minWidth="170.0" styleClass="section-title" text="Noviembre 2026" />
+                <Label fx:id="monthTitleLabel" alignment="CENTER" minWidth="160.0" styleClass="section-title" text="Noviembre 2026" />
                 <Button onAction="#onNextMonth" styleClass="secondary" text="Siguiente &gt;" />
                 <Button onAction="#onToday" styleClass="secondary" text="Hoy" />
             </HBox>
@@ -58,7 +61,7 @@
         <!-- Disposición Principal: Calendario Interactivo a la Izquierda y Detalle a la Derecha -->
         <HBox spacing="18.0">
             <!-- Contenedor del Calendario / Cuadrícula -->
-            <VBox fx:id="calendarContainer" spacing="6.0" HBox.hgrow="ALWAYS">
+            <VBox fx:id="calendarContainer" spacing="8.0" HBox.hgrow="ALWAYS">
                 <!-- Fila de Cabecera de Días de la Semana -->
                 <GridPane fx:id="dayHeadersGrid" hgap="4.0" styleClass="calendar-day-header">
                     <columnConstraints>
@@ -77,27 +80,10 @@
                     <Label alignment="CENTER" maxWidth="Infinity" styleClass="field-label" text="VIE" GridPane.columnIndex="4" />
                     <Label alignment="CENTER" maxWidth="Infinity" styleClass="field-label" text="SÁB" GridPane.columnIndex="5" />
                     <Label alignment="CENTER" maxWidth="Infinity" styleClass="field-label" text="DOM" GridPane.columnIndex="6" />
-               <rowConstraints>
-                  <RowConstraints />
-               </rowConstraints>
+                    <rowConstraints>
+                        <RowConstraints />
+                    </rowConstraints>
                 </GridPane>
-
-                <!-- Leyenda de Tipos de Eventos -->
-                <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="card">
-                    <Label styleClass="field-label" text="LEYENDA:" />
-                    <HBox alignment="CENTER_LEFT" spacing="6.0">
-                        <Region prefHeight="10.0" prefWidth="10.0" styleClass="calendar-event-dot-exam" />
-                        <Label styleClass="muted" text="Exámenes" />
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="6.0">
-                        <Region prefHeight="10.0" prefWidth="10.0" styleClass="calendar-event-dot-sub" />
-                        <Label styleClass="muted" text="Entregas" />
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="6.0">
-                        <Region prefHeight="10.0" prefWidth="10.0" styleClass="calendar-event-dot-meet" />
-                        <Label styleClass="muted" text="Reuniones" />
-                    </HBox>
-                </HBox>
 
                 <!-- Cuadrícula Dinámica para las Celdas FXML -->
                 <GridPane fx:id="calendarGrid" hgap="4.0" styleClass="calendar-grid" vgap="4.0">
@@ -112,16 +98,37 @@
                     </columnConstraints>
                 </GridPane>
 
+                <!-- Leyenda de Tipos de Eventos -->
+                <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="toolbar-strip">
+                    <Label styleClass="field-label" text="LEYENDA:" />
+                    <HBox alignment="CENTER_LEFT" spacing="6.0">
+                        <Region maxHeight="10.0" maxWidth="10.0" minHeight="10.0" minWidth="10.0" prefHeight="10.0" prefWidth="10.0" styleClass="calendar-event-dot-exam" />
+                        <Label styleClass="muted" text="Exámenes" />
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="6.0">
+                        <Region maxHeight="10.0" maxWidth="10.0" minHeight="10.0" minWidth="10.0" prefHeight="10.0" prefWidth="10.0" styleClass="calendar-event-dot-sub" />
+                        <Label styleClass="muted" text="Entregas" />
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="6.0">
+                        <Region maxHeight="10.0" maxWidth="10.0" minHeight="10.0" minWidth="10.0" prefHeight="10.0" prefWidth="10.0" styleClass="calendar-event-dot-meet" />
+                        <Label styleClass="muted" text="Reuniones" />
+                    </HBox>
+                </HBox>
+
                 <!-- Vista Alternativa: Lista / Agenda -->
                 <VBox fx:id="agendaListBox" managed="false" spacing="8.0" visible="false" />
             </VBox>
 
-            <!-- Panel Lateral de Detalle del Día Seleccionado y Próximos Hitos -->
+            <!-- Panel Lateral de Detalle del Día Seleccionado y Alcance -->
             <VBox maxWidth="350.0" minWidth="300.0" prefWidth="330.0" spacing="14.0">
                 <!-- Detalle del Día Seleccionado -->
                 <VBox spacing="10.0" styleClass="card-elevated">
-                    <Label fx:id="selectedDayTitleLabel" styleClass="section-title" text="Hitos del Día Seleccionado" />
-                    <Label fx:id="selectedDateDisplayLabel" styleClass="badge-admin" text="Hoy" />
+                    <HBox alignment="CENTER_LEFT" spacing="8.0">
+                        <Label fx:id="selectedDayTitleLabel" styleClass="section-title" text="Hitos del Día Seleccionado" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label fx:id="selectedDateDisplayLabel" styleClass="badge-admin" text="Hoy" />
+                    </HBox>
+                    <Separator />
                     <VBox fx:id="selectedDayEventsBox" spacing="8.0" />
                 </VBox>
 

@@ -63,6 +63,16 @@ public class CommunityErrors {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("error", "invitation_not_found", "message", "El código de invitación no existe o ha sido revocado."));
             }
+            if (sqlMsg.contains("cannot_remove_last_admin")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(Map.of("error", "cannot_remove_last_admin", "message",
+                                "No puedes salir de la comunidad porque eres su único administrador. Debes transferir la administración a otro integrante antes de salir."));
+            }
+            if (sqlMsg.contains("member_unavailable")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "member_unavailable", "message",
+                                "No formas parte activa de esta comunidad."));
+            }
             if (sqlMsg.contains("community_full")) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(Map.of("error", "community_full", "message", "Esta comunidad ha alcanzado su capacidad máxima."));
