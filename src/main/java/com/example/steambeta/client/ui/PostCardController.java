@@ -20,7 +20,6 @@ public final class PostCardController {
     @FXML private Label authorDateLabel;
     @FXML private Label bodyLabel;
     @FXML private Button toggleCommentsBtn;
-    @FXML private Button reportBtn;
     @FXML private Button deleteBtn;
 
     @FXML private VBox commentsBox;
@@ -147,28 +146,5 @@ public final class PostCardController {
                 });
             }
         });
-    }
-
-    @FXML
-    private void onReportPost() {
-        var loader = ViewLoader.<ReportContentDialogController>load("ReportContentDialog.fxml");
-        loader.controller().setHeader("Reportar Publicación");
-        Stage owner = titleLabel.getScene() != null ? (Stage) titleLabel.getScene().getWindow() : null;
-        var modal = UiHelper.createModalStage(loader.root(), "Reportar Contenido", owner);
-        modal.showAndWait();
-
-        if (loader.controller().isSubmitted()) {
-            String reason = loader.controller().getReason();
-            workers.submit(() -> {
-                try {
-                    api.report(communityId, "POST", post.id(), reason);
-                    Platform.runLater(() -> UiHelper.showSuccess(owner, "Reporte Enviado",
-                            "El contenido ha sido reportado a los moderadores de la comunidad."));
-                } catch (Exception ex) {
-                    Platform.runLater(() -> UiHelper.showError(owner, "Error",
-                            "No se pudo enviar el reporte: " + ex.getMessage()));
-                }
-            });
-        }
     }
 }

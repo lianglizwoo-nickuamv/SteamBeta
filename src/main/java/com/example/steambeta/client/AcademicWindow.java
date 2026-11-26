@@ -1,5 +1,6 @@
 package com.example.steambeta.client;
 
+import com.example.steambeta.client.ui.AdminLayoutController;
 import com.example.steambeta.client.ui.AuthController;
 import com.example.steambeta.client.ui.EmptyStateController;
 import com.example.steambeta.client.ui.MainLayoutController;
@@ -28,6 +29,7 @@ public final class AcademicWindow {
     });
 
     private ApiClient api;
+    private boolean adminSessionActive;
     private boolean closing;
     private MainLayoutController mainLayoutController;
 
@@ -50,10 +52,23 @@ public final class AcademicWindow {
 
     private void showAuthView(String notice, String presetLogin) {
         scope.reset();
+        adminSessionActive = false;
+        stage.setTitle("SteamBeta Campus · Ecosistema Digital Universitario");
         var authView = ViewLoader.<AuthController>load("Auth.fxml");
-        authView.controller().init(scope, workers, (client, signedIdentity) -> {
-            this.api = client;
-            showMainLayout();
+        authView.controller().init(scope, workers, new AuthController.AuthListener() {
+            @Override
+            public void onLoginSuccess(ApiClient client, ApiClient.Identity signedIdentity) {
+                api = client;
+                adminSessionActive = false;
+                showMainLayout();
+            }
+
+            @Override
+            public void onAdminLoginSuccess(ApiClient client, ApiClient.AdminSessionView session) {
+                api = client;
+                adminSessionActive = true;
+                showAdminLayout(session);
+            }
         }, notice, presetLogin);
 
         if (stage.getScene() == null) {
@@ -73,16 +88,27 @@ public final class AcademicWindow {
         stage.getScene().setRoot(mainView.root());
     }
 
+    private void showAdminLayout(ApiClient.AdminSessionView session) {
+        this.mainLayoutController = null;
+        stage.setTitle("SteamBeta Admin · Consola Administrativa Independiente");
+        var adminView = ViewLoader.<AdminLayoutController>load("AdminLayout.fxml");
+        adminView.controller().init(api, scope, workers, session, this::logout);
+        stage.getScene().setRoot(adminView.root());
+    }
+
     private void logout() {
         var previous = api;
+        boolean wasAdmin = adminSessionActive;
         api = null;
+        adminSessionActive = false;
         mainLayoutController = null;
-        showAuthView("Sesión cerrada correctamente.", "");
+        showAuthView(wasAdmin ? "Sesión administrativa cerrada correctamente." : "Sesión cerrada correctamente.", "");
 
         if (previous != null) {
             workers.submit(() -> {
                 try {
-                    previous.logout();
+                    if (wasAdmin) previous.adminLogout();
+                    else previous.logout();
                 } catch (Exception ignored) {
                     previous.clear();
                 }

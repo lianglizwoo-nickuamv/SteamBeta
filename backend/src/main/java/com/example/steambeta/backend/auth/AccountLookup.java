@@ -2,16 +2,32 @@ package com.example.steambeta.backend.auth;
 
 import java.util.Locale;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AccountLookup implements UserDetailsService {
-    private final JdbcTemplate jdbc;
+    public static final String TECHNICAL_ADMIN_LOGIN = "steambeta.admin.system";
+    public static final String ANONYMOUS_CONTENT_LOGIN = "steambeta.content.anonymous";
 
-    public AccountLookup(JdbcTemplate jdbc) {
+    private final JdbcTemplate jdbc;
+    private final UUID technicalAdminActorId;
+
+    public AccountLookup(
+            JdbcTemplate jdbc,
+            @Value("${steambeta.admin.actor-id:}") String technicalAdminActorIdRaw) {
         this.jdbc = jdbc;
+        UUID parsed = null;
+        if (technicalAdminActorIdRaw != null && !technicalAdminActorIdRaw.isBlank()) {
+            try {
+                parsed = UUID.fromString(technicalAdminActorIdRaw.strip());
+            } catch (IllegalArgumentException ignored) {
+                parsed = null;
+            }
+        }
+        this.technicalAdminActorId = parsed;
     }
 
     @Override
@@ -20,6 +36,13 @@ public class AccountLookup implements UserDetailsService {
             throw new UsernameNotFoundException("Invalid credentials");
         }
         String normalized = identifier.strip().toLowerCase(Locale.ROOT);
+
+        // Las identidades técnicas reservadas y registros anonimizados jamás pueden iniciar sesión
+        if (TECHNICAL_ADMIN_LOGIN.equals(normalized)
+                || ANONYMOUS_CONTENT_LOGIN.equals(normalized)
+                || normalized.startsWith("deleted.")) {
+            throw new UsernameNotFoundException("Invalid credentials");
+        }
 
         // Regla de seguridad RLS: Si se intenta iniciar sesión con correo (@),
         // verificar el estado mediante la función SECURITY DEFINER replica.check_email_verification_status(?).
@@ -67,6 +90,13 @@ public class AccountLookup implements UserDetailsService {
         if (rows.isEmpty()) {
             throw new UsernameNotFoundException("Invalid credentials");
         }
-        return rows.get(0);
+        AccountPrincipal principal = rows.get(0);
+        if (TECHNICAL_ADMIN_LOGIN.equalsIgnoreCase(principal.getUsername())
+                || ANONYMOUS_CONTENT_LOGIN.equalsIgnoreCase(principal.getUsername())
+                || (principal.getUsername() != null && principal.getUsername().toLowerCase(Locale.ROOT).startsWith("deleted."))
+                || (technicalAdminActorId != null && technicalAdminActorId.equals(principal.accountId()))) {
+            throw new UsernameNotFoundException("Invalid credentials");
+        }
+        return principal;
     }
 }

@@ -18,7 +18,6 @@
     <HBox alignment="CENTER_LEFT" spacing="8.0">
         <Button fx:id="toggleCommentsBtn" onAction="#onToggleComments" styleClass="secondary, btn-compact" text="Comentarios (0)" />
         <Region HBox.hgrow="ALWAYS" />
-        <Button fx:id="reportBtn" onAction="#onReportPost" styleClass="secondary, btn-compact" text="Reportar" />
         <Button fx:id="deleteBtn" managed="false" onAction="#onDeletePost" styleClass="danger-btn, btn-compact" text="Eliminar" visible="false" />
     </HBox>
 

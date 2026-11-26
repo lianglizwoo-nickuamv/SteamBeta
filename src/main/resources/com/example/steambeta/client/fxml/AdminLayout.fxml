@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="adminRoot" prefHeight="820.0" prefWidth="1260.0" styleClass="app-background" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.AdminLayoutController">
+    <!-- Barra Superior Exclusiva de SteamBeta Admin -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="topbar-surface">
+            <padding>
+                <Insets bottom="10.0" left="18.0" right="18.0" top="10.0" />
+            </padding>
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                <Label styleClass="brand" text="SteamBeta" />
+                <Label styleClass="badge-danger" text="ADMIN" />
+            </HBox>
+            <Separator orientation="VERTICAL" />
+            <Label fx:id="dbAuthBadge" styleClass="badge-pending" text="Verificando autorización PostgreSQL…" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="sessionInfoLabel" styleClass="muted" text="Sesión administrativa independiente" />
+            <Button fx:id="btnAdminLogout" onAction="#onLogout" styleClass="danger-btn" text="Cerrar sesión administrativa" />
+        </HBox>
+    </top>
+
+    <!-- Navegación Lateral Simplificada: Exclusivamente 3 Secciones -->
+    <left>
+        <VBox prefWidth="236.0" spacing="4.0" styleClass="sidebar-surface">
+            <padding>
+                <Insets bottom="16.0" left="10.0" right="10.0" top="14.0" />
+            </padding>
+            <Label styleClass="nav-category-label" text="CONSOLA INSTITUCIONAL" />
+            <Button fx:id="navDashboard" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavDashboard" styleClass="nav-item-active" text="Dashboard institucional" />
+            <Button fx:id="navDirectory" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavDirectory" styleClass="nav-item" text="Directorio de usuarios" />
+            <Button fx:id="navDossier" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavDossier" styleClass="nav-item" text="Expediente individual" />
+        </VBox>
+    </left>
+
+    <!-- Área Central Independiente -->
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="app-background">
+            <VBox spacing="14.0">
+                <padding>
+                    <Insets bottom="24.0" left="24.0" right="24.0" top="20.0" />
+                </padding>
+
+                <!-- Estado de conexión y permisos -->
+                <VBox fx:id="dbWarningBox" managed="false" spacing="4.0" styleClass="dialog-info-card" visible="false">
+                    <Label styleClass="field-label" text="ESTADO DE CONEXIÓN Y PERMISOS" />
+                    <Label fx:id="dbWarningLabel" styleClass="muted" text="" wrapText="true" />
+                </VBox>
+
+                <!-- SECCIÓN 1: DASHBOARD INSTITUCIONAL -->
+                <VBox fx:id="paneDashboard" spacing="14.0">
+                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                        <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                            <Label styleClass="title" text="Dashboard institucional" />
+                            <Label fx:id="dashScopeNotice" styleClass="muted" text="Resumen consolidado sobre la información institucional disponible." wrapText="true" />
+                        </VBox>
+                        <Button minWidth="-Infinity" onAction="#onRefreshDashboard" styleClass="secondary" text="Actualizar métricas" />
+                    </HBox>
+                    <Separator />
+                    <HBox spacing="12.0">
+                        <VBox spacing="4.0" styleClass="card" HBox.hgrow="ALWAYS">
+                            <Label styleClass="field-label" text="ESTUDIANTES ENCONTRADOS" />
+                            <Label fx:id="kpiTotalUsers" styleClass="progress-number" text="0" />
+                        </VBox>
+                        <VBox spacing="4.0" styleClass="card" HBox.hgrow="ALWAYS">
+                            <Label styleClass="field-label" text="MEMBRESÍAS COMUNITARIAS" />
+                            <Label fx:id="kpiCommunities" styleClass="progress-number" text="0" />
+                        </VBox>
+                        <VBox spacing="4.0" styleClass="card" HBox.hgrow="ALWAYS">
+                            <Label styleClass="field-label" text="PUBLICACIONES REGISTRADAS" />
+                            <Label fx:id="kpiPosts" styleClass="progress-number" text="0" />
+                        </VBox>
+                    </HBox>
+                    <HBox spacing="12.0">
+                        <VBox spacing="4.0" styleClass="card" HBox.hgrow="ALWAYS">
+                            <Label styleClass="field-label" text="ACTIVIDAD GENERAL" />
+                            <Label fx:id="kpiGeneralActivity" styleClass="progress-number" text="0" />
+                        </VBox>
+                        <VBox spacing="4.0" styleClass="card" HBox.hgrow="ALWAYS">
+                            <Label styleClass="field-label" text="REGISTROS DE LOS ÚLTIMOS 30 DÍAS" />
+                            <Label fx:id="kpiNew30Days" styleClass="progress-number" text="—" />
+                        </VBox>
+                        <VBox spacing="4.0" styleClass="card" HBox.hgrow="ALWAYS">
+                            <Label styleClass="field-label" text="EVENTOS DE AUDITORÍA" />
+                            <Label fx:id="kpiAuditEntries" styleClass="progress-number" text="0" />
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <!-- SECCIÓN 2: DIRECTORIO DE USUARIOS -->
+                <VBox fx:id="paneDirectory" managed="false" spacing="12.0" visible="false">
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label styleClass="title" text="Directorio de usuarios" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <ComboBox fx:id="dirReportFormatCombo" prefWidth="135.0" />
+                        <Button fx:id="btnGenerateFullReport" minWidth="-Infinity" onAction="#onGenerateFullUsersReport" styleClass="primary" text="Generar informe de usuarios" />
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="8.0" styleClass="toolbar-strip">
+                        <TextField fx:id="dirSearchField" onAction="#onSearchDirectory" prefWidth="280.0" promptText="Buscar por alias o login…" styleClass="input" HBox.hgrow="ALWAYS" />
+                        <ComboBox fx:id="dirSortCombo" prefWidth="180.0" />
+                        <Button onAction="#onSearchDirectory" styleClass="primary" text="Buscar" />
+                    </HBox>
+                    <Label fx:id="dirStatusLabel" styleClass="muted" text="Sin consultar." wrapText="true" />
+                    <TableView fx:id="usersTable" prefHeight="360.0">
+                        <columns>
+                            <TableColumn fx:id="colAlias" prefWidth="175.0" text="Alias" />
+                            <TableColumn fx:id="colLogin" prefWidth="150.0" text="Login" />
+                            <TableColumn fx:id="colUniversity" prefWidth="210.0" text="Universidad declarada" />
+                            <TableColumn fx:id="colCareer" prefWidth="195.0" text="Carrera declarada" />
+                            <TableColumn fx:id="colRole" prefWidth="110.0" text="Rol" />
+                            <TableColumn fx:id="colCreated" prefWidth="125.0" text="Fecha registro" />
+                        </columns>
+                    </TableView>
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Button fx:id="btnPrevPage" onAction="#onPrevPage" styleClass="secondary" text="← Anterior" />
+                        <Label fx:id="pageLabel" styleClass="muted" text="Bloque 1 / 1" />
+                        <Button fx:id="btnNextPage" onAction="#onNextPage" styleClass="secondary" text="Siguiente →" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button fx:id="btnDeleteUser" disable="true" onAction="#onDeleteSelectedUser" styleClass="danger-btn" text="Eliminar" />
+                        <Button fx:id="btnOpenDossier" onAction="#onOpenSelectedDossier" styleClass="primary" text="Ver expediente individual" />
+                    </HBox>
+                    <VBox spacing="4.0" styleClass="dialog-info-card">
+                        <Label styleClass="field-label" text="ELIMINACIÓN DEFINITIVA DE ESTUDIANTES" />
+                        <Label fx:id="dirDeleteNoticeLabel" styleClass="muted" text="Selecciona un estudiante para revisar la vista previa antes de eliminar físicamente su cuenta original y sus datos personales. Sus aportes compartidos y archivos comunitarios se conservan bajo el autor «Usuario eliminado»." wrapText="true" />
+                    </VBox>
+                </VBox>
+
+                <!-- SECCIÓN 3: EXPEDIENTE INDIVIDUAL -->
+                <VBox fx:id="paneDossier" managed="false" spacing="12.0" visible="false">
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Button onAction="#onBackToDirectory" styleClass="secondary" text="← Volver al directorio" />
+                        <Label fx:id="dosHeaderTitle" styleClass="title" text="Expediente individual" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button fx:id="btnExportDossierPdf" disable="true" onAction="#onExportDossierPdf" styleClass="primary" text="Exportar expediente PDF" />
+                        <Button fx:id="btnExportDossierXlsx" disable="true" onAction="#onExportDossierXlsx" styleClass="secondary" text="Exportar XLSX" />
+                    </HBox>
+                    <Separator />
+                    <!-- Estado vacío cuando no hay usuario seleccionado -->
+                    <VBox fx:id="dosEmptyBox" alignment="CENTER_LEFT" spacing="10.0" styleClass="card">
+                        <Label styleClass="section-title" text="Sin usuario seleccionado" />
+                        <Label fx:id="dosEmptyLabel" styleClass="muted" text="Selecciona un usuario del directorio para consultar su expediente" wrapText="true" />
+                        <Button onAction="#onBackToDirectory" styleClass="primary" text="Ir al Directorio de usuarios" />
+                    </VBox>
+                    <!-- Estado de carga o error explícito (sin guiones engañosos) -->
+                    <VBox fx:id="dosErrorBox" managed="false" spacing="6.0" styleClass="dialog-info-card" visible="false">
+                        <Label fx:id="dosErrorTitle" styleClass="field-label" text="ESTADO DEL EXPEDIENTE" />
+                        <Label fx:id="dosErrorLabel" styleClass="muted" text="" wrapText="true" />
+                    </VBox>
+                    <!-- Contenido real del expediente -->
+                    <VBox fx:id="dosContentBox" managed="false" spacing="12.0" visible="false">
+                        <HBox spacing="14.0">
+                            <VBox spacing="6.0" styleClass="card" HBox.hgrow="ALWAYS">
+                                <Label styleClass="section-title" text="IDENTIFICACIÓN" />
+                                <Label fx:id="dosAlias" text="" />
+                                <Label fx:id="dosLogin" text="" />
+                                <Label fx:id="dosEmail" styleClass="muted" text="" wrapText="true" />
+                                <Label fx:id="dosCreated" text="" />
+                                <Label fx:id="dosRole" text="" />
+                            </VBox>
+                            <VBox spacing="6.0" styleClass="card" HBox.hgrow="ALWAYS">
+                                <Label styleClass="section-title" text="PERFIL" />
+                                <Label fx:id="dosUniversity" text="" wrapText="true" />
+                                <Label fx:id="dosCareer" text="" wrapText="true" />
+                                <Label fx:id="dosSemester" styleClass="muted" text="" wrapText="true" />
+                                <Label fx:id="dosBio" styleClass="muted" text="" wrapText="true" />
+                                <Label fx:id="dosInterests" styleClass="muted" text="" wrapText="true" />
+                            </VBox>
+                        </HBox>
+                        <HBox spacing="14.0">
+                            <VBox spacing="6.0" styleClass="card" HBox.hgrow="ALWAYS">
+                                <Label styleClass="section-title" text="ACTIVIDAD" />
+                                <Label fx:id="dosCommunities" text="" />
+                                <Label fx:id="dosPosts" text="" />
+                                <Label fx:id="dosExtendedActivity" styleClass="muted" text="" wrapText="true" />
+                            </VBox>
+                            <VBox spacing="6.0" styleClass="card" HBox.hgrow="ALWAYS">
+                                <Label styleClass="section-title" text="MODERACIÓN" />
+                                <Label fx:id="dosSanctions" text="" />
+                                <Label fx:id="dosModDetail" styleClass="muted" text="" wrapText="true" />
+                            </VBox>
+                        </HBox>
+                        <!-- REPORTES DEL ESTUDIANTE SELECCIONADO -->
+                        <VBox spacing="10.0" styleClass="card">
+                            <Label styleClass="section-title" text="REPORTES DEL ESTUDIANTE SELECCIONADO" />
+                            <Label styleClass="muted" text="Genera informes individuales del estudiante seleccionado (identificando únicamente a este estudiante) en formato PDF o Excel XLSX." wrapText="true" />
+                            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                <DatePicker fx:id="dosRepFromDate" prefWidth="135.0" promptText="Desde (opc.)" />
+                                <DatePicker fx:id="dosRepToDate" prefWidth="135.0" promptText="Hasta (opc.)" />
+                                <ComboBox fx:id="dosRepFormatCombo" prefWidth="140.0" />
+                            </HBox>
+                            <HBox spacing="10.0">
+                                <Button onAction="#onDosRepActivity" styleClass="primary" text="1. Actividad académica" />
+                                <Button onAction="#onDosRepCommunities" styleClass="secondary" text="2. Comunidades" />
+                                <Button onAction="#onDosRepPlanning" styleClass="secondary" text="3. Planificación académica" />
+                                <Button onAction="#onDosRepExchange" styleClass="secondary" text="4. Publicaciones de intercambio" />
+                            </HBox>
+                            <Label fx:id="dosRepStatusLabel" styleClass="muted" text="" wrapText="true" />
+                        </VBox>
+                    </VBox>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

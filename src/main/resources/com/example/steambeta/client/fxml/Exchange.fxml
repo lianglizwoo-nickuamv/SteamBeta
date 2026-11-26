@@ -18,7 +18,7 @@
                         <Label styleClass="title" text="Intercambio Universitario de Materiales" />
                         <Label styleClass="badge-admin" text="TRUEQUE SOLIDARIO" />
                     </HBox>
-                    <Label styleClass="muted" text="Comparte libros, apuntes y herramientas mediante intercambio, donación o préstamo — sin dinero ni transacciones monetarias." wrapText="true" />
+                    <Label styleClass="muted" text="Catálogo solidario sin dinero: Intercambio (trueque; detalla lo que buscas en la descripción), Donación (entrega gratuita y permanente) y Préstamo (entrega temporal con devolución acordada). Los documentos descargables por materia pertenecen a Recursos dentro de cada Comunidad." wrapText="true" />
                 </VBox>
                 <Region HBox.hgrow="ALWAYS" />
                 <HBox alignment="CENTER_RIGHT" spacing="8.0">

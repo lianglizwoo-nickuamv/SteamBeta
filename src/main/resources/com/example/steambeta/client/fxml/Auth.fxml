@@ -24,6 +24,26 @@
 
             <!-- Columna Derecha: Tarjeta de Formulario Unificada -->
             <VBox fx:id="formCard" alignment="CENTER_LEFT" maxWidth="540.0" prefWidth="500.0" spacing="14.0" styleClass="auth-card">
+                <!-- Selector de Modalidad Independiente: STEAMBETA USER / STEAMBETA ADMIN -->
+                <HBox fx:id="modeSelectorBar" alignment="CENTER_LEFT" spacing="8.0" styleClass="toolbar-strip">
+                    <Button fx:id="btnModeUser" maxWidth="Infinity" onAction="#onSelectUserMode" styleClass="tab-btn-active" text="STEAMBETA USER" HBox.hgrow="ALWAYS" />
+                    <Button fx:id="btnModeAdmin" maxWidth="Infinity" onAction="#onSelectAdminMode" styleClass="tab-btn" text="STEAMBETA ADMIN" HBox.hgrow="ALWAYS" />
+                </HBox>
+
+                <!-- Panel de Acceso Administrativo Independiente (clave privada compartida, sin registro) -->
+                <VBox fx:id="adminLoginPane" managed="false" spacing="12.0" visible="false">
+                    <HBox alignment="CENTER_LEFT" spacing="8.0">
+                        <Label styleClass="title" text="SteamBeta Admin" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label styleClass="badge-danger" text="ACCESO PRIVADO" />
+                    </HBox>
+                    <Label styleClass="muted" text="Modalidad exclusiva para organizadores autorizados. No requiere cuenta de estudiante ni ofrece registro público." wrapText="true" />
+                    <Separator />
+                    <Label styleClass="field-label" text="CLAVE PRIVADA ADMINISTRATIVA" />
+                    <PasswordField fx:id="adminKeyField" onAction="#onAdminLoginSubmit" promptText="Ingresa la clave privada compartida" />
+                    <Button fx:id="adminLoginSubmitBtn" maxWidth="Infinity" onAction="#onAdminLoginSubmit" styleClass="primary" text="Ingresar a SteamBeta Admin" />
+                </VBox>
+
                 <!-- Panel de Inicio de Sesión -->
                 <VBox fx:id="loginPane" spacing="12.0">
                     <Label styleClass="title" text="Bienvenido a SteamBeta Campus" />

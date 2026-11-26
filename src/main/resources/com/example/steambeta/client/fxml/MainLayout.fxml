@@ -20,7 +20,6 @@
             <Region HBox.hgrow="ALWAYS" />
             <TextField fx:id="searchField" onAction="#onSearchAction" prefWidth="315.0" promptText="Buscar en el campus (comunidades, dudas, apuntes)..." styleClass="input" />
             <Button fx:id="helpBtn" onAction="#onHelpClicked" styleClass="secondary" text="Ayuda" />
-            <Button fx:id="notifBtn" onAction="#onNotificationsClicked" styleClass="secondary" text="Avisos" />
             <Button fx:id="profileBtn" onAction="#onProfileClicked" styleClass="secondary" text="Mi Perfil" />
             <Button fx:id="logoutBtn" onAction="#onLogoutClicked" styleClass="secondary" text="Cerrar sesión" />
         </HBox>
@@ -58,8 +57,6 @@
 
                 <!-- Categoría: Cuenta -->
                 <Label styleClass="nav-category-label" text="CUENTA" />
-                <Button fx:id="navReports" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavReports" styleClass="nav-item" text="Mis reportes" />
-                <Button fx:id="navNotifications" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavNotifications" styleClass="nav-item" text="Notificaciones" />
                 <Button fx:id="navProfile" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavProfile" styleClass="nav-item" text="Mi Perfil" />
                 <Button fx:id="navSettings" alignment="CENTER_LEFT" maxWidth="Infinity" onAction="#onNavSettings" styleClass="nav-item" text="Configuración" />
 

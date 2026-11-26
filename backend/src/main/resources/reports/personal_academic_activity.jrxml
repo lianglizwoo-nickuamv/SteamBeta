@@ -1,11 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport name="personal_academic_activity" language="java" pageWidth="595" pageHeight="842" columnWidth="547" leftMargin="24" rightMargin="24" topMargin="24" bottomMargin="24" whenNoDataType="AllSectionsNoDetail">
+<jasperReport name="personal_academic_activity" language="java" orientation="Landscape" pageWidth="842" pageHeight="595" columnWidth="794" leftMargin="24" rightMargin="24" topMargin="20" bottomMargin="20" whenNoDataType="AllSectionsNoDetail">
+    <style name="DashZebra" mode="Opaque" backcolor="#FFFFFF">
+        <conditionalStyle mode="Opaque" backcolor="#F0F9FF">
+            <conditionExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></conditionExpression>
+        </conditionalStyle>
+    </style>
+
+    <dataset name="ChartDS">
+        <field name="series" class="java.lang.String"/>
+        <field name="label" class="java.lang.String"/>
+        <field name="value" class="java.lang.Number"/>
+    </dataset>
+
     <parameter name="reportTitle" class="java.lang.String"/>
     <parameter name="studentAlias" class="java.lang.String"/>
     <parameter name="periodLabel" class="java.lang.String"/>
     <parameter name="generatedAt" class="java.lang.String"/>
     <parameter name="summaryLine" class="java.lang.String"/>
     <parameter name="emptyNotice" class="java.lang.String"/>
+    <parameter name="kpi1Lbl" class="java.lang.String"/>
+    <parameter name="kpi1Val" class="java.lang.String"/>
+    <parameter name="kpi2Lbl" class="java.lang.String"/>
+    <parameter name="kpi2Val" class="java.lang.String"/>
+    <parameter name="kpi3Lbl" class="java.lang.String"/>
+    <parameter name="kpi3Val" class="java.lang.String"/>
+    <parameter name="kpi4Lbl" class="java.lang.String"/>
+    <parameter name="kpi4Val" class="java.lang.String"/>
+    <parameter name="activityChartData" class="net.sf.jasperreports.engine.JRDataSource"/>
+    <parameter name="communityChartData" class="net.sf.jasperreports.engine.JRDataSource"/>
 
     <field name="activityType" class="java.lang.String"/>
     <field name="communityName" class="java.lang.String"/>
@@ -13,95 +35,164 @@
     <field name="statusLabel" class="java.lang.String"/>
     <field name="createdAtLabel" class="java.lang.String"/>
 
-    <title height="118">
-        <element kind="staticText" x="0" y="0" width="320" height="16" forecolor="#475569" fontName="SansSerif" fontSize="9.0" bold="true">
-            <text><![CDATA[STEAMBETA CAMPUS · REPORTE PERSONAL]]></text>
+    <title height="300">
+        <!-- Encabezado editorial Waves + Flower (Landscape split) -->
+        <element kind="rectangle" x="0" y="0" width="530" height="58" mode="Opaque" backcolor="#1E3A5F">
+            <pen lineWidth="0.0"/>
         </element>
-        <element kind="textField" x="320" y="0" width="227" height="16" forecolor="#64748B" fontName="SansSerif" fontSize="8.5" hTextAlign="Right" blankWhenNull="true">
-            <expression><![CDATA["Generado: " + $P{generatedAt}]]></expression>
+        <element kind="rectangle" x="0" y="58" width="530" height="5" mode="Opaque" backcolor="#0EA5E9">
+            <pen lineWidth="0.0"/>
         </element>
-        <element kind="textField" x="0" y="18" width="547" height="24" forecolor="#0F172A" fontName="SansSerif" fontSize="16.0" bold="true" blankWhenNull="true">
+        <element kind="staticText" x="14" y="8" width="320" height="13" forecolor="#7DD3FC" fontName="SansSerif" fontSize="8.0" bold="true">
+            <text><![CDATA[STEAMBETA CAMPUS · DASHBOARD ACADÉMICO PERSONAL]]></text>
+        </element>
+        <element kind="textField" x="14" y="23" width="500" height="28" forecolor="#FFFFFF" fontName="SansSerif" fontSize="18.0" bold="true" blankWhenNull="true">
             <expression><![CDATA[$P{reportTitle}]]></expression>
         </element>
-        <element kind="line" x="0" y="45" width="547" height="1" forecolor="#2563EB"/>
-        <element kind="textField" x="0" y="52" width="275" height="16" forecolor="#1E293B" fontName="SansSerif" fontSize="9.5" blankWhenNull="true">
-            <expression><![CDATA["Estudiante: " + $P{studentAlias}]]></expression>
+
+        <!-- Panel derecho de identificación del estudiante (acento Flower) -->
+        <element kind="rectangle" x="538" y="0" width="256" height="63" mode="Opaque" backcolor="#E0F2FE">
+            <pen lineWidth="0.75" lineColor="#7DD3FC"/>
         </element>
-        <element kind="textField" x="275" y="52" width="272" height="16" forecolor="#1E293B" fontName="SansSerif" fontSize="9.5" hTextAlign="Right" blankWhenNull="true">
+        <element kind="textField" x="548" y="8" width="236" height="16" forecolor="#0C4A6E" fontName="SansSerif" fontSize="10.0" bold="true" blankWhenNull="true">
+            <expression><![CDATA[$P{studentAlias}]]></expression>
+        </element>
+        <element kind="textField" x="548" y="26" width="236" height="14" forecolor="#0369A1" fontName="SansSerif" fontSize="8.0" blankWhenNull="true">
             <expression><![CDATA["Período: " + $P{periodLabel}]]></expression>
         </element>
-        <element kind="textField" x="0" y="74" width="547" height="28" mode="Opaque" backcolor="#F1F5F9" forecolor="#0F172A" fontName="SansSerif" fontSize="9.0" bold="true" vTextAlign="Middle" textAdjust="StretchHeight" blankWhenNull="true">
-            <expression><![CDATA["  " + $P{summaryLine}]]></expression>
-            <box leftPadding="6" rightPadding="6" topPadding="4" bottomPadding="4">
-                <pen lineWidth="0.5" lineColor="#CBD5E1"/>
-            </box>
+        <element kind="textField" x="548" y="42" width="236" height="14" forecolor="#475569" fontName="SansSerif" fontSize="7.5" blankWhenNull="true">
+            <expression><![CDATA["Generado: " + $P{generatedAt}]]></expression>
+        </element>
+
+        <!-- Tira de 4 indicadores KPI destacados -->
+        <element kind="textField" x="0" y="72" width="191" height="32" mode="Opaque" backcolor="#F8FAFC" forecolor="#1E3A5F" fontName="SansSerif" fontSize="11.0" bold="true" hTextAlign="Center" vTextAlign="Middle" blankWhenNull="true">
+            <expression><![CDATA[$P{kpi1Val} + "  ·  " + $P{kpi1Lbl}]]></expression>
+            <box><leftPen lineWidth="3.0" lineColor="#2563EB"/><topPen lineWidth="0.5" lineColor="#CBD5E1"/><rightPen lineWidth="0.5" lineColor="#CBD5E1"/><bottomPen lineWidth="0.5" lineColor="#CBD5E1"/></box>
+        </element>
+        <element kind="textField" x="201" y="72" width="191" height="32" mode="Opaque" backcolor="#F8FAFC" forecolor="#1E3A5F" fontName="SansSerif" fontSize="11.0" bold="true" hTextAlign="Center" vTextAlign="Middle" blankWhenNull="true">
+            <expression><![CDATA[$P{kpi2Val} + "  ·  " + $P{kpi2Lbl}]]></expression>
+            <box><leftPen lineWidth="3.0" lineColor="#0EA5E9"/><topPen lineWidth="0.5" lineColor="#CBD5E1"/><rightPen lineWidth="0.5" lineColor="#CBD5E1"/><bottomPen lineWidth="0.5" lineColor="#CBD5E1"/></box>
+        </element>
+        <element kind="textField" x="402" y="72" width="191" height="32" mode="Opaque" backcolor="#F8FAFC" forecolor="#1E3A5F" fontName="SansSerif" fontSize="11.0" bold="true" hTextAlign="Center" vTextAlign="Middle" blankWhenNull="true">
+            <expression><![CDATA[$P{kpi3Val} + "  ·  " + $P{kpi3Lbl}]]></expression>
+            <box><leftPen lineWidth="3.0" lineColor="#6366F1"/><topPen lineWidth="0.5" lineColor="#CBD5E1"/><rightPen lineWidth="0.5" lineColor="#CBD5E1"/><bottomPen lineWidth="0.5" lineColor="#CBD5E1"/></box>
+        </element>
+        <element kind="textField" x="603" y="72" width="191" height="32" mode="Opaque" backcolor="#F8FAFC" forecolor="#1E3A5F" fontName="SansSerif" fontSize="11.0" bold="true" hTextAlign="Center" vTextAlign="Middle" blankWhenNull="true">
+            <expression><![CDATA[$P{kpi4Val} + "  ·  " + $P{kpi4Lbl}]]></expression>
+            <box><leftPen lineWidth="3.0" lineColor="#10B981"/><topPen lineWidth="0.5" lineColor="#CBD5E1"/><rightPen lineWidth="0.5" lineColor="#CBD5E1"/><bottomPen lineWidth="0.5" lineColor="#CBD5E1"/></box>
+        </element>
+
+        <!-- GRÁFICO 1 (Protagonista): Barras reales de actividad académica por tipo -->
+        <element kind="chart" chartType="bar" x="0" y="114" width="389" height="176" evaluationTime="Report" showLegend="false">
+            <titleFont fontName="SansSerif" fontSize="10.0" bold="true"/>
+            <titleExpression><![CDATA["Actividad propia por tipo de aporte"]]></titleExpression>
+            <dataset kind="category">
+                <datasetRun subDataset="ChartDS">
+                    <dataSourceExpression><![CDATA[$P{activityChartData}]]></dataSourceExpression>
+                </datasetRun>
+                <series>
+                    <seriesExpression><![CDATA[$F{series}]]></seriesExpression>
+                    <categoryExpression><![CDATA[$F{label}]]></categoryExpression>
+                    <valueExpression><![CDATA[$F{value}]]></valueExpression>
+                </series>
+            </dataset>
+            <plot categoryAxisLabelColor="#334155" valueAxisLabelColor="#334155">
+                <itemLabel/>
+                <seriesColor order="0" color="#2563EB"/>
+            </plot>
+            <box><pen lineWidth="0.5" lineColor="#CBD5E1"/></box>
+        </element>
+
+        <!-- GRÁFICO 2 (Protagonista): Pastel real de distribución por comunidad -->
+        <element kind="chart" chartType="pie" x="405" y="114" width="389" height="176" evaluationTime="Report" showLegend="true">
+            <titleFont fontName="SansSerif" fontSize="10.0" bold="true"/>
+            <titleExpression><![CDATA["Distribución de aportes por comunidad"]]></titleExpression>
+            <dataset kind="pie">
+                <datasetRun subDataset="ChartDS">
+                    <dataSourceExpression><![CDATA[$P{communityChartData}]]></dataSourceExpression>
+                </datasetRun>
+                <series>
+                    <keyExpression><![CDATA[$F{label}]]></keyExpression>
+                    <valueExpression><![CDATA[$F{value}]]></valueExpression>
+                </series>
+            </dataset>
+            <plot>
+                <itemLabel/>
+                <seriesColor order="0" color="#1E3A5F"/>
+                <seriesColor order="1" color="#0EA5E9"/>
+                <seriesColor order="2" color="#6366F1"/>
+                <seriesColor order="3" color="#10B981"/>
+                <seriesColor order="4" color="#F59E0B"/>
+            </plot>
+            <box><pen lineWidth="0.5" lineColor="#CBD5E1"/></box>
         </element>
     </title>
 
     <columnHeader height="24">
-        <element kind="staticText" x="0" y="0" width="95" height="22" mode="Opaque" backcolor="#E2E8F0" forecolor="#0F172A" fontName="SansSerif" fontSize="8.5" bold="true" vTextAlign="Middle">
-            <text><![CDATA[Tipo]]></text>
-            <box leftPadding="5" rightPadding="4"><bottomPen lineWidth="1.0" lineColor="#94A3B8"/></box>
+        <element kind="staticText" x="0" y="0" width="110" height="22" mode="Opaque" backcolor="#1E3A5F" forecolor="#FFFFFF" fontName="SansSerif" fontSize="8.5" bold="true" vTextAlign="Middle">
+            <text><![CDATA[Tipo de aporte]]></text>
+            <box leftPadding="6" rightPadding="4"/>
         </element>
-        <element kind="staticText" x="95" y="0" width="125" height="22" mode="Opaque" backcolor="#E2E8F0" forecolor="#0F172A" fontName="SansSerif" fontSize="8.5" bold="true" vTextAlign="Middle">
+        <element kind="staticText" x="110" y="0" width="175" height="22" mode="Opaque" backcolor="#1E3A5F" forecolor="#FFFFFF" fontName="SansSerif" fontSize="8.5" bold="true" vTextAlign="Middle">
             <text><![CDATA[Comunidad]]></text>
-            <box leftPadding="4" rightPadding="4"><bottomPen lineWidth="1.0" lineColor="#94A3B8"/></box>
+            <box leftPadding="4" rightPadding="4"/>
         </element>
-        <element kind="staticText" x="220" y="0" width="167" height="22" mode="Opaque" backcolor="#E2E8F0" forecolor="#0F172A" fontName="SansSerif" fontSize="8.5" bold="true" vTextAlign="Middle">
+        <element kind="staticText" x="285" y="0" width="309" height="22" mode="Opaque" backcolor="#1E3A5F" forecolor="#FFFFFF" fontName="SansSerif" fontSize="8.5" bold="true" vTextAlign="Middle">
             <text><![CDATA[Detalle / Título]]></text>
-            <box leftPadding="4" rightPadding="4"><bottomPen lineWidth="1.0" lineColor="#94A3B8"/></box>
+            <box leftPadding="4" rightPadding="4"/>
         </element>
-        <element kind="staticText" x="387" y="0" width="75" height="22" mode="Opaque" backcolor="#E2E8F0" forecolor="#0F172A" fontName="SansSerif" fontSize="8.5" bold="true" vTextAlign="Middle">
+        <element kind="staticText" x="594" y="0" width="105" height="22" mode="Opaque" backcolor="#1E3A5F" forecolor="#FFFFFF" fontName="SansSerif" fontSize="8.5" bold="true" vTextAlign="Middle">
             <text><![CDATA[Estado]]></text>
-            <box leftPadding="4" rightPadding="4"><bottomPen lineWidth="1.0" lineColor="#94A3B8"/></box>
+            <box leftPadding="4" rightPadding="4"/>
         </element>
-        <element kind="staticText" x="462" y="0" width="85" height="22" mode="Opaque" backcolor="#E2E8F0" forecolor="#0F172A" fontName="SansSerif" fontSize="8.5" bold="true" vTextAlign="Middle">
-            <text><![CDATA[Fecha]]></text>
-            <box leftPadding="4" rightPadding="5"><bottomPen lineWidth="1.0" lineColor="#94A3B8"/></box>
+        <element kind="staticText" x="699" y="0" width="95" height="22" mode="Opaque" backcolor="#1E3A5F" forecolor="#FFFFFF" fontName="SansSerif" fontSize="8.5" bold="true" vTextAlign="Middle">
+            <text><![CDATA[Fecha y hora]]></text>
+            <box leftPadding="4" rightPadding="6"/>
         </element>
     </columnHeader>
 
     <detail>
-        <band height="22" splitType="Stretch">
-            <element kind="textField" x="0" y="0" width="95" height="20" forecolor="#1E293B" fontName="SansSerif" fontSize="8.5" textAdjust="StretchHeight" blankWhenNull="true">
+        <band height="20" splitType="Stretch">
+            <element kind="textField" style="DashZebra" stretchType="ContainerHeight" x="0" y="0" width="110" height="20" forecolor="#1E3A5F" fontName="SansSerif" fontSize="8.5" bold="true" textAdjust="StretchHeight" blankWhenNull="true">
                 <expression><![CDATA[$F{activityType}]]></expression>
-                <box leftPadding="5" rightPadding="4" topPadding="3" bottomPadding="3"><bottomPen lineWidth="0.5" lineColor="#E2E8F0"/></box>
+                <box leftPadding="6" rightPadding="4" topPadding="3" bottomPadding="3"><bottomPen lineWidth="0.5" lineColor="#CBD5E1"/></box>
             </element>
-            <element kind="textField" x="95" y="0" width="125" height="20" forecolor="#334155" fontName="SansSerif" fontSize="8.5" textAdjust="StretchHeight" blankWhenNull="true">
+            <element kind="textField" style="DashZebra" stretchType="ContainerHeight" x="110" y="0" width="175" height="20" forecolor="#334155" fontName="SansSerif" fontSize="8.5" textAdjust="StretchHeight" blankWhenNull="true">
                 <expression><![CDATA[$F{communityName}]]></expression>
-                <box leftPadding="4" rightPadding="4" topPadding="3" bottomPadding="3"><bottomPen lineWidth="0.5" lineColor="#E2E8F0"/></box>
+                <box leftPadding="4" rightPadding="4" topPadding="3" bottomPadding="3"><bottomPen lineWidth="0.5" lineColor="#CBD5E1"/></box>
             </element>
-            <element kind="textField" x="220" y="0" width="167" height="20" forecolor="#0F172A" fontName="SansSerif" fontSize="8.5" textAdjust="StretchHeight" blankWhenNull="true">
+            <element kind="textField" style="DashZebra" stretchType="ContainerHeight" x="285" y="0" width="309" height="20" forecolor="#0F172A" fontName="SansSerif" fontSize="8.5" textAdjust="StretchHeight" blankWhenNull="true">
                 <expression><![CDATA[$F{title}]]></expression>
-                <box leftPadding="4" rightPadding="4" topPadding="3" bottomPadding="3"><bottomPen lineWidth="0.5" lineColor="#E2E8F0"/></box>
+                <box leftPadding="4" rightPadding="4" topPadding="3" bottomPadding="3"><bottomPen lineWidth="0.5" lineColor="#CBD5E1"/></box>
             </element>
-            <element kind="textField" x="387" y="0" width="75" height="20" forecolor="#334155" fontName="SansSerif" fontSize="8.5" textAdjust="StretchHeight" blankWhenNull="true">
+            <element kind="textField" style="DashZebra" stretchType="ContainerHeight" x="594" y="0" width="105" height="20" forecolor="#0369A1" fontName="SansSerif" fontSize="8.0" bold="true" textAdjust="StretchHeight" blankWhenNull="true">
                 <expression><![CDATA[$F{statusLabel}]]></expression>
-                <box leftPadding="4" rightPadding="4" topPadding="3" bottomPadding="3"><bottomPen lineWidth="0.5" lineColor="#E2E8F0"/></box>
+                <box leftPadding="4" rightPadding="4" topPadding="3" bottomPadding="3"><bottomPen lineWidth="0.5" lineColor="#CBD5E1"/></box>
             </element>
-            <element kind="textField" x="462" y="0" width="85" height="20" forecolor="#475569" fontName="SansSerif" fontSize="8.0" textAdjust="StretchHeight" blankWhenNull="true">
+            <element kind="textField" style="DashZebra" stretchType="ContainerHeight" x="699" y="0" width="95" height="20" forecolor="#475569" fontName="SansSerif" fontSize="8.0" textAdjust="StretchHeight" blankWhenNull="true">
                 <expression><![CDATA[$F{createdAtLabel}]]></expression>
-                <box leftPadding="4" rightPadding="5" topPadding="3" bottomPadding="3"><bottomPen lineWidth="0.5" lineColor="#E2E8F0"/></box>
+                <box leftPadding="4" rightPadding="6" topPadding="3" bottomPadding="3"><bottomPen lineWidth="0.5" lineColor="#CBD5E1"/></box>
             </element>
         </band>
     </detail>
 
     <pageFooter height="22">
-        <element kind="line" x="0" y="2" width="547" height="1" forecolor="#CBD5E1"/>
-        <element kind="staticText" x="0" y="6" width="360" height="14" forecolor="#64748B" fontName="SansSerif" fontSize="8.0">
-            <text><![CDATA[SteamBeta Campus · Documento generado exclusivamente con datos propios del estudiante]]></text>
+        <element kind="line" x="0" y="2" width="794" height="1" forecolor="#7DD3FC"/>
+        <element kind="staticText" x="0" y="6" width="520" height="14" forecolor="#64748B" fontName="SansSerif" fontSize="8.0">
+            <text><![CDATA[SteamBeta Campus · Dashboard de actividad académica personal (datos reales del estudiante autenticado)]]></text>
         </element>
-        <element kind="textField" x="380" y="6" width="120" height="14" forecolor="#64748B" fontName="SansSerif" fontSize="8.0" hTextAlign="Right">
+        <element kind="textField" x="620" y="6" width="125" height="14" forecolor="#475569" fontName="SansSerif" fontSize="8.0" hTextAlign="Right">
             <expression><![CDATA["Página " + $V{PAGE_NUMBER} + " de "]]></expression>
         </element>
-        <element kind="textField" x="500" y="6" width="47" height="14" forecolor="#64748B" fontName="SansSerif" fontSize="8.0" evaluationTime="Report">
+        <element kind="textField" x="748" y="6" width="46" height="14" forecolor="#475569" fontName="SansSerif" fontSize="8.0" evaluationTime="Report">
             <expression><![CDATA[$V{PAGE_NUMBER}]]></expression>
         </element>
     </pageFooter>
 
-    <summary height="34">
-        <element kind="textField" x="0" y="8" width="547" height="20" forecolor="#475569" fontName="SansSerif" fontSize="9.0" italic="true" textAdjust="StretchHeight" blankWhenNull="true">
-            <expression><![CDATA[$P{emptyNotice}]]></expression>
+    <summary height="30">
+        <element kind="textField" x="0" y="6" width="794" height="20" mode="Opaque" backcolor="#F0F9FF" forecolor="#0C4A6E" fontName="SansSerif" fontSize="8.5" italic="true" vTextAlign="Middle" textAdjust="StretchHeight" blankWhenNull="true">
+            <expression><![CDATA["  " + $P{emptyNotice} + "   ·   " + $P{summaryLine}]]></expression>
+            <box leftPadding="6" rightPadding="6"><pen lineWidth="0.5" lineColor="#7DD3FC"/></box>
         </element>
     </summary>
 </jasperReport>

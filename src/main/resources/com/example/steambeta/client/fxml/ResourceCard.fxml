@@ -3,14 +3,21 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="7.0" styleClass="file-card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ResourceCardController">
-    <HBox alignment="CENTER_LEFT" spacing="10.0">
+<VBox spacing="8.0" styleClass="file-card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ResourceCardController">
+    <HBox alignment="CENTER_LEFT" spacing="8.0">
         <Label fx:id="typeBadge" styleClass="badge-role" text="PDF" />
-        <Label fx:id="uploaderLabel" styleClass="muted" text="Subido por: Sofia" />
+        <Label fx:id="subjectBadge" managed="false" styleClass="tag-pill" text="Asignatura" visible="false" />
+        <Label fx:id="uploaderLabel" styleClass="muted" text="Autor: Estudiante" />
         <Region HBox.hgrow="ALWAYS" />
         <Label fx:id="dateLabel" styleClass="muted" text="01/01/2026" />
     </HBox>
 
-    <Label fx:id="titleLabel" styleClass="card-title" text="Título del recurso o material" />
-    <Label fx:id="descLabel" styleClass="muted" text="Descripción..." wrapText="true" />
+    <Label fx:id="titleLabel" styleClass="card-title" text="Título del recurso o material" wrapText="true" />
+    <Label fx:id="descLabel" managed="false" styleClass="muted" text="" visible="false" wrapText="true" />
+
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <Label fx:id="attachmentMetaLabel" styleClass="muted" text="" wrapText="true" HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnDownload" managed="false" onAction="#onDownload" styleClass="primary, btn-compact" text="Descargar" visible="false" />
+        <Button fx:id="btnOpenLink" managed="false" onAction="#onOpenLink" styleClass="secondary, btn-compact" text="Abrir enlace" visible="false" />
+    </HBox>
 </VBox>

@@ -9,6 +9,22 @@ public final class PersonalReportDtos {
 
     public record GeneratedReport(byte[] bytes, String filename, String contentType) {}
 
+    public static final class ChartMetric {
+        private final String series;
+        private final String label;
+        private final Number value;
+
+        public ChartMetric(String series, String label, Number value) {
+            this.series = series;
+            this.label = label;
+            this.value = value;
+        }
+
+        public String getSeries() { return series; }
+        public String getLabel() { return label; }
+        public Number getValue() { return value; }
+    }
+
     public static final class AcademicActivityRow {
         private final String activityType;
         private final String communityName;

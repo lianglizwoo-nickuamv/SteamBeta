@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport name="admin_student_dossier" language="java" pageWidth="595" pageHeight="842" columnWidth="547" leftMargin="24" rightMargin="24" topMargin="22" bottomMargin="22" whenNoDataType="AllSectionsNoDetail">
+    <parameter name="generatedAt" class="java.lang.String"/>
+    <parameter name="alias" class="java.lang.String"/>
+    <parameter name="loginIdentifier" class="java.lang.String"/>
+    <parameter name="emailNotice" class="java.lang.String"/>
+    <parameter name="createdAtLabel" class="java.lang.String"/>
+    <parameter name="statusLabel" class="java.lang.String"/>
+    <parameter name="roleLabel" class="java.lang.String"/>
+    <parameter name="university" class="java.lang.String"/>
+    <parameter name="career" class="java.lang.String"/>
+    <parameter name="semesterNotice" class="java.lang.String"/>
+    <parameter name="bioNotice" class="java.lang.String"/>
+    <parameter name="interestsNotice" class="java.lang.String"/>
+    <parameter name="communitiesCount" class="java.lang.String"/>
+    <parameter name="postsCount" class="java.lang.String"/>
+    <parameter name="activeSanctionsCount" class="java.lang.String"/>
+    <parameter name="extendedActivityNotice" class="java.lang.String"/>
+    <parameter name="moderationDetailNotice" class="java.lang.String"/>
+
+    <title height="450">
+        <element kind="rectangle" x="0" y="0" width="547" height="58" mode="Opaque" backcolor="#1E293B"><pen lineWidth="0.0"/></element>
+        <element kind="rectangle" x="0" y="58" width="547" height="4" mode="Opaque" backcolor="#B91C1C"><pen lineWidth="0.0"/></element>
+        <element kind="staticText" x="14" y="8" width="360" height="13" forecolor="#FCA5A5" fontName="SansSerif" fontSize="8.0" bold="true"><text><![CDATA[STEAMBETA ADMIN · EXPEDIENTE INDIVIDUAL CONFIDENCIAL]]></text></element>
+        <element kind="textField" x="370" y="8" width="163" height="13" forecolor="#CBD5E1" fontName="SansSerif" fontSize="7.8" hTextAlign="Right" blankWhenNull="true"><expression><![CDATA["Generado: " + $P{generatedAt}]]></expression></element>
+        <element kind="textField" x="14" y="24" width="519" height="26" forecolor="#FFFFFF" fontName="SansSerif" fontSize="16.0" bold="true" blankWhenNull="true"><expression><![CDATA["Expediente: " + $P{alias}]]></expression></element>
+
+        <!-- BLOQUE 1: IDENTIFICACIÓN -->
+        <element kind="staticText" x="0" y="74" width="547" height="18" mode="Opaque" backcolor="#F1F5F9" forecolor="#7F1D1D" fontName="SansSerif" fontSize="9.0" bold="true" vTextAlign="Middle"><text><![CDATA[  1. IDENTIFICACIÓN]]></text><box><leftPen lineWidth="3.0" lineColor="#991B1B"/></box></element>
+        <element kind="textField" x="8" y="96" width="265" height="15" fontName="SansSerif" fontSize="8.5" textAdjust="StretchHeight" blankWhenNull="true"><expression><![CDATA["Alias: " + $P{alias}]]></expression></element>
+        <element kind="textField" x="280" y="96" width="265" height="15" fontName="SansSerif" fontSize="8.5" textAdjust="StretchHeight" blankWhenNull="true"><expression><![CDATA["Login: " + $P{loginIdentifier}]]></expression></element>
+        <element kind="textField" positionType="Float" x="8" y="114" width="265" height="15" fontName="SansSerif" fontSize="8.5" blankWhenNull="true"><expression><![CDATA["Estado: " + $P{statusLabel}]]></expression></element>
+        <element kind="textField" positionType="Float" x="280" y="114" width="265" height="15" fontName="SansSerif" fontSize="8.5" blankWhenNull="true"><expression><![CDATA["Rol global: " + $P{roleLabel}]]></expression></element>
+        <element kind="textField" positionType="Float" x="8" y="132" width="265" height="15" fontName="SansSerif" fontSize="8.5" blankWhenNull="true"><expression><![CDATA["Fecha de creación: " + $P{createdAtLabel}]]></expression></element>
+        <element kind="textField" positionType="Float" x="280" y="132" width="265" height="15" forecolor="#64748B" fontName="SansSerif" fontSize="8.0" textAdjust="StretchHeight" blankWhenNull="true"><expression><![CDATA["Correo: " + $P{emailNotice}]]></expression></element>
+
+        <!-- BLOQUE 2: PERFIL -->
+        <element kind="staticText" positionType="Float" x="0" y="158" width="547" height="18" mode="Opaque" backcolor="#F1F5F9" forecolor="#7F1D1D" fontName="SansSerif" fontSize="9.0" bold="true" vTextAlign="Middle"><text><![CDATA[  2. PERFIL ACADÉMICO DECLARADO]]></text><box><leftPen lineWidth="3.0" lineColor="#991B1B"/></box></element>
+        <element kind="textField" positionType="Float" x="8" y="180" width="535" height="15" fontName="SansSerif" fontSize="8.5" textAdjust="StretchHeight" blankWhenNull="true"><expression><![CDATA["Universidad declarada: " + $P{university}]]></expression></element>
+        <element kind="textField" positionType="Float" x="8" y="198" width="535" height="15" fontName="SansSerif" fontSize="8.5" textAdjust="StretchHeight" blankWhenNull="true"><expression><![CDATA["Carrera declarada: " + $P{career}]]></expression></element>
+        <element kind="textField" positionType="Float" x="8" y="216" width="535" height="15" forecolor="#64748B" fontName="SansSerif" fontSize="8.0" textAdjust="StretchHeight" blankWhenNull="true"><expression><![CDATA["Semestre: " + $P{semesterNotice}]]></expression></element>
+        <element kind="textField" positionType="Float" x="8" y="234" width="535" height="15" forecolor="#64748B" fontName="SansSerif" fontSize="8.0" textAdjust="StretchHeight" blankWhenNull="true"><expression><![CDATA["Biografía: " + $P{bioNotice}]]></expression></element>
+        <element kind="textField" positionType="Float" x="8" y="252" width="535" height="15" forecolor="#64748B" fontName="SansSerif" fontSize="8.0" textAdjust="StretchHeight" blankWhenNull="true"><expression><![CDATA["Intereses académicos: " + $P{interestsNotice}]]></expression></element>
+
+        <!-- BLOQUE 3: ACTIVIDAD -->
+        <element kind="staticText" positionType="Float" x="0" y="278" width="547" height="18" mode="Opaque" backcolor="#F1F5F9" forecolor="#7F1D1D" fontName="SansSerif" fontSize="9.0" bold="true" vTextAlign="Middle"><text><![CDATA[  3. ACTIVIDAD REGISTRADA]]></text><box><leftPen lineWidth="3.0" lineColor="#991B1B"/></box></element>
+        <element kind="textField" positionType="Float" x="8" y="300" width="265" height="16" fontName="SansSerif" fontSize="9.0" bold="true" blankWhenNull="true"><expression><![CDATA["Comunidades activas: " + $P{communitiesCount}]]></expression></element>
+        <element kind="textField" positionType="Float" x="280" y="300" width="265" height="16" fontName="SansSerif" fontSize="9.0" bold="true" blankWhenNull="true"><expression><![CDATA["Publicaciones registradas: " + $P{postsCount}]]></expression></element>
+        <element kind="textField" positionType="Float" x="8" y="320" width="535" height="24" forecolor="#64748B" fontName="SansSerif" fontSize="8.0" textAdjust="StretchHeight" blankWhenNull="true"><expression><![CDATA[$P{extendedActivityNotice}]]></expression></element>
+
+        <!-- BLOQUE 4: MODERACIÓN -->
+        <element kind="staticText" positionType="Float" x="0" y="354" width="547" height="18" mode="Opaque" backcolor="#F1F5F9" forecolor="#7F1D1D" fontName="SansSerif" fontSize="9.0" bold="true" vTextAlign="Middle"><text><![CDATA[  4. MODERACIÓN]]></text><box><leftPen lineWidth="3.0" lineColor="#991B1B"/></box></element>
+        <element kind="textField" positionType="Float" x="8" y="376" width="535" height="16" fontName="SansSerif" fontSize="9.0" bold="true" blankWhenNull="true"><expression><![CDATA["Sanciones activas: " + $P{activeSanctionsCount}]]></expression></element>
+        <element kind="textField" positionType="Float" x="8" y="396" width="535" height="28" forecolor="#64748B" fontName="SansSerif" fontSize="8.0" textAdjust="StretchHeight" blankWhenNull="true"><expression><![CDATA[$P{moderationDetailNotice}]]></expression></element>
+    </title>
+
+    <pageFooter height="24">
+        <element kind="line" x="0" y="3" width="547" height="1" forecolor="#FECACA"/>
+        <element kind="staticText" x="0" y="8" width="380" height="14" forecolor="#7F1D1D" fontName="SansSerif" fontSize="7.8" bold="true"><text><![CDATA[CONFIDENCIAL · STEAMBETA ADMIN · SIN CONTRASEÑAS, HASHES NI SECRETOS]]></text></element>
+        <element kind="textField" x="390" y="8" width="110" height="14" forecolor="#475569" fontName="SansSerif" fontSize="8.0" hTextAlign="Right"><expression><![CDATA["Página " + $V{PAGE_NUMBER} + " de "]]></expression></element>
+        <element kind="textField" x="503" y="8" width="44" height="14" forecolor="#475569" fontName="SansSerif" fontSize="8.0" evaluationTime="Report"><expression><![CDATA[$V{PAGE_NUMBER}]]></expression></element>
+    </pageFooter>
+</jasperReport>

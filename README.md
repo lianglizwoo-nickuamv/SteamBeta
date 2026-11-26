@@ -4,6 +4,28 @@
 
 ---
 
+## Descargar e instalar SteamBeta
+
+¿Primera vez descargando el proyecto? Sigue la guía completa paso a paso en **[DESCARGAR-Y-EJECUTAR.md](DESCARGAR-Y-EJECUTAR.md)** (incluye descarga por ZIP o Git, configuración de PostgreSQL 18, scripts de mantenimiento manual, configuración de STEAMBETA ADMIN, arranque y solución de problemas).
+
+### Clonación rápida (rama estable)
+
+```powershell
+git clone --branch feature/steambeta-v13-stable https://github.com/lianglizwoo-nickuamv/SteamBeta.git
+cd SteamBeta
+```
+
+### Requisitos principales
+
+- **Windows 10/11 (x64)** con PowerShell 5.1+.
+- **Java JDK 21 LTS** (`JAVA_HOME` configurado).
+- **PostgreSQL 18** en ejecución local (`localhost:5432`).
+- **Maven Wrapper incluido** (`mvnw.cmd`, no requiere Maven global).
+- **IntelliJ IDEA** recomendado para ejecutar el cliente JavaFX (`SteamBeta Client (JavaFX)`).
+- Conexión a Internet para descargar dependencias Maven iniciales.
+
+---
+
 ## 1. Funcionalidades disponibles
 
 - **Registro e inicio de sesión:** creación de cuentas estudiantiles, inicio de sesión mediante identificador o correo electrónico, protección CSRF y cookies `HttpOnly`.

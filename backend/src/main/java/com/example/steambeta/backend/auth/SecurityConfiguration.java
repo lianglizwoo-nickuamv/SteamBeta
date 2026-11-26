@@ -35,8 +35,10 @@ public class SecurityConfiguration {
                     "/api/auth/login",
                     "/api/auth/register",
                     "/api/auth/verify-email",
-                    "/api/auth/email-status"
+                    "/api/auth/email-status",
+                    "/api/admin/auth/login"
                 ).permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN_CONSOLE")
                 .anyRequest().authenticated())
             .sessionManagement(session -> session.sessionFixation(fixation -> fixation.changeSessionId()))
             .requestCache(cache -> cache.disable())

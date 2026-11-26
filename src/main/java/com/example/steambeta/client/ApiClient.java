@@ -126,6 +126,35 @@ public final class ApiClient {
     public record ExchangeAttachment(String id, String exchangeItemId, String originalFilename,
                                      String extension, String mimeType, long fileSizeBytes, String createdAt) {}
 
+    // Consola Administrativa Independiente (SteamBeta Admin)
+    public record AdminCapabilities(boolean dbAuthorized, String limitationReason, int maxDirectoryWindow,
+                                    boolean canDeactivate, boolean canReactivate, boolean canPermanentDelete) {}
+    public record AdminSessionView(boolean authenticated, String authenticatedAt, AdminCapabilities capabilities) {}
+    public record AdminDashboard(AdminCapabilities capabilities, long totalUsers, long activeUsers, long disabledUsers,
+                                 long totalCommunitiesSum, long totalPostsSum, long newRegistrations30Days,
+                                 long activeSanctionsSum, long recentAuditEntries,
+                                 boolean partialWindow, boolean auditWindowCapReached, String metricsScopeNotice) {}
+    public record AdminPagedUsers(AdminCapabilities capabilities, List<StudentOverview> items, int page, int size,
+                                  int totalItems, int totalPages, boolean v11WindowCapReached) {}
+    public record AdminStudentDossier(AdminCapabilities capabilities, String accountId, String alias,
+                                      String loginIdentifier, String emailNotice, String createdAt, boolean enabled,
+                                      String globalRole, String declaredUniversity, String declaredCareer,
+                                      String semesterNotice, String bioNotice, String interestsNotice,
+                                      long communitiesCount, long postsCount, long activeSanctionsCount,
+                                      String extendedActivityNotice, String moderationDetailNotice,
+                                      boolean isTechnicalActor) {}
+    public record AdminStudentRemovalPreview(
+            String accountId, String alias, String loginIdentifier, String email, String createdAt,
+            long tasksCount, long manualSubjectsCount, boolean studyProfileExists,
+            long notificationsCount, long emailTokensCount, long exchangeItemsCount,
+            long exchangeAttachmentsCount, boolean hasAvatar,
+            long communitiesCount, long postsCount, long questionsCount, long commentsCount,
+            long resourcesCount, long opportunitiesCount, long eventsCount,
+            long sanctionsCount, long auditLogsCount) {}
+    public record AdminStudentDeletionResult(String deletedAccountId, boolean physicallyDeleted,
+                                             int externalPersonalFilesCleaned, int externalPersonalFilesFailed,
+                                             String summaryMessage) {}
+
 
     private record Csrf(String headerName, String token) {}
 
@@ -872,6 +901,53 @@ public final class ApiClient {
                 json.toJson(data), "application/json"), ResourceItem.class);
     }
 
+    public ResourceItem publishResourceWithFile(String communityId, String title, String description,
+                                                String resourceType, String subjectName, Path file) throws Exception {
+        if (csrf == null) throw new IllegalStateException("CSRF token required");
+        String boundary = "----SteamBetaResourceBoundary" + UUID.randomUUID().toString().replace("-", "");
+        String filename = file.getFileName().toString().replace("\"", "_");
+        String probed = Files.probeContentType(file);
+        String mime = (probed != null && !probed.isBlank()) ? probed : "application/octet-stream";
+
+        var baos = new java.io.ByteArrayOutputStream();
+        appendTextPart(baos, boundary, "title", title);
+        appendTextPart(baos, boundary, "resourceType", resourceType);
+        if (description != null && !description.isBlank()) appendTextPart(baos, boundary, "description", description);
+        if (subjectName != null && !subjectName.isBlank()) appendTextPart(baos, boundary, "subjectName", subjectName);
+
+        baos.write(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
+        baos.write(("Content-Disposition: form-data; name=\"file\"; filename=\"" + filename + "\"\r\n").getBytes(StandardCharsets.UTF_8));
+        baos.write(("Content-Type: " + mime + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+        baos.write(Files.readAllBytes(file));
+        baos.write(("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
+
+        long timeout = Long.parseLong(System.getenv().getOrDefault("STEAMBETA_HTTP_TIMEOUT_SECONDS", "60"));
+        var req = HttpRequest.newBuilder(base.resolve("api/communities/" + UUID.fromString(communityId) + "/resources/upload"))
+                .timeout(Duration.ofSeconds(Math.max(30, timeout)))
+                .header("Accept", "application/json")
+                .header(csrf.headerName(), csrf.token())
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                .POST(HttpRequest.BodyPublishers.ofByteArray(baos.toByteArray()))
+                .build();
+        var response = getHttp().send(req, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new Failure(response.statusCode(), response.body());
+        }
+        return json.fromJson(response.body(), ResourceItem.class);
+    }
+
+    private static void appendTextPart(java.io.ByteArrayOutputStream baos, String boundary, String name, String value) throws Exception {
+        baos.write(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
+        baos.write(("Content-Disposition: form-data; name=\"" + name + "\"\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+        baos.write((value != null ? value : "").getBytes(StandardCharsets.UTF_8));
+        baos.write("\r\n".getBytes(StandardCharsets.UTF_8));
+    }
+
+    public byte[] downloadCommunityResource(String communityId, String resourceId) throws Exception {
+        String path = "api/communities/" + UUID.fromString(communityId) + "/resources/" + UUID.fromString(resourceId) + "/download";
+        return getBytes(path);
+    }
+
     public List<ResourceItem> resources(String communityId, String type, String subject, String search) throws Exception {
         StringBuilder path = new StringBuilder("/api/communities/" + UUID.fromString(communityId) + "/resources?");
         if (type != null && !type.isBlank()) path.append("type=").append(encode(type)).append("&");
@@ -1011,6 +1087,131 @@ public final class ApiClient {
 
     public void logout() throws Exception {
         try { request("/api/auth/logout", ""); } finally { clear(); }
+    }
+
+    // =========================================================================
+    // Consola Administrativa Independiente (/api/admin/**)
+    // =========================================================================
+
+    public AdminSessionView adminLogin(String adminKey) throws Exception {
+        long deadlineNanos = System.nanoTime() + Duration.ofSeconds(AUTH_TOTAL_TIMEOUT_SECONDS).toNanos();
+        csrf = json.fromJson(requestWithTimeout("/api/auth/csrf", null, "application/x-www-form-urlencoded", "GET", remainingTimeout(deadlineNanos)), Csrf.class);
+        String body = json.toJson(Map.of("adminKey", adminKey != null ? adminKey : ""));
+        var session = json.fromJson(
+                requestWithTimeout("/api/admin/auth/login", body, "application/json", "POST", remainingTimeout(deadlineNanos)),
+                AdminSessionView.class);
+        csrf = json.fromJson(requestWithTimeout("/api/auth/csrf", null, "application/x-www-form-urlencoded", "GET", remainingTimeout(deadlineNanos)), Csrf.class);
+        cachedProfile = null;
+        accountId = null;
+        return session;
+    }
+
+    public void adminLogout() throws Exception {
+        try { request("/api/admin/auth/logout", "", "application/json", "POST"); } finally { clear(); }
+    }
+
+    public AdminDashboard adminDashboard() throws Exception {
+        return json.fromJson(request("/api/admin/dashboard", null), AdminDashboard.class);
+    }
+
+    public AdminPagedUsers adminUsers(String query, String status, String role, String sortBy, int page, int size) throws Exception {
+        StringBuilder path = new StringBuilder("/api/admin/users?page=").append(page).append("&size=").append(size);
+        if (query != null && !query.isBlank()) path.append("&query=").append(encode(query.strip()));
+        if (status != null && !status.isBlank()) path.append("&status=").append(encode(status));
+        if (role != null && !role.isBlank()) path.append("&role=").append(encode(role));
+        if (sortBy != null && !sortBy.isBlank()) path.append("&sortBy=").append(encode(sortBy));
+        return json.fromJson(request(path.toString(), null), AdminPagedUsers.class);
+    }
+
+    public AdminStudentDossier adminDossier(String targetAccountId) throws Exception {
+        return adminDossier(targetAccountId, null);
+    }
+
+    public AdminStudentDossier adminDossier(String targetAccountId, String searchHint) throws Exception {
+        String path = "/api/admin/users/" + UUID.fromString(targetAccountId);
+        if (searchHint != null && !searchHint.isBlank()) {
+            path += "?query=" + encode(searchHint.strip());
+        }
+        return json.fromJson(request(path, null), AdminStudentDossier.class);
+    }
+
+    public String adminDeactivateUser(String targetAccountId, String reason) throws Exception {
+        return request("/api/admin/users/" + UUID.fromString(targetAccountId) + "/deactivate",
+                json.toJson(Map.of("reason", reason)), "application/json", "POST");
+    }
+
+    public AdminStudentRemovalPreview adminRemovalPreview(String targetAccountId) throws Exception {
+        return json.fromJson(
+                request("/api/admin/users/" + UUID.fromString(targetAccountId) + "/removal-preview", null),
+                AdminStudentRemovalPreview.class);
+    }
+
+    public AdminStudentDeletionResult adminDeleteStudent(String targetAccountId, String confirmationText, String reason) throws Exception {
+        var payload = new LinkedHashMap<String, String>();
+        payload.put("confirmationText", confirmationText != null ? confirmationText : "");
+        payload.put("reason", reason != null ? reason : "");
+        return json.fromJson(
+                request("/api/admin/users/" + UUID.fromString(targetAccountId) + "/delete",
+                        json.toJson(payload), "application/json", "POST"),
+                AdminStudentDeletionResult.class);
+    }
+
+    public List<AuditLogEntry> adminAuditLogs(int limit) throws Exception {
+        return List.of(json.fromJson(request("/api/admin/audit-logs?limit=" + limit, null), AuditLogEntry[].class));
+    }
+
+    public byte[] downloadAdminFullUsersReport(String format, String query) throws Exception {
+        StringBuilder path = new StringBuilder("api/admin/reports/users-full?format=")
+                .append(encode(format != null ? format : "PDF"));
+        if (query != null && !query.isBlank()) path.append("&query=").append(encode(query.strip()));
+        return getBytes(path.toString());
+    }
+
+    public byte[] downloadAdminReport(String kind, String format, String query, String fromIso, String toIso) throws Exception {
+        StringBuilder path = new StringBuilder("api/admin/reports/").append(encode(kind))
+                .append("?format=").append(encode(format != null ? format : "PDF"));
+        if (query != null && !query.isBlank()) path.append("&query=").append(encode(query.strip()));
+        if (fromIso != null && !fromIso.isBlank()) path.append("&from=").append(encode(fromIso.strip()));
+        if (toIso != null && !toIso.isBlank()) path.append("&to=").append(encode(toIso.strip()));
+        return getBytes(path.toString());
+    }
+
+    public byte[] downloadAdminDossierReport(String targetAccountId, String format) throws Exception {
+        return downloadAdminDossierReport(targetAccountId, format, null);
+    }
+
+    public byte[] downloadAdminDossierReport(String targetAccountId, String format, String searchHint) throws Exception {
+        String path = "api/admin/reports/dossier/" + UUID.fromString(targetAccountId)
+                + "?format=" + encode(format != null ? format : "PDF");
+        if (searchHint != null && !searchHint.isBlank()) {
+            path += "&query=" + encode(searchHint.strip());
+        }
+        return getBytes(path);
+    }
+
+    public byte[] downloadAdminStudentPersonalReport(String targetAccountId, String reportKind, String format,
+                                                     String fromIso, String toIso, String searchHint) throws Exception {
+        StringBuilder path = new StringBuilder("api/admin/users/")
+                .append(UUID.fromString(targetAccountId))
+                .append("/reports/").append(encode(reportKind))
+                .append("?format=").append(encode(format != null ? format : "PDF"));
+        if (fromIso != null && !fromIso.isBlank()) path.append("&from=").append(encode(fromIso.strip()));
+        if (toIso != null && !toIso.isBlank()) path.append("&to=").append(encode(toIso.strip()));
+        if (searchHint != null && !searchHint.isBlank()) path.append("&query=").append(encode(searchHint.strip()));
+        return getBytes(path.toString());
+    }
+
+    private byte[] getBytes(String relativePath) throws Exception {
+        long timeout = Long.parseLong(System.getenv().getOrDefault("STEAMBETA_HTTP_TIMEOUT_SECONDS", "30"));
+        var req = HttpRequest.newBuilder(base.resolve(relativePath))
+                .timeout(Duration.ofSeconds(Math.max(15, timeout)))
+                .GET()
+                .build();
+        var response = getHttp().send(req, HttpResponse.BodyHandlers.ofByteArray());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new Failure(response.statusCode(), new String(response.body(), StandardCharsets.UTF_8));
+        }
+        return response.body();
     }
 
     public String accountId() { return accountId; }

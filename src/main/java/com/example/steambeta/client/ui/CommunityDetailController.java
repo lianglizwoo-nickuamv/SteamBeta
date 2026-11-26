@@ -22,9 +22,9 @@ public final class CommunityDetailController {
         boolean isQuestion() { return question != null; }
     }
 
+    @FunctionalInterface
     public interface CommunityDetailNavigationListener {
         void onBackToHome();
-        void onOpenModeration(ApiClient.Community community);
     }
 
     @FXML private ScrollPane mainScrollPane;
@@ -42,7 +42,6 @@ public final class CommunityDetailController {
     @FXML private Button btnResources;
     @FXML private Button btnCalendar;
     @FXML private Button btnMembers;
-    @FXML private Button btnModeration;
     @FXML private Button btnNewQuestion;
     @FXML private Button btnNewResource;
     @FXML private Button btnNewCalendarEvent;
@@ -133,11 +132,6 @@ public final class CommunityDetailController {
             roleBadge.getStyleClass().add("badge-mod");
         } else {
             roleBadge.getStyleClass().add("badge-role");
-        }
-
-        if ("ADMIN".equals(role) || "MODERATOR".equals(role)) {
-            btnModeration.setVisible(true);
-            btnModeration.setManaged(true);
         }
 
         // Botón "Salir de la comunidad" visible únicamente para miembros activos
@@ -524,7 +518,7 @@ public final class CommunityDetailController {
                     } else {
                         for (var r : items) {
                             var rCard = ViewLoader.<ResourceCardController>load("ResourceCard.fxml");
-                            rCard.controller().set(r);
+                            rCard.controller().set(r, api, workers);
                             tabContentPane.getChildren().add(rCard.root());
                         }
                     }
@@ -794,5 +788,4 @@ public final class CommunityDetailController {
     @FXML private void onTabResources() { switchTab("RESOURCES"); }
     @FXML private void onTabCalendar() { switchTab("CALENDAR"); }
     @FXML private void onTabMembers() { switchTab("MEMBERS"); }
-    @FXML private void onOpenModeration() { if (navigation != null) navigation.onOpenModeration(community); }
 }

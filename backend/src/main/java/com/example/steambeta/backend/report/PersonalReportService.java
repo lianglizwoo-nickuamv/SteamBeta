@@ -11,13 +11,15 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Servicio de generación de reportes personales del estudiante autenticado.
- * Reutiliza exclusivamente los servicios autorizados existentes sin modificar BD ni RLS.
+ * Reutiliza exclusivamente los servicios autorizados existentes sin modificar
+ * BD ni RLS.
  */
 @Service
 public class PersonalReportService {
@@ -34,8 +36,8 @@ public class PersonalReportService {
     private final JasperReportEngine engine;
 
     public PersonalReportService(AccountService accounts, CommunityService communities,
-                                 AcademicTaskService tasks, CampusExchangeService exchange,
-                                 JasperReportEngine engine) {
+            AcademicTaskService tasks, CampusExchangeService exchange,
+            JasperReportEngine engine) {
         this.accounts = accounts;
         this.communities = communities;
         this.tasks = tasks;
@@ -53,7 +55,8 @@ public class PersonalReportService {
         UUID actorId = profile.accountId();
         String alias = safeAlias(profile.alias());
 
-        record TimedRow(Instant ts, AcademicActivityRow row) {}
+        record TimedRow(Instant ts, AcademicActivityRow row) {
+        }
         List<TimedRow> collected = new ArrayList<>();
         long ownPosts = 0;
         long ownQuestions = 0;
@@ -71,17 +74,17 @@ public class PersonalReportService {
                     ownPosts++;
                     collected.add(new TimedRow(p.createdAt(), new AcademicActivityRow(
                             "Publicación", commName, safeText(p.title(), "(Sin título)"),
-                            formatStatus(p.status()), formatDateTime(p.createdAt())
-                    )));
+                            formatStatus(p.status()), formatDateTime(p.createdAt()))));
                 }
                 if (p.commentCount() > 0) {
                     for (var cm : communities.comments(c.id(), p.id())) {
                         if (actorId.equals(cm.authorAccountId()) && inRange(cm.createdAt(), from, to)) {
                             ownComments++;
                             collected.add(new TimedRow(cm.createdAt(), new AcademicActivityRow(
-                                    "Comentario", commName, truncate("En «" + safeText(p.title(), "publicación") + "»: " + safeText(cm.body(), ""), 110),
-                                    formatStatus(cm.status()), formatDateTime(cm.createdAt())
-                            )));
+                                    "Comentario", commName,
+                                    truncate("En «" + safeText(p.title(), "publicación") + "»: "
+                                            + safeText(cm.body(), ""), 110),
+                                    formatStatus(cm.status()), formatDateTime(cm.createdAt()))));
                         }
                     }
                 }
@@ -94,19 +97,22 @@ public class PersonalReportService {
                     ownQuestions++;
                     collected.add(new TimedRow(q.createdAt(), new AcademicActivityRow(
                             "Pregunta", commName, safeText(q.title(), "(Sin título)"),
-                            q.isResolved() ? "Resuelta" : "Pendiente", formatDateTime(q.createdAt())
-                    )));
+                            q.isResolved() ? "Resuelta" : "Pendiente", formatDateTime(q.createdAt()))));
                 }
                 if (q.commentCount() > 0) {
                     for (var ans : communities.comments(c.id(), q.id())) {
                         if (actorId.equals(ans.authorAccountId()) && inRange(ans.createdAt(), from, to)) {
                             ownAnswers++;
-                            boolean isAccepted = q.resolvedCommentId() != null && q.resolvedCommentId().equals(ans.id());
-                            if (isAccepted) acceptedSolutions++;
+                            boolean isAccepted = q.resolvedCommentId() != null
+                                    && q.resolvedCommentId().equals(ans.id());
+                            if (isAccepted)
+                                acceptedSolutions++;
                             collected.add(new TimedRow(ans.createdAt(), new AcademicActivityRow(
-                                    "Respuesta Q&A", commName, truncate("En «" + safeText(q.title(), "pregunta") + "»: " + safeText(ans.body(), ""), 110),
-                                    isAccepted ? "Solución aceptada" : "Publicada", formatDateTime(ans.createdAt())
-                            )));
+                                    "Respuesta Q&A", commName,
+                                    truncate(
+                                            "En «" + safeText(q.title(), "pregunta") + "»: " + safeText(ans.body(), ""),
+                                            110),
+                                    isAccepted ? "Solución aceptada" : "Publicada", formatDateTime(ans.createdAt()))));
                         }
                     }
                 }
@@ -117,13 +123,36 @@ public class PersonalReportService {
         List<AcademicActivityRow> rows = collected.stream().map(TimedRow::row).toList();
 
         String summary = String.format(
-                "Publicaciones propias: %d  |  Preguntas propias: %d  |  Respuestas propias: %d  |  Comentarios propios: %d  |  Soluciones aceptadas: %d",
+                "Resumen detallado · Publicaciones: %d · Preguntas: %d · Respuestas Q&A: %d · Comentarios: %d · Soluciones aceptadas: %d",
                 ownPosts, ownQuestions, ownAnswers, ownComments, acceptedSolutions);
         String emptyNotice = rows.isEmpty()
                 ? "No se encontró actividad académica propia registrada en el período seleccionado."
                 : "Total de registros propios incluidos en este informe: " + rows.size() + ".";
 
         Map<String, Object> params = baseParams("Mi actividad académica", alias, from, to, summary, emptyNotice);
+        putKpis(params,
+                "PUBLICACIONES", String.valueOf(ownPosts),
+                "PREGUNTAS", String.valueOf(ownQuestions),
+                "RESPUESTAS Q&A", String.valueOf(ownAnswers),
+                "SOLUCIONES ACEPT.", String.valueOf(acceptedSolutions));
+
+        List<ChartMetric> activitySeries = List.of(
+                new ChartMetric("Actividad propia", "Publicaciones", ownPosts),
+                new ChartMetric("Actividad propia", "Preguntas", ownQuestions),
+                new ChartMetric("Actividad propia", "Respuestas", ownAnswers),
+                new ChartMetric("Actividad propia", "Comentarios", ownComments),
+                new ChartMetric("Actividad propia", "Soluciones", acceptedSolutions));
+        Map<String, Long> byCommunity = collected.stream()
+                .collect(Collectors.groupingBy(tr -> tr.row().getCommunityName(), LinkedHashMap::new,
+                        Collectors.counting()));
+        List<ChartMetric> communityPie = byCommunity.isEmpty()
+                ? List.of(new ChartMetric("Comunidades", "Sin registros en el período", 1))
+                : byCommunity.entrySet().stream()
+                        .map(e -> new ChartMetric("Comunidades", e.getKey(), e.getValue()))
+                        .toList();
+        params.put("activityChartData", new JRBeanCollectionDataSource(activitySeries));
+        params.put("communityChartData", new JRBeanCollectionDataSource(communityPie));
+
         byte[] bytes = engine.render("personal_academic_activity", params, rows, format, "Mi actividad academica");
         return new GeneratedReport(bytes, fileName("mi_actividad_academica", format), format.contentType());
     }
@@ -174,18 +203,25 @@ public class PersonalReportService {
                     formatRole(roleCode),
                     "Activa",
                     joinedAt != null ? formatDate(joinedAt) : "No disponible",
-                    c.memberCount() + " / " + max
-            ));
+                    c.memberCount() + " / " + max));
         }
 
+        rows.sort(Comparator.comparing(CommunityMembershipRow::getCategory, String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(CommunityMembershipRow::getName, String.CASE_INSENSITIVE_ORDER));
+
         String summary = String.format(
-                "Comunidades activas: %d  |  Administrador: %d  |  Moderador: %d  |  Miembro: %d",
+                "Agrupado por categoría · Comunidades activas: %d · Administrador: %d · Moderador: %d · Miembro: %d",
                 rows.size(), adminCount, modCount, memberCount);
         String emptyNotice = rows.isEmpty()
                 ? "No se encontraron membresías activas en el período consultado."
                 : "Solo se muestran comunidades donde el estudiante autenticado tiene membresía activa.";
 
         Map<String, Object> params = baseParams("Mis comunidades", alias, from, to, summary, emptyNotice);
+        putKpis(params,
+                "COMUNIDADES ACTIVAS", String.valueOf(rows.size()),
+                "ADMINISTRADOR", String.valueOf(adminCount),
+                "MODERADOR", String.valueOf(modCount),
+                "MIEMBRO", String.valueOf(memberCount));
         byte[] bytes = engine.render("personal_communities", params, rows, format, "Mis comunidades");
         return new GeneratedReport(bytes, fileName("mis_comunidades", format), format.contentType());
     }
@@ -217,7 +253,8 @@ public class PersonalReportService {
                 default -> pending++;
             }
             boolean isOverdue = t.dueDate() != null && t.dueDate().isBefore(now) && !"COMPLETED".equals(st);
-            if (isOverdue) overdue++;
+            if (isOverdue)
+                overdue++;
 
             String statusLabel = formatTaskStatus(st) + (isOverdue ? " (Vencida)" : "");
             rows.add(new PlanningTaskRow(
@@ -227,18 +264,33 @@ public class PersonalReportService {
                     statusLabel,
                     formatPriority(t.priority()),
                     t.dueDate() != null ? formatDate(t.dueDate()) : "Sin fecha",
-                    formatDate(t.createdAt())
-            ));
+                    formatDate(t.createdAt())));
         }
 
+        // Ordenar por estado (agrupación de agenda) y fecha de vencimiento cronológica
+        rows.sort(Comparator.comparing(PlanningTaskRow::getStatusLabel, String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(PlanningTaskRow::getDueDateLabel, String.CASE_INSENSITIVE_ORDER));
+
         String summary = String.format(
-                "Total: %d  |  Pendientes: %d  |  En proceso: %d  |  En revisión: %d  |  Completadas: %d  |  Vencidas: %d",
-                rows.size(), pending, inProgress, inReview, completed, overdue);
+                "Agenda académica · Pendientes: %d · En proceso: %d · En revisión: %d · Completadas: %d · Vencidas: %d",
+                pending, inProgress, inReview, completed, overdue);
         String emptyNotice = rows.isEmpty()
                 ? "No se encontraron tareas registradas en el período seleccionado."
                 : "Las tareas vencidas se calculan únicamente a partir de fechas de vencimiento reales en estados no completados.";
 
         Map<String, Object> params = baseParams("Mi planificación académica", alias, from, to, summary, emptyNotice);
+        putKpis(params,
+                "TOTAL TAREAS", String.valueOf(rows.size()),
+                "EN CURSO / PEND.", String.valueOf(pending + inProgress + inReview),
+                "COMPLETADAS", String.valueOf(completed),
+                "VENCIDAS REALES", String.valueOf(overdue));
+        List<ChartMetric> planningSeries = List.of(
+                new ChartMetric("Tareas", "Pendientes", pending),
+                new ChartMetric("Tareas", "En proceso", inProgress),
+                new ChartMetric("Tareas", "En revisión", inReview),
+                new ChartMetric("Tareas", "Completadas", completed),
+                new ChartMetric("Tareas", "Vencidas", overdue));
+        params.put("planningChartData", new JRBeanCollectionDataSource(planningSeries));
         byte[] bytes = engine.render("personal_academic_planning", params, rows, format, "Mi planificacion");
         return new GeneratedReport(bytes, fileName("mi_planificacion_academica", format), format.contentType());
     }
@@ -258,10 +310,13 @@ public class PersonalReportService {
         long exchangeCount = 0, giftCount = 0, loanCount = 0;
 
         for (var item : mine) {
-            if (!actorId.equals(item.ownerAccountId())) continue;
-            if ((from != null || to != null) && !inRange(item.createdAt(), from, to)) continue;
+            if (!actorId.equals(item.ownerAccountId()))
+                continue;
+            if ((from != null || to != null) && !inRange(item.createdAt(), from, to))
+                continue;
 
-            String mod = item.exchangeType() != null ? item.exchangeType().strip().toUpperCase(Locale.ROOT) : "EXCHANGE";
+            String mod = item.exchangeType() != null ? item.exchangeType().strip().toUpperCase(Locale.ROOT)
+                    : "EXCHANGE";
             switch (mod) {
                 case "GIFT" -> giftCount++;
                 case "LOAN" -> loanCount++;
@@ -289,18 +344,23 @@ public class PersonalReportService {
                     truncate(safeText(item.description(), "—"), 120),
                     formatExchangeStatus(item.status()),
                     attSummary,
-                    formatDate(item.createdAt())
-            ));
+                    formatDate(item.createdAt())));
         }
 
         String summary = String.format(
-                "Publicaciones propias: %d  |  Intercambio: %d  |  Donación: %d  |  Préstamo: %d",
+                "Modalidades solidarias · Total: %d · Intercambio: %d · Donación: %d · Préstamo: %d",
                 rows.size(), exchangeCount, giftCount, loanCount);
         String emptyNotice = rows.isEmpty()
                 ? "No se encontraron publicaciones propias de intercambio en el período seleccionado."
                 : "Intercambio solidario sin precios ni datos privados de contacto.";
 
-        Map<String, Object> params = baseParams("Mis publicaciones de intercambio", alias, from, to, summary, emptyNotice);
+        Map<String, Object> params = baseParams("Mis publicaciones de intercambio", alias, from, to, summary,
+                emptyNotice);
+        putKpis(params,
+                "PUBLICACIONES", String.valueOf(rows.size()),
+                "INTERCAMBIO", String.valueOf(exchangeCount),
+                "DONACIÓN", String.valueOf(giftCount),
+                "PRÉSTAMO", String.valueOf(loanCount));
         byte[] bytes = engine.render("personal_exchange_publications", params, rows, format, "Mis publicaciones");
         return new GeneratedReport(bytes, fileName("mis_publicaciones_intercambio", format), format.contentType());
     }
@@ -317,16 +377,33 @@ public class PersonalReportService {
     }
 
     private static boolean inRange(Instant instant, LocalDate from, LocalDate to) {
-        if (from == null && to == null) return true;
-        if (instant == null) return false;
+        if (from == null && to == null)
+            return true;
+        if (instant == null)
+            return false;
         LocalDate d = instant.atZone(CAMPUS_ZONE).toLocalDate();
-        if (from != null && d.isBefore(from)) return false;
-        if (to != null && d.isAfter(to)) return false;
+        if (from != null && d.isBefore(from))
+            return false;
+        if (to != null && d.isAfter(to))
+            return false;
         return true;
     }
 
+    private static void putKpis(Map<String, Object> params,
+            String l1, String v1, String l2, String v2,
+            String l3, String v3, String l4, String v4) {
+        params.put("kpi1Lbl", l1);
+        params.put("kpi1Val", v1);
+        params.put("kpi2Lbl", l2);
+        params.put("kpi2Val", v2);
+        params.put("kpi3Lbl", l3);
+        params.put("kpi3Val", v3);
+        params.put("kpi4Lbl", l4);
+        params.put("kpi4Val", v4);
+    }
+
     private static Map<String, Object> baseParams(String title, String alias, LocalDate from, LocalDate to,
-                                                  String summary, String emptyNotice) {
+            String summary, String emptyNotice) {
         Map<String, Object> params = new HashMap<>();
         params.put("reportTitle", title);
         params.put("studentAlias", alias);
@@ -338,9 +415,12 @@ public class PersonalReportService {
     }
 
     private static String formatPeriod(LocalDate from, LocalDate to) {
-        if (from == null && to == null) return "Histórico completo";
-        if (from != null && to != null) return from.format(DATE_FMT) + " al " + to.format(DATE_FMT);
-        if (from != null) return "Desde " + from.format(DATE_FMT);
+        if (from == null && to == null)
+            return "Histórico completo";
+        if (from != null && to != null)
+            return from.format(DATE_FMT) + " al " + to.format(DATE_FMT);
+        if (from != null)
+            return "Desde " + from.format(DATE_FMT);
         return "Hasta " + to.format(DATE_FMT);
     }
 
@@ -365,12 +445,14 @@ public class PersonalReportService {
     }
 
     private static String truncate(String s, int max) {
-        if (s == null || s.length() <= max) return s == null ? "" : s;
+        if (s == null || s.length() <= max)
+            return s == null ? "" : s;
         return s.substring(0, max - 1).strip() + "…";
     }
 
     private static String formatStatus(String st) {
-        if (st == null) return "Activa";
+        if (st == null)
+            return "Activa";
         return switch (st.strip().toUpperCase(Locale.ROOT)) {
             case "ACTIVE" -> "Activa";
             case "HIDDEN" -> "Oculta";
@@ -380,7 +462,8 @@ public class PersonalReportService {
     }
 
     private static String formatCategory(String c) {
-        if (c == null || c.isBlank()) return "Académica";
+        if (c == null || c.isBlank())
+            return "Académica";
         return switch (c.strip().toUpperCase(Locale.ROOT)) {
             case "ACADEMICA" -> "Académica";
             case "ESTUDIO" -> "Estudio";
@@ -392,7 +475,8 @@ public class PersonalReportService {
     }
 
     private static String formatVisibility(String v) {
-        if (v == null || v.isBlank()) return "Pública";
+        if (v == null || v.isBlank())
+            return "Pública";
         return switch (v.strip().toUpperCase(Locale.ROOT)) {
             case "PUBLIC" -> "Pública";
             case "INVITE_ONLY" -> "Solo invitación";
@@ -419,7 +503,8 @@ public class PersonalReportService {
     }
 
     private static String formatPriority(String p) {
-        if (p == null) return "Media";
+        if (p == null)
+            return "Media";
         return switch (p.strip().toUpperCase(Locale.ROOT)) {
             case "LOW" -> "Baja";
             case "HIGH" -> "Alta";
@@ -429,7 +514,8 @@ public class PersonalReportService {
     }
 
     private static String formatExchangeCategory(String c) {
-        if (c == null) return "Otros";
+        if (c == null)
+            return "Otros";
         return switch (c.strip().toUpperCase(Locale.ROOT)) {
             case "BOOK" -> "Libros";
             case "TOOL" -> "Herramientas";
@@ -449,7 +535,8 @@ public class PersonalReportService {
     }
 
     private static String formatExchangeStatus(String s) {
-        if (s == null) return "Disponible";
+        if (s == null)
+            return "Disponible";
         return switch (s.strip().toUpperCase(Locale.ROOT)) {
             case "AVAILABLE" -> "Disponible";
             case "RESERVED" -> "Reservado";

@@ -26,7 +26,6 @@ public final class MainLayoutController {
     @FXML private HBox topBar;
     @FXML private Label connectionBadge;
     @FXML private TextField searchField;
-    @FXML private Button notifBtn;
     @FXML private Button profileBtn;
     @FXML private Button logoutBtn;
 
@@ -42,8 +41,6 @@ public final class MainLayoutController {
     @FXML private Button navExchange;
     @FXML private Button navOpportunities;
 
-    @FXML private Button navReports;
-    @FXML private Button navNotifications;
     @FXML private Button navProfile;
     @FXML private Button navSettings;
 
@@ -70,8 +67,6 @@ public final class MainLayoutController {
         navMap.put("STUDY_TEAMS", navStudyTeams);
         navMap.put("EXCHANGE", navExchange);
         navMap.put("OPPORTUNITIES", navOpportunities);
-        navMap.put("REPORTS", navReports);
-        navMap.put("NOTIFICATIONS", navNotifications);
         navMap.put("PROFILE", navProfile);
         navMap.put("SETTINGS", navSettings);
         navMap.put("CONTROL_CENTER", navControlCenter);
@@ -101,14 +96,13 @@ public final class MainLayoutController {
             adminSection.setManaged(true);
         }
 
-        // Diagnóstico real de conectividad asíncrona y conteo de notificaciones
+        // Diagnóstico real de conectividad asíncrona
         workers.submit(() -> {
             try {
-                long unread = api.unreadNotificationsCount();
+                api.profile();
                 Platform.runLater(() -> {
                     connectionBadge.setText("● En línea: " + env.getDisplayName());
                     connectionBadge.getStyleClass().setAll("badge-resolved");
-                    updateUnreadBadge(unread);
                 });
             } catch (Exception e) {
                 Platform.runLater(() -> {
@@ -183,16 +177,6 @@ public final class MainLayoutController {
                 view.controller().init(api, scope, workers);
                 contentArea.setCenter(view.root());
             }
-            case "REPORTS" -> {
-                ViewLoader.ViewResult<ReportsController> view = ViewLoader.load("Reports.fxml");
-                view.controller().init(api, scope, workers);
-                contentArea.setCenter(view.root());
-            }
-            case "NOTIFICATIONS" -> {
-                ViewLoader.ViewResult<NotificationCenterController> view = ViewLoader.load("Notifications.fxml");
-                view.controller().init(api, scope, workers, this::refreshUnreadBadge);
-                contentArea.setCenter(view.root());
-            }
             case "PROFILE" -> {
                 ViewLoader.ViewResult<ProfileController> view = ViewLoader.load("Profile.fxml");
                 view.controller().init(api, scope, workers, this);
@@ -214,40 +198,8 @@ public final class MainLayoutController {
 
     public void openCommunityDetail(ApiClient.Community community) {
         var view = ViewLoader.<CommunityDetailController>load("CommunityDetail.fxml");
-        view.controller().init(community, api, scope, workers, new CommunityDetailController.CommunityDetailNavigationListener() {
-            @Override public void onBackToHome() { navigateTo("COMMUNITIES"); }
-            @Override public void onOpenModeration(ApiClient.Community comm) { openCommunityModeration(comm); }
-        });
+        view.controller().init(community, api, scope, workers, () -> navigateTo("COMMUNITIES"));
         contentArea.setCenter(view.root());
-    }
-
-    public void openCommunityModeration(ApiClient.Community community) {
-        scope.reset();
-        contentArea.setBottom(null);
-
-        var view = ViewLoader.<CommunityModerationController>load("CommunityModeration.fxml");
-        view.controller().init(api, scope, workers, community, this);
-        contentArea.setCenter(view.root());
-    }
-
-    public void refreshUnreadBadge() {
-        if (api == null || workers == null) return;
-        workers.submit(() -> {
-            try {
-                long unread = api.unreadNotificationsCount();
-                Platform.runLater(() -> updateUnreadBadge(unread));
-            } catch (Exception ignored) {
-            }
-        });
-    }
-
-    private void updateUnreadBadge(long unread) {
-        if (notifBtn == null) return;
-        if (unread > 0) {
-            notifBtn.setText("Avisos (" + unread + ")");
-        } else {
-            notifBtn.setText("Avisos");
-        }
     }
 
     @FXML private void onNavHome() { navigateTo("HOME"); }
@@ -259,8 +211,6 @@ public final class MainLayoutController {
     @FXML private void onNavStudyTeams() { navigateTo("STUDY_TEAMS"); }
     @FXML private void onNavExchange() { navigateTo("EXCHANGE"); }
     @FXML private void onNavOpportunities() { navigateTo("OPPORTUNITIES"); }
-    @FXML private void onNavReports() { navigateTo("REPORTS"); }
-    @FXML private void onNavNotifications() { navigateTo("NOTIFICATIONS"); }
     @FXML private void onNavProfile() { navigateTo("PROFILE"); }
     @FXML private void onNavSettings() { navigateTo("SETTINGS"); }
     @FXML private void onNavControlCenter() { navigateTo("CONTROL_CENTER"); }
@@ -275,7 +225,6 @@ public final class MainLayoutController {
     }
 
     @FXML private void onSearchAction() { navigateTo("COMMUNITIES"); }
-    @FXML private void onNotificationsClicked() { navigateTo("NOTIFICATIONS"); }
     @FXML private void onProfileClicked() { navigateTo("PROFILE"); }
     @FXML private void onLogoutClicked() { if (onLogout != null) onLogout.run(); }
 }

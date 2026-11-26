@@ -1,10 +1,18 @@
 package com.example.steambeta.backend.community;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 public class CommunityController {
@@ -199,6 +207,33 @@ public class CommunityController {
     public CommunityService.ResourceItem publishResource(@PathVariable UUID communityId,
                                                          @RequestBody CommunityService.ResourceDraft draft) {
         return community.publishResource(communityId, draft);
+    }
+
+    @PostMapping(value = "/api/communities/{communityId}/resources/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommunityService.ResourceItem publishResourceWithFile(
+            @PathVariable UUID communityId,
+            @RequestParam("title") String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam("resourceType") String resourceType,
+            @RequestParam(value = "subjectName", required = false) String subjectName,
+            @RequestPart("file") MultipartFile file) {
+        return community.publishResourceWithFile(communityId, title, description, resourceType, subjectName, file);
+    }
+
+    @GetMapping("/api/communities/{communityId}/resources/{resourceId}/download")
+    public ResponseEntity<Resource> downloadResource(@PathVariable UUID communityId,
+                                                     @PathVariable UUID resourceId) {
+        var dl = community.downloadResource(communityId, resourceId);
+        ContentDisposition disp = ContentDisposition.attachment()
+                .filename(dl.originalFilename(), StandardCharsets.UTF_8)
+                .build();
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(dl.mimeType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, disp.toString())
+                .header("X-Content-Type-Options", "nosniff")
+                .cacheControl(CacheControl.noStore())
+                .body(dl.resource());
     }
 
     @GetMapping("/api/communities/{communityId}/resources")

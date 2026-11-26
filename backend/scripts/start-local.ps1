@@ -1,4 +1,4 @@
-﻿param([ValidateSet('Normal','Migration','Demo')][string]$Mode = 'Normal')
+param([ValidateSet('Normal','Migration','Demo')][string]$Mode = 'Normal')
 $ErrorActionPreference = 'Stop'
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 
@@ -59,7 +59,33 @@ if (-not $env:REPLICA_DB_PASSWORD) {
     throw 'Configure REPLICA_DB_PASSWORD localmente o ejecute setup-local-credentials.ps1'
 }
 
-# 6. Preparación de variables de entorno y ejecución
+# 6. Verificación de configuración persistida para STEAMBETA ADMIN (entorno de usuario Windows)
+if ([string]::IsNullOrWhiteSpace($env:STEAMBETA_ADMIN_KEY_SHA256)) {
+    $persistedHash = [Environment]::GetEnvironmentVariable('STEAMBETA_ADMIN_KEY_SHA256', 'User')
+    if (-not [string]::IsNullOrWhiteSpace($persistedHash)) {
+        $env:STEAMBETA_ADMIN_KEY_SHA256 = $persistedHash.Trim()
+    }
+}
+if ([string]::IsNullOrWhiteSpace($env:STEAMBETA_ADMIN_ACTOR_ID)) {
+    $persistedActor = [Environment]::GetEnvironmentVariable('STEAMBETA_ADMIN_ACTOR_ID', 'User')
+    if (-not [string]::IsNullOrWhiteSpace($persistedActor)) {
+        $env:STEAMBETA_ADMIN_ACTOR_ID = $persistedActor.Trim()
+    }
+}
+if ([string]::IsNullOrWhiteSpace($env:STEAMBETA_ADMIN_KEY_SHA256) -or [string]::IsNullOrWhiteSpace($env:STEAMBETA_ADMIN_ACTOR_ID)) {
+    Write-Host ""
+    Write-Host "==========================================================================" -ForegroundColor Red
+    Write-Host " [ERROR] Faltan variables persistidas de STEAMBETA ADMIN." -ForegroundColor Yellow
+    Write-Host "==========================================================================" -ForegroundColor Red
+    Write-Host "Se requieren STEAMBETA_ADMIN_KEY_SHA256 y STEAMBETA_ADMIN_ACTOR_ID en el"
+    Write-Host "entorno de usuario de Windows. Ejecuta UNA SOLA VEZ:" -ForegroundColor Cyan
+    Write-Host "   powershell -ExecutionPolicy Bypass -File .\backend\scripts\setup-admin-environment.ps1" -ForegroundColor White
+    Write-Host "==========================================================================" -ForegroundColor Yellow
+    Write-Host ""
+    throw 'Faltan variables persistidas de STEAMBETA ADMIN (STEAMBETA_ADMIN_KEY_SHA256 / STEAMBETA_ADMIN_ACTOR_ID).'
+}
+
+# 7. Preparación de variables de entorno y ejecución
 $migrationUser = $env:REPLICA_MIGRATION_USER
 $migrationPassword = $env:REPLICA_MIGRATION_PASSWORD
 $env:REPLICA_MIGRATION_USER = $null

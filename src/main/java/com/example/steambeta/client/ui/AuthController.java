@@ -27,7 +27,16 @@ public final class AuthController {
 
     public interface AuthListener {
         void onLoginSuccess(ApiClient client, ApiClient.Identity identity);
+        default void onAdminLoginSuccess(ApiClient client, ApiClient.AdminSessionView session) {}
     }
+
+    // Selector de modalidad y acceso administrativo
+    @FXML private javafx.scene.layout.HBox modeSelectorBar;
+    @FXML private Button btnModeUser;
+    @FXML private Button btnModeAdmin;
+    @FXML private VBox adminLoginPane;
+    @FXML private PasswordField adminKeyField;
+    @FXML private Button adminLoginSubmitBtn;
 
     // Vistas Login
     @FXML private VBox loginPane;
@@ -111,6 +120,78 @@ public final class AuthController {
         }
 
         Platform.runLater(loginIdentifierField::requestFocus);
+    }
+
+    @FXML
+    private void onSelectUserMode() {
+        UiHelper.setActiveTab(btnModeUser, btnModeUser, btnModeAdmin);
+        UiHelper.setVisible(adminLoginPane, false);
+        UiHelper.setVisible(registerPane, false);
+        UiHelper.setVisible(onboardingPane, false);
+        UiHelper.setVisible(loginPane, true);
+        if (adminKeyField != null) adminKeyField.clear();
+        setStatus("", "");
+        Platform.runLater(loginIdentifierField::requestFocus);
+    }
+
+    @FXML
+    private void onSelectAdminMode() {
+        UiHelper.setActiveTab(btnModeAdmin, btnModeUser, btnModeAdmin);
+        UiHelper.setVisible(loginPane, false);
+        UiHelper.setVisible(registerPane, false);
+        UiHelper.setVisible(onboardingPane, false);
+        UiHelper.setVisible(adminLoginPane, true);
+        setStatus("", "");
+        if (adminKeyField != null) {
+            Platform.runLater(adminKeyField::requestFocus);
+        }
+    }
+
+    @FXML
+    private void onAdminLoginSubmit() {
+        String key = adminKeyField != null && adminKeyField.getText() != null ? adminKeyField.getText().strip() : "";
+        if (key.isEmpty()) {
+            setStatus("Ingresa la clave privada administrativa.", "status-error");
+            return;
+        }
+        if (!authInFlight.compareAndSet(false, true)) return;
+
+        long epoch = scope.generation();
+        if (adminLoginSubmitBtn != null) adminLoginSubmitBtn.setDisable(true);
+        if (adminKeyField != null) adminKeyField.setDisable(true);
+        UiHelper.setVisible(busyIndicator, true);
+        setStatus("Verificando acceso administrativo…", "muted");
+
+        workers.submit(() -> {
+            ApiClient client = new ApiClient();
+            try {
+                var session = client.adminLogin(key);
+                Platform.runLater(() -> {
+                    authInFlight.set(false);
+                    if (!scope.current(epoch)) return;
+                    if (adminKeyField != null) adminKeyField.clear();
+                    UiHelper.setVisible(busyIndicator, false);
+                    if (listener != null) {
+                        listener.onAdminLoginSuccess(client, session);
+                    }
+                });
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    authInFlight.set(false);
+                    if (!scope.current(epoch)) return;
+                    if (adminLoginSubmitBtn != null) adminLoginSubmitBtn.setDisable(false);
+                    if (adminKeyField != null) {
+                        adminKeyField.setDisable(false);
+                        adminKeyField.clear();
+                    }
+                    UiHelper.setVisible(busyIndicator, false);
+                    String msg = (ex instanceof ApiClient.Failure f && f.status() == 429)
+                            ? "Demasiados intentos fallidos. Espera unos minutos antes de volver a intentar."
+                            : "Acceso administrativo denegado.";
+                    setStatus(msg, "status-error");
+                });
+            }
+        });
     }
 
     @FXML

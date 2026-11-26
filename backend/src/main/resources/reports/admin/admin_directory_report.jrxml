@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport name="admin_directory_report" language="java" orientation="Landscape" pageWidth="842" pageHeight="595" columnWidth="794" leftMargin="24" rightMargin="24" topMargin="20" bottomMargin="20" whenNoDataType="AllSectionsNoDetail">
+    <style name="AdminZebra" mode="Opaque" backcolor="#FFFFFF">
+        <conditionalStyle mode="Opaque" backcolor="#F8FAFC">
+            <conditionExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></conditionExpression>
+        </conditionalStyle>
+    </style>
+
+    <parameter name="reportTitle" class="java.lang.String"/>
+    <parameter name="reportType" class="java.lang.String"/>
+    <parameter name="filtersApplied" class="java.lang.String"/>
+    <parameter name="generatedAt" class="java.lang.String"/>
+    <parameter name="summaryLine" class="java.lang.String"/>
+    <parameter name="emptyNotice" class="java.lang.String"/>
+
+    <field name="groupKey" class="java.lang.String"/>
+    <field name="identityBlock" class="java.lang.String"/>
+    <field name="emailBlock" class="java.lang.String"/>
+    <field name="profileBlock" class="java.lang.String"/>
+    <field name="bioInterestsBlock" class="java.lang.String"/>
+    <field name="activitySummary" class="java.lang.String"/>
+    <field name="createdAtLabel" class="java.lang.String"/>
+
+    <group name="ReportGroup">
+        <expression><![CDATA[$F{groupKey}]]></expression>
+        <groupHeader>
+            <band height="22">
+                <element kind="textField" x="0" y="2" width="794" height="18" mode="Opaque" backcolor="#F1F5F9" forecolor="#7F1D1D" fontName="SansSerif" fontSize="8.5" bold="true" vTextAlign="Middle" blankWhenNull="true">
+                    <expression><![CDATA["  " + ($F{groupKey} != null ? $F{groupKey} : "USUARIOS")]]></expression>
+                    <box leftPadding="6" rightPadding="6"><leftPen lineWidth="3.0" lineColor="#991B1B"/><bottomPen lineWidth="0.5" lineColor="#CBD5E1"/></box>
+                </element>
+            </band>
+        </groupHeader>
+    </group>
+
+    <title height="122">
+        <element kind="rectangle" x="0" y="0" width="794" height="54" mode="Opaque" backcolor="#1E293B">
+            <pen lineWidth="0.0"/>
+        </element>
+        <element kind="rectangle" x="0" y="54" width="794" height="4" mode="Opaque" backcolor="#B91C1C">
+            <pen lineWidth="0.0"/>
+        </element>
+        <element kind="staticText" x="14" y="7" width="460" height="13" forecolor="#FCA5A5" fontName="SansSerif" fontSize="8.0" bold="true">
+            <text><![CDATA[STEAMBETA ADMIN · DOCUMENTO ADMINISTRATIVO CONFIDENCIAL]]></text>
+        </element>
+        <element kind="textField" x="500" y="7" width="280" height="13" forecolor="#CBD5E1" fontName="SansSerif" fontSize="8.0" hTextAlign="Right" blankWhenNull="true">
+            <expression><![CDATA["Generado: " + $P{generatedAt}]]></expression>
+        </element>
+        <element kind="textField" x="14" y="22" width="540" height="24" forecolor="#FFFFFF" fontName="SansSerif" fontSize="16.0" bold="true" blankWhenNull="true">
+            <expression><![CDATA[$P{reportTitle}]]></expression>
+        </element>
+        <element kind="textField" x="560" y="26" width="220" height="16" forecolor="#F1F5F9" fontName="SansSerif" fontSize="8.2" hTextAlign="Right" blankWhenNull="true">
+            <expression><![CDATA["Alcance: " + $P{reportType}]]></expression>
+        </element>
+
+        <element kind="textField" x="0" y="64" width="794" height="15" forecolor="#334155" fontName="SansSerif" fontSize="8.3" textAdjust="StretchHeight" blankWhenNull="true">
+            <expression><![CDATA["Filtros aplicados: " + $P{filtersApplied}]]></expression>
+        </element>
+        <element kind="textField" positionType="Float" x="0" y="83" width="794" height="30" mode="Opaque" backcolor="#FEF2F2" forecolor="#7F1D1D" fontName="SansSerif" fontSize="8.1" bold="true" vTextAlign="Middle" textAdjust="StretchHeight" blankWhenNull="true">
+            <expression><![CDATA["  " + $P{summaryLine}]]></expression>
+            <box leftPadding="6" rightPadding="6" topPadding="3" bottomPadding="3"><pen lineWidth="0.5" lineColor="#FECACA"/></box>
+        </element>
+    </title>
+
+    <columnHeader height="22">
+        <element kind="staticText" x="0" y="0" width="165" height="20" mode="Opaque" backcolor="#334155" forecolor="#FFFFFF" fontName="SansSerif" fontSize="7.8" bold="true" vTextAlign="Middle"><text><![CDATA[Identificación (Alias / Login / UUID)]]></text><box leftPadding="4"/></element>
+        <element kind="staticText" x="165" y="0" width="130" height="20" mode="Opaque" backcolor="#334155" forecolor="#FFFFFF" fontName="SansSerif" fontSize="7.8" bold="true" vTextAlign="Middle"><text><![CDATA[Correo y Verificación]]></text><box leftPadding="4"/></element>
+        <element kind="staticText" x="295" y="0" width="155" height="20" mode="Opaque" backcolor="#334155" forecolor="#FFFFFF" fontName="SansSerif" fontSize="7.8" bold="true" vTextAlign="Middle"><text><![CDATA[Perfil Académico]]></text><box leftPadding="4"/></element>
+        <element kind="staticText" x="450" y="0" width="160" height="20" mode="Opaque" backcolor="#334155" forecolor="#FFFFFF" fontName="SansSerif" fontSize="7.8" bold="true" vTextAlign="Middle"><text><![CDATA[Biografía e Intereses]]></text><box leftPadding="4"/></element>
+        <element kind="staticText" x="610" y="0" width="120" height="20" mode="Opaque" backcolor="#334155" forecolor="#FFFFFF" fontName="SansSerif" fontSize="7.8" bold="true" vTextAlign="Middle"><text><![CDATA[Actividad Real]]></text><box leftPadding="4"/></element>
+        <element kind="staticText" x="730" y="0" width="64" height="20" mode="Opaque" backcolor="#334155" forecolor="#FFFFFF" fontName="SansSerif" fontSize="7.8" bold="true" vTextAlign="Middle"><text><![CDATA[Registro]]></text><box leftPadding="4"/></element>
+    </columnHeader>
+
+    <detail>
+        <band height="42" splitType="Prevent">
+            <element kind="textField" style="AdminZebra" stretchType="ContainerHeight" x="0" y="0" width="165" height="42" forecolor="#0F172A" fontName="SansSerif" fontSize="7.2" textAdjust="StretchHeight" blankWhenNull="true"><expression><![CDATA[$F{identityBlock}]]></expression><box leftPadding="4" rightPadding="3" topPadding="3" bottomPadding="3"><bottomPen lineWidth="0.5" lineColor="#E2E8F0"/></box></element>
+            <element kind="textField" style="AdminZebra" stretchType="ContainerHeight" x="165" y="0" width="130" height="42" forecolor="#334155" fontName="SansSerif" fontSize="7.3" textAdjust="StretchHeight" blankWhenNull="true"><expression><![CDATA[$F{emailBlock}]]></expression><box leftPadding="4" rightPadding="3" topPadding="3" bottomPadding="3"><bottomPen lineWidth="0.5" lineColor="#E2E8F0"/></box></element>
+            <element kind="textField" style="AdminZebra" stretchType="ContainerHeight" x="295" y="0" width="155" height="42" forecolor="#334155" fontName="SansSerif" fontSize="7.3" textAdjust="StretchHeight" blankWhenNull="true"><expression><![CDATA[$F{profileBlock}]]></expression><box leftPadding="4" rightPadding="3" topPadding="3" bottomPadding="3"><bottomPen lineWidth="0.5" lineColor="#E2E8F0"/></box></element>
+            <element kind="textField" style="AdminZebra" stretchType="ContainerHeight" x="450" y="0" width="160" height="42" forecolor="#475569" fontName="SansSerif" fontSize="7.1" textAdjust="StretchHeight" blankWhenNull="true"><expression><![CDATA[$F{bioInterestsBlock}]]></expression><box leftPadding="4" rightPadding="3" topPadding="3" bottomPadding="3"><bottomPen lineWidth="0.5" lineColor="#E2E8F0"/></box></element>
+            <element kind="textField" style="AdminZebra" stretchType="ContainerHeight" x="610" y="0" width="120" height="42" forecolor="#1E293B" fontName="SansSerif" fontSize="7.3" textAdjust="StretchHeight" blankWhenNull="true"><expression><![CDATA[$F{activitySummary}]]></expression><box leftPadding="4" rightPadding="3" topPadding="3" bottomPadding="3"><bottomPen lineWidth="0.5" lineColor="#E2E8F0"/></box></element>
+            <element kind="textField" style="AdminZebra" stretchType="ContainerHeight" x="730" y="0" width="64" height="42" forecolor="#475569" fontName="SansSerif" fontSize="7.4" textAdjust="StretchHeight" blankWhenNull="true"><expression><![CDATA[$F{createdAtLabel}]]></expression><box leftPadding="4" rightPadding="3" topPadding="3" bottomPadding="3"><bottomPen lineWidth="0.5" lineColor="#E2E8F0"/></box></element>
+        </band>
+    </detail>
+
+    <pageFooter height="22">
+        <element kind="line" x="0" y="2" width="794" height="1" forecolor="#FECACA"/>
+        <element kind="staticText" x="0" y="6" width="560" height="14" forecolor="#7F1D1D" fontName="SansSerif" fontSize="7.6" bold="true">
+            <text><![CDATA[CONFIDENCIAL · USO EXCLUSIVO STEAMBETA ADMIN · SIN CONTRASEÑAS, HASHES, TOKENS NI SECRETOS]]></text>
+        </element>
+        <element kind="textField" x="620" y="6" width="125" height="14" forecolor="#475569" fontName="SansSerif" fontSize="8.0" hTextAlign="Right"><expression><![CDATA["Página " + $V{PAGE_NUMBER} + " de "]]></expression></element>
+        <element kind="textField" x="748" y="6" width="46" height="14" forecolor="#475569" fontName="SansSerif" fontSize="8.0" evaluationTime="Report"><expression><![CDATA[$V{PAGE_NUMBER}]]></expression></element>
+    </pageFooter>
+
+    <summary height="50">
+        <element kind="textField" x="0" y="6" width="794" height="38" mode="Opaque" backcolor="#F8FAFC" forecolor="#334155" fontName="SansSerif" fontSize="7.8" italic="true" vTextAlign="Middle" textAdjust="StretchHeight" blankWhenNull="true">
+            <expression><![CDATA["  " + $P{emptyNotice}]]></expression>
+            <box leftPadding="6" rightPadding="6" topPadding="4" bottomPadding="4"><pen lineWidth="0.5" lineColor="#CBD5E1"/></box>
+        </element>
+    </summary>
+</jasperReport>

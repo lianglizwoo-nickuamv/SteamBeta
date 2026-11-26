@@ -61,6 +61,8 @@ settings-security.xml
 .replica-work/
 .steambeta/
 exchange-storage/
+avatar-storage/
+community-resource-storage/
 backups/
 steam_academico_pre_*.sql
 *.sql.bak

@@ -9,10 +9,12 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -112,12 +114,17 @@ public class CommunityService {
     public record CommunityStats(UUID communityId, long totalMembers, long totalPosts, long totalQuestions,
                                  long resolvedQuestions, long totalResources, long upcomingEvents) {}
 
+    public record ResourceDownload(Resource resource, String originalFilename, String mimeType, long sizeBytes) {}
+
     private final JdbcTemplate jdbc;
     private final AccountService accounts;
+    private final CommunityResourceStorageService resourceStorage;
 
-    public CommunityService(JdbcTemplate jdbc, AccountService accounts) {
+    public CommunityService(JdbcTemplate jdbc, AccountService accounts,
+                            CommunityResourceStorageService resourceStorage) {
         this.jdbc = jdbc;
         this.accounts = accounts;
+        this.resourceStorage = resourceStorage;
     }
 
     // =========================================================================
@@ -540,6 +547,67 @@ public class CommunityService {
                         rs.getTimestamp("created_at").toInstant()
                 ), accounts.current().accountId(), communityId, title, desc, type, url,
                 draft.fileStorageName(), draft.originalFilename(), draft.fileSizeBytes(), draft.mimeType(), subj);
+    }
+
+    @Transactional
+    public ResourceItem publishResourceWithFile(UUID communityId, String rawTitle, String rawDescription,
+                                                String rawType, String rawSubject, MultipartFile file) {
+        String title = text(rawTitle, 3, 160);
+        String desc = (rawDescription == null || rawDescription.isBlank()) ? null : rawDescription.strip();
+        if (desc != null && desc.length() > 2000) throw bad();
+        String type = text(rawType, 3, 30).toUpperCase(Locale.ROOT);
+        if (!Set.of("DOCUMENT", "PDF", "SLIDES", "LAB_GUIDE").contains(type)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo de recurso inválido para archivo descargable.");
+        }
+        String subj = (rawSubject == null || rawSubject.isBlank()) ? null : rawSubject.strip();
+        if (subj != null && (subj.length() < 2 || subj.length() > 80)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La asignatura debe tener entre 2 y 80 caracteres.");
+        }
+
+        UUID actorId = accounts.current().accountId();
+        var stored = resourceStorage.store(file);
+        try {
+            return jdbc.queryForObject("select * from replica.publish_community_resource(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (rs, row) -> new ResourceItem(
+                            rs.getObject("id", UUID.class),
+                            rs.getObject("community_id", UUID.class),
+                            actorId,
+                            rs.getString("uploader_alias"),
+                            rs.getString("title"),
+                            rs.getString("description"),
+                            rs.getString("resource_type"),
+                            rs.getString("external_url"),
+                            rs.getString("original_filename"),
+                            rs.getObject("file_size_bytes", Long.class),
+                            rs.getString("mime_type"),
+                            rs.getString("subject_name"),
+                            rs.getTimestamp("created_at").toInstant()
+                    ), actorId, communityId, title, desc, type, null,
+                    stored.storageName(), stored.originalFilename(), stored.sizeBytes(), stored.mimeType(), subj);
+        } catch (RuntimeException ex) {
+            resourceStorage.deleteQuietly(stored.storageName());
+            throw ex;
+        }
+    }
+
+    @Transactional
+    public ResourceDownload downloadResource(UUID communityId, UUID resourceId) {
+        UUID actorId = accounts.current().accountId();
+        record DownloadMeta(String storageName, String originalFilename, String mimeType, long sizeBytes) {}
+        DownloadMeta meta = jdbc.queryForObject("select * from replica.get_resource_download(?, ?, ?)",
+                (rs, row) -> new DownloadMeta(
+                        rs.getString("file_storage_name"),
+                        rs.getString("original_filename"),
+                        rs.getString("mime_type"),
+                        rs.getLong("file_size_bytes")
+                ), actorId, communityId, resourceId);
+        if (meta == null || meta.storageName() == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Recurso descargable no disponible.");
+        }
+        Resource fileRes = resourceStorage.loadAsResource(meta.storageName());
+        String mime = (meta.mimeType() != null && !meta.mimeType().isBlank()) ? meta.mimeType() : "application/octet-stream";
+        String orig = (meta.originalFilename() != null && !meta.originalFilename().isBlank()) ? meta.originalFilename() : "recurso";
+        return new ResourceDownload(fileRes, orig, mime, meta.sizeBytes());
     }
 
     @Transactional

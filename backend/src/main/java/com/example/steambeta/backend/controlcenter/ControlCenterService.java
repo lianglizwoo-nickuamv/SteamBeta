@@ -9,6 +9,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 @Service
 public class ControlCenterService {
@@ -23,15 +26,16 @@ public class ControlCenterService {
             Instant createdAt,
             long activeSanctionsCount,
             long communitiesCount,
-            long postsCount
-    ) {}
+            long postsCount) {
+    }
 
     public record SanctionDraft(
-            String action, // WARNING, FORMAL_WARNING, TEMPORARY_SUSPENSION, EXTENDED_SUSPENSION, ACCOUNT_DEACTIVATED
+            String action, // WARNING, FORMAL_WARNING, TEMPORARY_SUSPENSION, EXTENDED_SUSPENSION,
+                           // ACCOUNT_DEACTIVATED
             String reason,
             String evidenceContext,
-            Integer durationHours
-    ) {}
+            Integer durationHours) {
+    }
 
     public record AuditLogEntry(
             UUID id,
@@ -39,13 +43,13 @@ public class ControlCenterService {
             String targetLogin,
             String action,
             String reason,
-            Instant createdAt
-    ) {}
+            Instant createdAt) {
+    }
 
     public record AppealResolution(
             String decision, // ACCEPTED, REJECTED
-            String note
-    ) {}
+            String note) {
+    }
 
     private final JdbcTemplate jdbc;
     private final AccountService accounts;
@@ -64,22 +68,29 @@ public class ControlCenterService {
 
     public List<StudentOverview> searchStudents(String query, int limit) {
         requireGlobalModerator();
-        int finalLimit = (limit < 1 || limit > 50) ? 20 : limit;
+        int finalLimit = (limit < 1 || limit > 200) ? 20 : limit;
         try {
-            return jdbc.query("select * from replica.control_center_search_students(?, ?, ?)", (rs, row) ->
-                    new StudentOverview(
-                            rs.getObject("account_id", UUID.class),
-                            rs.getString("login_identifier"),
-                            rs.getString("alias"),
-                            rs.getString("declared_university"),
-                            rs.getString("declared_career"),
-                            rs.getBoolean("enabled"),
-                            rs.getString("global_role"),
-                            rs.getTimestamp("created_at").toInstant(),
-                            rs.getLong("active_sanctions_count"),
-                            rs.getLong("communities_count"),
-                            rs.getLong("posts_count")
-                    ), accounts.current().accountId(), query, finalLimit);
+            return jdbc
+                    .query("select * from replica.control_center_search_students(?, ?, ?)",
+                            (rs, row) -> new StudentOverview(
+                                    rs.getObject("account_id", UUID.class),
+                                    rs.getString("login_identifier"),
+                                    rs.getString("alias"),
+                                    rs.getString("declared_university"),
+                                    rs.getString("declared_career"),
+                                    rs.getBoolean("enabled"),
+                                    rs.getString("global_role"),
+                                    rs.getTimestamp("created_at").toInstant(),
+                                    rs.getLong("active_sanctions_count"),
+                                    rs.getLong("communities_count"),
+                                    rs.getLong("posts_count")),
+                            accounts.current().accountId(), query, finalLimit)
+                    .stream()
+                    .filter(s -> s.loginIdentifier() == null
+                            || (!"steambeta.admin.system".equalsIgnoreCase(s.loginIdentifier().strip())
+                                && !"steambeta.content.anonymous".equalsIgnoreCase(s.loginIdentifier().strip())
+                                    && !s.loginIdentifier().strip().toLowerCase(Locale.ROOT).startsWith("deleted.")))
+                    .toList();
         } catch (Exception ex) {
             // Fallback si V11 no ha sido corrida aún en la BD local
             return List.of();
@@ -105,15 +116,13 @@ public class ControlCenterService {
         requireGlobalModerator();
         int finalLimit = (limit < 1 || limit > 100) ? 50 : limit;
         try {
-            return jdbc.query("select * from replica.control_center_audit_logs(?, ?)", (rs, row) ->
-                    new AuditLogEntry(
-                            rs.getObject("id", UUID.class),
-                            rs.getString("moderator_alias"),
-                            rs.getString("target_login"),
-                            rs.getString("action"),
-                            rs.getString("reason"),
-                            rs.getTimestamp("created_at").toInstant()
-                    ), accounts.current().accountId(), finalLimit);
+            return jdbc.query("select * from replica.control_center_audit_logs(?, ?)", (rs, row) -> new AuditLogEntry(
+                    rs.getObject("id", UUID.class),
+                    rs.getString("moderator_alias"),
+                    rs.getString("target_login"),
+                    rs.getString("action"),
+                    rs.getString("reason"),
+                    rs.getTimestamp("created_at").toInstant()), accounts.current().accountId(), finalLimit);
         } catch (Exception ex) {
             return List.of();
         }
@@ -128,8 +137,10 @@ public class ControlCenterService {
         UUID actor = accounts.current().accountId();
         boolean accepted = "ACCEPTED".equals(resolution.decision());
 
-        jdbc.update("update replica.account_sanction set appeal_status = ?, appeal_resolved_by = ?, appeal_resolved_at = clock_timestamp(), active = ? " +
-                "where id = ? and appeal_status = 'REQUESTED'",
+        jdbc.update(
+                "update replica.account_sanction set appeal_status = ?, appeal_resolved_by = ?, appeal_resolved_at = clock_timestamp(), active = ? "
+                        +
+                        "where id = ? and appeal_status = 'REQUESTED'",
                 resolution.decision(), actor, !accepted, sanctionId);
 
         // Si se acepta la apelación y la cuenta estaba desactivada, reactivarla

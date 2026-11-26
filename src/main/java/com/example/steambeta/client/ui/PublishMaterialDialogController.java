@@ -89,9 +89,9 @@ public final class PublishMaterialDialogController {
     public static String modalityExplanation(String code) {
         if (code == null) code = "EXCHANGE";
         return switch (code.toUpperCase(Locale.ROOT)) {
-            case "GIFT" -> "Donación: entregas gratuitamente un material sin recibir otro a cambio (ej. regalar apuntes de programación). Sin dinero de por medio.";
-            case "LOAN" -> "Préstamo: prestas temporalmente un material y esperas que te lo devuelvan (ej. prestar un libro durante una semana). Sin dinero de por medio.";
-            default -> "Intercambio: entregas un material y recibes otro a cambio (ej. libro de Álgebra por calculadora científica). Sin dinero de por medio.";
+            case "GIFT" -> "Donación: entrega gratuita y permanente de un material. No se espera devolución ni pago.";
+            case "LOAN" -> "Préstamo: entrega temporal de un material que debe devolverse. Actualmente no existe una fecha estructurada de devolución ni seguimiento formal del préstamo; acuerda las condiciones directamente.";
+            default -> "Intercambio: trueque de un material por otro sin dinero. Como no existe un campo estructurado para el material solicitado, detalla en la descripción qué material buscas a cambio.";
         };
     }
 

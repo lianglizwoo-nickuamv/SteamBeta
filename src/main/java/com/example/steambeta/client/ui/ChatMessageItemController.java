@@ -39,7 +39,6 @@ public final class ChatMessageItemController {
     @FXML private Label bodyLabel;
 
     @FXML private Button toggleRepliesBtn;
-    @FXML private Button reportBtn;
     @FXML private Button deleteBtn;
 
     @FXML private VBox repliesBox;
@@ -304,28 +303,5 @@ public final class ChatMessageItemController {
                 });
             }
         });
-    }
-
-    @FXML
-    private void onReport() {
-        var loader = ViewLoader.<ReportContentDialogController>load("ReportContentDialog.fxml");
-        loader.controller().setHeader(isQuestion ? "Reportar Pregunta" : "Reportar Mensaje");
-        Stage owner = authorLabel.getScene() != null ? (Stage) authorLabel.getScene().getWindow() : null;
-        var modal = UiHelper.createModalStage(loader.root(), "Reportar Contenido", owner);
-        modal.showAndWait();
-
-        if (loader.controller().isSubmitted()) {
-            String reason = loader.controller().getReason();
-            workers.submit(() -> {
-                try {
-                    api.report(communityId, "POST", itemId, reason);
-                    Platform.runLater(() -> UiHelper.showSuccess(owner, "Reporte Enviado",
-                            "El contenido ha sido reportado a los moderadores de la comunidad."));
-                } catch (Exception ex) {
-                    Platform.runLater(() -> UiHelper.showError(owner, "Error",
-                            "No se pudo enviar el reporte: " + ex.getMessage()));
-                }
-            });
-        }
     }
 }

@@ -4,14 +4,14 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefWidth="560.0" spacing="14.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.PublishResourceDialogController">
+<VBox prefWidth="580.0" spacing="14.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.PublishResourceDialogController">
     <padding>
         <Insets bottom="20.0" left="22.0" right="22.0" top="20.0" />
     </padding>
 
     <VBox spacing="4.0">
         <Label styleClass="title" text="Publicar Recurso Académico" />
-        <Label fx:id="communitySubtitle" styleClass="muted" text="Comparte guías, apuntes o enlaces útiles con tu comunidad." />
+        <Label fx:id="communitySubtitle" styleClass="muted" text="Comparte documentos descargables o enlaces útiles con tu comunidad." />
         <Separator />
     </VBox>
 
@@ -22,7 +22,7 @@
         </VBox>
 
         <HBox spacing="12.0">
-            <VBox prefWidth="200.0" spacing="4.0">
+            <VBox prefWidth="210.0" spacing="4.0">
                 <Label styleClass="field-label" text="TIPO DE RECURSO:" />
                 <ComboBox fx:id="typeCombo" maxWidth="Infinity" styleClass="combo-box" />
             </VBox>
@@ -32,15 +32,28 @@
             </VBox>
         </HBox>
 
-        <VBox spacing="4.0">
-            <Label styleClass="field-label" text="ENLACE EXTERNO (Obligatorio para Enlace Externo, http/https):" />
+        <!-- Bloque URL (visible únicamente para Enlace externo) -->
+        <VBox fx:id="urlBox" spacing="4.0">
+            <Label styleClass="field-label" text="ENLACE EXTERNO (Obligatorio, http:// o https://):" />
             <TextField fx:id="urlField" promptText="https://..." styleClass="input" />
+        </VBox>
+
+        <!-- Bloque Archivo local (visible para Documento, PDF, Presentación y Guía de laboratorio) -->
+        <VBox fx:id="fileBox" managed="false" spacing="6.0" visible="false">
+            <Label styleClass="field-label" text="ARCHIVO DESCARGABLE (Máx. 25 MB · PDF, DOC/DOCX, PPT/PPTX, imágenes):" />
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                <Button fx:id="btnChooseFile" onAction="#onChooseFile" styleClass="secondary" text="Seleccionar archivo" />
+                <Button fx:id="btnRemoveFile" managed="false" onAction="#onRemoveFile" styleClass="danger-btn, btn-compact" text="Quitar" visible="false" />
+                <Label fx:id="fileInfoLabel" styleClass="muted" text="Ningún archivo seleccionado." wrapText="true" HBox.hgrow="ALWAYS" />
+            </HBox>
         </VBox>
 
         <VBox spacing="4.0">
             <Label styleClass="field-label" text="DESCRIPCIÓN (Opcional, hasta 2000 caracteres):" />
             <TextArea fx:id="descriptionArea" prefRowCount="3" promptText="Resumen del contenido o instrucciones de uso..." styleClass="text-area" wrapText="true" />
         </VBox>
+
+        <CheckBox fx:id="rightsCheckBox" text="Declaro que tengo derecho a compartir este material (documento propio, dominio público o licencia que autoriza su distribución)." wrapText="true" />
 
         <Label fx:id="errorLabel" managed="false" styleClass="status-error" text="" visible="false" wrapText="true" />
     </VBox>

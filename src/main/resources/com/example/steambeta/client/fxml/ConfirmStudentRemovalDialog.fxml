@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefWidth="650.0" spacing="12.0" styleClass="modal-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.steambeta.client.ui.ConfirmStudentRemovalDialogController">
+    <padding>
+        <Insets bottom="20.0" left="22.0" right="22.0" top="20.0" />
+    </padding>
+
+    <VBox spacing="4.0">
+        <Label styleClass="title" text="Eliminar definitivamente al estudiante" />
+        <Label styleClass="muted" text="La cuenta original se eliminará físicamente de PostgreSQL junto con su perfil y datos personales. Sus publicaciones, comentarios, preguntas, recursos, archivos comunitarios y eventos se conservarán bajo el autor «Usuario eliminado». Esta operación no se puede deshacer." wrapText="true" />
+        <Separator />
+    </VBox>
+
+    <ScrollPane fitToWidth="true" prefHeight="430.0" styleClass="app-background">
+        <VBox spacing="10.0">
+            <!-- Identidad del estudiante seleccionado -->
+            <VBox spacing="4.0" styleClass="card">
+                <Label styleClass="section-title" text="ESTUDIANTE SELECCIONADO" />
+                <Label fx:id="lblIdentity" styleClass="identity" text="" wrapText="true" />
+                <Label fx:id="lblEmailAndDate" styleClass="muted" text="" wrapText="true" />
+            </VBox>
+
+            <!-- A. Datos personales que se eliminan físicamente -->
+            <VBox spacing="4.0" styleClass="card">
+                <Label styleClass="field-label" text="A. CUENTA Y DATOS PERSONALES QUE SE ELIMINARÁN FÍSICAMENTE" />
+                <Label fx:id="lblPersonalEliminated" text="" wrapText="true" />
+            </VBox>
+
+            <!-- B. Aportes compartidos conservados como Usuario eliminado -->
+            <VBox spacing="4.0" styleClass="card">
+                <Label styleClass="field-label" text="B. APORTES COMPARTIDOS CONSERVADOS COMO «USUARIO ELIMINADO»" />
+                <Label fx:id="lblSharedAnonymized" text="" wrapText="true" />
+            </VBox>
+
+            <!-- C. Auditoría y trazabilidad institucional -->
+            <VBox spacing="4.0" styleClass="dialog-info-card">
+                <Label styleClass="field-label" text="C. TRAZABILIDAD INSTITUCIONAL" />
+                <Label fx:id="lblInstitutionalRetained" styleClass="muted" text="" wrapText="true" />
+            </VBox>
+
+            <!-- Motivo y confirmación explícita -->
+            <VBox spacing="6.0" styleClass="card">
+                <Label styleClass="field-label" text="MOTIVO DOCUMENTADO (OPCIONAL):" />
+                <TextField fx:id="reasonField" promptText="Ej. Retiro definitivo de cuenta de prueba / solicitud de baja…" styleClass="input" />
+                <Label fx:id="lblConfirmPrompt" styleClass="field-label" text="ESCRIBE ELIMINAR PARA CONFIRMAR LA ELIMINACIÓN DEFINITIVA:" />
+                <TextField fx:id="confirmField" promptText="Escribe ELIMINAR en mayúsculas" styleClass="input" />
+                <Label fx:id="errorLabel" managed="false" styleClass="status-error" text="" visible="false" wrapText="true" />
+            </VBox>
+        </VBox>
+    </ScrollPane>
+
+    <HBox alignment="CENTER_RIGHT" spacing="10.0">
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnCancel" onAction="#onCancel" styleClass="secondary" text="Cancelar" />
+        <Button fx:id="btnConfirmRemove" disable="true" onAction="#onConfirm" styleClass="danger-btn" text="Eliminar definitivamente" />
+    </HBox>
+</VBox>

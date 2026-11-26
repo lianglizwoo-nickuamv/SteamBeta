@@ -39,7 +39,6 @@
         <HBox alignment="CENTER_LEFT" spacing="8.0">
             <Button fx:id="toggleRepliesBtn" onAction="#onToggleReplies" styleClass="secondary, btn-compact" text="Respuestas (0)" />
             <Region HBox.hgrow="ALWAYS" />
-            <Button fx:id="reportBtn" onAction="#onReport" styleClass="secondary, btn-compact" text="Reportar" />
             <Button fx:id="deleteBtn" managed="false" onAction="#onDelete" styleClass="danger-btn, btn-compact" text="Eliminar" visible="false" />
         </HBox>
 
